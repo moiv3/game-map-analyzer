@@ -1,0 +1,1062 @@
+/* Override browser default 8px margin, define font family */
+body {
+    margin:0;
+    padding:0;
+    font-family: "Noto Sans TC", sans-serif;
+}
+
+a {
+    text-decoration: none;
+}
+
+.hr {
+    width: calc(100% - 20px);
+    border-top: 1px solid rgb(224, 224, 224);
+    margin: auto;
+}
+
+.hr.attraction-header-hr{
+    width: 100%;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* 字體大小區域 */
+.header-1 {
+    font-size: 28px; 
+    font-weight: bold;
+    line-height: 24px;
+}
+  
+.header-2 {
+    font-size: 30px; 
+    font-weight: bold;
+    line-height: 34px;
+}
+
+.header-3 {
+    font-size: 24px;
+    font-weight: normal;
+    line-height: 24px;
+}
+
+.btn {
+    font-size: 19px;
+    font-weight: normal;
+    line-height: 16px;
+}
+
+.content {
+    font-size: 16px;
+    font-weight: normal;
+    line-height: auto;
+}
+
+.body {
+    font-size: 16px;
+    font-weight: 500; /*medium = 500*/
+    line-height: 13.3px;
+}
+
+.list {
+    font-size: 14px; 
+    font-weight: 500;
+    line-height: auto;
+}
+
+.bold{
+    font-weight: bold;
+}
+
+/* 字體顏色區域 */
+.primary-color{
+    color:#448899;
+}
+
+.secondary-color{
+    color:#666666;
+}
+
+.cyan-70{
+    color:#448899;
+}
+
+.cyan-50{
+    color:#66AABB;
+}
+
+.cyan-20{
+    color:#AADDEE;
+}
+
+.gray-70{
+    color:#666666;
+}
+
+.gray-50{
+    color:#757575;
+}
+
+.gray-20{
+    color:#E8E8E8;
+}
+
+.gray-10{
+    color:#F8F8F8;
+}
+
+.white{
+    color:white;
+}
+
+.text-shadow-30{
+    box-shadow: 0px 0px 30px 0px #AABBCC;
+}
+
+/* header(101背景圖)區域 20240605 */
+
+/* navbar凍結至整個可視範圍（畫面）的最上方 */
+.navbar-background{
+    width: 100%;
+    background: white;    
+    position: fixed;
+    top: 0;    
+    left: 0;
+    right: 0;
+    z-index: 10;
+}
+
+.navbar-container{
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 54px;
+    padding-left: 10px;    
+}
+
+.navbar-title{
+    margin: 0;
+}
+
+.navbar-button{
+    border: none;
+    background: none;
+    padding: 10px;
+    font-family: "Noto Sans TC", sans-serif; /* override button的預設設定 */
+}
+
+/* header(101背景圖)區域 20240612 */
+.header{
+    background-image: url('images/ai_mario_bg.jpeg');
+    background-size: cover;
+    background-position: top left;
+    opacity: 50%;
+    height: 640px;
+    position: relative;
+    margin-top: 54px;
+}
+
+.header-container{
+    max-width: 1200px;
+    margin: auto;
+    padding: 10px;
+}
+
+.header-text-box{
+    max-width: 1200px;
+    margin: auto;     
+    text-align: left;
+    padding: 10px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-30%), translateY(-50%);
+    background-color: aliceblue;
+    color: #000000;
+}
+
+.header-text{
+    max-width: 1200px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: black
+}
+
+.attraction-search-form{
+    display: inline-block;
+    position: relative;
+    width: 460px;
+}
+
+.header-search-box{
+    margin: 0;     
+    text-align: left;
+}
+
+.header-search-box::placeholder{
+    padding:15px;
+}
+
+.search-bar{
+    box-sizing: border-box;
+    width: 400px;
+    height: 46px;
+    border: 0;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    padding: 15px 0px 15px 15px;
+}
+
+.search-button{
+    width: 60px;
+    height: 46px;
+    background-color: #448899;
+    border: 0;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-image: url("../static/images/search_icon.png");
+    background-size: 30px 30px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* 主文區域 20240603 */
+.main-container{
+    /*有RWD設定，參見最下方*/
+    max-width: 1200px;
+    margin: auto;
+    padding: 40px 0px 40px 0px;
+}
+
+.bigboxgroup{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) ;
+    max-width: 100%;
+    min-width: 0;
+}
+
+/* 橫向scroll bar區域 20240604 */
+.horizontal-scroll-container{
+    display: flex;
+    justify-content: space-between;
+    margin: auto;
+    padding-bottom: 20px;
+}
+
+.horizontal-scroll-btn {
+    border: none;
+    background: none;
+    opacity: 50%;
+}
+
+.horizontal-scroll-btn:hover {
+    opacity: 100%;
+}
+
+.horizontal-scroll-bar{
+    box-sizing: border-box; 
+    height: 50px;
+    padding: 13px 10px 13px 10px;
+    display: flex;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    align-items: center;
+    overflow-x: scroll;
+}
+
+/* 隱藏捲軸用 */
+.horizontal-scroll-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.mrt-item{
+    padding: 5px 15px 5px 15px;
+    gap: 4px;
+    color:#666666;
+    cursor: default;
+}
+
+.mrt-item:hover{
+    color:#000000;
+}
+
+#scroll-left{
+    padding: 9px 0px 9px 15px;
+}
+
+#scroll-right{
+    padding: 9px 15px 9px 0px;
+}
+
+/* 景點盒子區域 */
+.attraction{
+    height: 242px; /* RWD below */
+    min-width: 0;
+    padding: 0px;
+    margin: 0px;
+    display: flex;
+    align-items: center;    
+    overflow: hidden;
+    position: relative;
+    margin: 15px;
+    box-sizing: border-box; 
+    border: 1px #E8E8E8 solid;
+    border-radius: 5px;
+}
+
+.bigboximage{
+    width: 100%;
+    min-width: 0;
+    height: 197px; /* RWD below */
+    position: absolute;
+    top: 0;
+    object-fit: cover;
+}
+
+.text-block-1{
+    box-sizing: border-box; 
+    height: 40px;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    position: absolute;
+    width: 100%;
+    min-width: 0;
+    bottom: 45px;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 60%);
+    padding: 10px;
+}
+
+.text-block-1-text{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 10px 0;
+}
+
+.text-block-2{
+    box-sizing: border-box;
+    height: 45px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: absolute;
+    width: 100%;
+    min-width: 0;
+    bottom:0;
+    background-color: rgb(255, 255, 255);
+    padding: 10px;
+}
+
+.text-block-2-text{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 10px 0;
+}
+
+.text-block-3-text{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 10px 0;
+}
+
+/* attraction頁面 */
+.attraction-main-container{
+    /* 有RWD設定，參見最下方 */
+    max-width: 1200px;
+    margin: 54px auto 0 auto; /* 54px navbar 40px margin */
+}
+
+.picture-booking-container{
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;    
+    padding: 40px 0px 40px 0px;
+}
+
+.picture{
+    width: 540px;
+    position: relative;
+    height: 400px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.booking{
+    flex-grow: 1;
+    /* height: 400px; */
+    display: flex;
+    flex-direction: column;
+}
+
+.booking > * { /* select child elements (僅一階)*/
+    margin: 10px;
+}
+
+.order-details-form{
+    border-radius: 5px;
+    background-color: #E8E8E8;
+    min-height: 300px;
+    bottom: 0;
+    padding: 15px 20px 15px 20px;
+    box-sizing: border-box;
+    width: calc(100%-20px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /*維持預約button的大小*/
+    line-height: 2rem;
+}
+
+.order-details-form > * { /* select child elements (僅一階)*/
+    margin-bottom: 15px;
+    }
+
+.order-details-form-subtitle {
+    margin-right: 5px;
+}
+
+.order-title {
+    line-height: 22px;
+}
+
+.booking-button{
+    background-color: #448899;
+    padding: 10px 20px 10px 20px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    border: 0;
+    border-radius: 5px;
+}
+
+.attraction-content{
+    margin: 40px 0 40px 0;
+    padding: 10px;
+}
+
+.attraction-content-title {
+    line-height: 32px;
+    margin-top: 20px;
+}
+
+/* date picker 相關 CSS settings */
+.date-picker{
+    box-sizing: border-box;
+    width: 193px;
+    height: 35px;
+    border: 0;
+    border-radius: 0;
+    padding: 5px 10px 5px 10px;
+    background-color: white;
+    font-size: 16px;
+    font-family: "Noto Sans TC", sans-serif; 
+}
+
+.date-picker::-webkit-calendar-picker-indicator {
+    background: url(../static/images/calendar_icon.png) no-repeat;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+}
+
+/* 這裡依據figma的樣式打造自訂的radio button. 參考網路上的教學 */
+.radio-form{
+    display: flex;
+    align-items: center;
+}
+
+/* 整體概念：把label加上一個class, 畫出我要的樣式，然後讓他剛好在原來的radio button element的後面。最後把原來的radio element隱藏掉 */
+/* 1. 把新創造的element打造成我們要的型態 */
+.radio-newlycreated-button {
+    position: relative;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    border: 2px solid white;
+    border-radius: 50%;
+    margin: 0 5px 0 5px;
+    background-color: white;
+}
+
+/* 2. 當radio button是checked狀態時(input:checked)，同時改變"後面的新創的element"(+ .radio-newlycreated-button)的樣貌 */
+input:checked + .radio-newlycreated-button {
+    background-color: #448899;
+}
+
+/* 3. 最後，讓原來的radio button消失即可 */
+.radio-original-button {
+    display: none;
+}
+
+/* attraction-slideshow */
+.next{
+    right: 0;
+}
+
+/* There is a transition: opacity 1s; method on the web, might need to research more */ 
+.slides-picture{
+    display: none;    
+    height: 100%;
+}
+
+.slides-picture.slides-active{
+    display: block;
+    animation: visible 1.5s; 
+}
+
+/* This code & "animation: visible 1.5s;" line above are for CSS transitions. Also need to use js to toggle. */
+@keyframes visible {
+ from {
+   opacity: 0;
+ }
+ to {
+   opacity: 1;
+ }
+}
+
+.slides-picture > img{  
+    width: 100%;      
+    height: 100%;
+    object-fit: cover;
+}
+
+.attraction-scroll-btn{
+    border: 0;
+    background-color: transparent;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 75%;
+    z-index: 5;
+}
+
+.attraction-scroll-btn:hover{
+    opacity: 100%; 
+}
+
+.left-btn{
+    left: 0;
+}
+
+.right-btn{
+    right: 0;
+}
+
+.dot-button-container{
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+
+}
+
+.dot-button{
+    height: 12px;
+    width: 12px;
+    background-color: white;    
+    border: 1px solid white;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 6px;
+    opacity: 75%;
+}
+
+.dot-button:hover{
+    background-color: rgb(192, 192, 192);
+}
+
+.dot-button.selected{
+    background-color: black;
+}
+
+/* booking page (購物車)相關 */
+
+.booking-main-container{
+    /* 有RWD設定，參見最下方 */
+    max-width: 1200px;
+    margin: 54px auto 0 auto; /* 54px navbar 40px margin */
+}
+
+.booking-headline{
+    margin: 94px 100px 0px 100px;
+}
+
+.booking-text{    
+    margin: 40px 100px 40px 100px;
+}
+
+#booking-status-ticker {
+    margin: 10px 10px 10px 10px;
+    text-align: center;
+    display: none;
+}
+
+#payment-status-ticker {
+    margin: 10px 10px 10px 10px;
+    text-align: right;
+    /* display: none; */
+}
+
+.booking-attraction-container{
+    /* border: 1px red solid; */
+    margin: 30px 110px 40px 110px;
+    display: flex;
+    position: relative;
+}
+
+.booking-attraction-image-container{    
+    height: 200px; /* take note of RWD below */
+    /* width: 100%; */
+    /* object-fit: cover; */
+    padding: 0 8px 0 8px;
+}
+
+.booking-attraction-image{    
+    height: 100%;
+    /* width: 100%; */
+    /* object-fit: cover; */
+    min-width: 0;
+}
+
+.booking-attraction-text{
+    padding: 0 0 0 22px;
+}
+
+.booking-attraction-text > div{
+    line-height: 24px;
+    margin-bottom: 10px;
+}
+
+.booking-attraction-text > div:first-of-type{
+    line-height: 24px;
+    margin-bottom: 20px;
+}
+
+.booking-attraction-delete-icon{
+    height: 30px;
+    width: 30px;
+    position: absolute;
+    /* top: 0; */
+    right: 0;
+    border: 0;
+    background-image: url("../static/images/icon_delete.png");
+    background-color: transparent;
+    background-size: 30px 30px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.booking-data-container{
+    /* border: 1px red solid; */
+    margin: 40px 110px 40px 110px;
+}
+
+.booking-data-container > div{
+    /* border: 1px red solid; */
+    line-height: 24px;
+    margin-bottom: 15px;
+}
+
+.booking-data-container > div:first-child{
+    margin-bottom: 20px;
+}
+
+.booking-data-container > div:last-child{
+    margin-bottom: 0;
+}
+
+.booking-input {
+    box-sizing: border-box;
+    width: 200px;
+    height: 38px;
+    border: 1px solid #CCCCCC;
+    border-color: #E8E8E8;
+    border-radius: 5px;
+    padding: 10px 10px 10px 10px;
+    background-color: white;
+    font-size: 16px;
+    font-family: "Noto Sans TC", sans-serif;
+}
+
+.booking-confirm-container{
+    /* border: 1px red solid; */
+    margin: 40px 110px 40px 110px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    justify-content:flex-start;
+
+}
+
+.confirm-booking-button{
+    background-color: #448899;
+    padding: 10px 20px 10px 20px;
+    margin-top: 20px;
+    margin-bottom: 0px;
+    border: 0;
+    border-radius: 5px;
+}
+
+#booking-form-id{
+    display: none;
+}
+
+/* footer區域 */
+.footer{
+    height: 104px;
+    background-color: #757575;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* RWD使用 */
+@media screen and (min-width:1201px){
+.booking-attraction-delete-icon {
+    top: 0;
+}
+}
+
+@media screen and (max-width:1200px){
+.main-container{
+    max-width: 704px;
+}
+
+.attraction{
+    height: 280px;
+}
+
+.bigboximage {
+    height: 240px;
+}
+
+.bigboxgroup{
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.attraction-main-container{
+    max-width: 100%;
+}
+
+.booking-main-container{
+    max-width: 100%;
+}
+
+}
+@media screen and (max-width:750px){
+.search-bar {
+    width: 230px;
+    box-shadow: 0px 0px 20px 0px #AABBCC;
+}
+
+.attraction-search-form{
+    width: 285px;
+}
+
+.main-container{
+    max-width: 352px;
+}
+
+.bigboxgroup{
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.picture-booking-container{   
+    display: block;
+    padding-top: 0;
+}
+
+.picture{
+    /* border: 1px red solid; */
+    width: 100%;
+    position: relative;
+    height: 350px;
+    margin: 0;
+}
+
+.booking{
+    /* border: 1px red solid; */
+    width: 100%;
+    min-height: 390px;
+    margin-top: 20px;
+}
+
+.attraction-content{
+    padding: 10px 10px 10px 20px;
+}
+
+.booking-attraction-container{
+    /* border: 1px red solid; */
+    margin: 30px 10px 40px 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    gap: 30px;
+}
+
+.booking-attraction-image-container{    
+    /* border: 1px blue solid; */
+    padding: 0;
+}
+
+.booking-attraction-image{
+    width: 100%;
+    object-fit: cover;
+}
+
+.booking-attraction-text{   
+    /* border: 1px green solid; */
+    width: 100%;
+    padding: 0;
+}
+
+.booking-attraction-text > div:last-of-type{
+    margin-bottom: 30px;
+}
+
+.booking-attraction-delete-icon {
+    bottom: 0;
+}
+
+.booking-headline {
+    margin: 94px 10px 0 10px;
+}
+
+.booking-text {
+    margin: 40px 10px 40px 10px;
+}
+
+.booking-data-container {
+    margin: 40px 10px 40px 10px;
+}
+
+.booking-confirm-container {
+    margin: 40px 10px 40px 10px;
+}
+
+}
+
+/* 其他狀況區域 */
+/* iOS+Chrome/iOS+Safari有個詭異的行為，會預設input form四周都有圓角(約5px radius)，Windows+Chrome則不會。
+研究了許久，加這兩行可以把上述圓角強制處理掉。但不知其必要性。先留著，如果之後有衍生其他layout問題再修正。
+追記：後來影響到attraction的日期框了。解決方法：以下兩行拿掉，因為search bar原本就和search icon有5px的重疊，剛好會被遮住。 iOS直擺橫擺皆確認OK。 */
+/* input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+} */
+
+/* 搜尋框瀏覽器會自定義font, 為了達成與設計稿一致的字型，直接定義之。 (i: means case-insensitive) */
+input[type="text" i] {
+    font-family: "Noto Sans TC", sans-serif;
+}
+
+input[type="password" i] {
+    font-family: "Noto Sans TC", sans-serif;
+}
+
+button {
+    font-family: "Noto Sans TC", sans-serif;
+}
+
+/* test */
+.curtain{
+    width: 100%;
+    height: 100%;
+    background-color:rgba(0, 0, 0, 0.25);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    display: none;
+}
+
+.curtain.active{
+    display: block;
+    z-index: 20;
+}
+
+.signup-form-bg{
+    width: 340px;
+    /* height: 275px; */
+    position: absolute;
+    background-color: white;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 25px 15px 15px 15px;
+    box-sizing: border-box;
+}
+
+.decoration-bar{
+    width: 100%;
+    height: 10px;
+    background-image:linear-gradient(to right, #66AABB, #337788);
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.header-3.signin{
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.signin-form{
+    border: 0;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+}
+
+.deactivate-curtain-button{
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: 20px;
+    right: 10px;
+    background-image: url("../static/images/icon_close.png");
+    background-color: transparent;
+    background-size: 30px 30px;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 0;
+}
+
+#username_id{
+    height: 47px;
+    margin-top: 10px;
+    padding: 15px;
+    box-sizing: border-box;
+    border: 1px solid #CCCCCC;
+    border-radius: 6px;
+}
+
+#password_id{
+    height: 47px;
+    margin-top: 10px;
+    padding: 15px;
+    box-sizing: border-box;
+    border: 1px solid #CCCCCC;
+    border-radius: 6px;
+}
+
+#signin_button{
+    height: 47px;
+    margin-top: 10px;
+    border-radius: 6px;
+    background-color: #448899;
+    border: 0;
+    color: white;
+}
+
+.signup-container{
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    font-weight: 500;
+}
+
+.signup-container > a{
+    color:#666666;
+}
+
+.signin-response-text{
+    text-align: center;
+}
+
+.signup-input{
+    height: 47px;
+    margin-top: 10px;
+    padding: 15px;
+    box-sizing: border-box;
+    border: 1px solid #CCCCCC;
+    border-radius: 6px;
+}
+
+.tpfield-container {
+    display: flex;
+    align-items: center;
+}
+
+.tpfield {
+    box-sizing: border-box;
+    width: 200px;
+    height: 38px;
+    border: 1px solid #CCCCCC;
+    border-color: #E8E8E8;
+    border-radius: 5px;
+    padding: 10px 10px 10px 10px;
+    background-color: white;
+    font-size: 16px;
+    font-family: "Noto Sans TC", sans-serif;
+}
+
+.thankyou-container {
+    padding: 0 20px;
+    /* border: 1px solid red; */
+    margin-top: 94px;
+    margin-bottom: 40px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    
+}
+
+.thankyou-container > *{
+    line-height: 20px;    
+    margin-bottom: 24px;
+}
+
+.parsed-image{
+    height: 150px;
+}
+
+.parsed-image > img{
+    max-height: 100%;
+}
+
+.youtube-url-input{
+    width: 300px;
+}
+
+.api-form{
+    border: 1px solid red;
+    border-radius: 5px;
+    background-color: #E8E8E8;
+    min-height: 300px;
+    bottom: 0;
+    padding: 15px 20px 15px 20px;
+    box-sizing: border-box;
+    width: calc(100%-20px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /*維持預約button的大小*/
+    line-height: 2rem;
+}
+
+/*
+.api-form > * { 
+    margin-bottom: 15px;
+    }
+ 
+.order-details-form-subtitle {
+    margin-right: 5px;
+} */
