@@ -5,7 +5,7 @@ from ultralytics import YOLO
 from math import sqrt
 # Config 
 # Training Model
-model = YOLO("../training_data/20240801mariov2/best.pt")
+model = YOLO("./training_data/20240801mariov2/best.pt")
 # ratio of image to 視為邊界
 lr_margin_ratio = 0.005
 
