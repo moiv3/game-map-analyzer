@@ -1,16 +1,53 @@
-async function fetchTaskQueueRedis(){
-    const result = await fetch("./task-status/", {
-        method:"GET"
-    });
-    const resultJson = await result.json();
-    console.log(resultJson);
-    console.log(resultJson["active"]["celery@Huang-SP"]);
-    if (resultJson["active"]["celery@Huang-SP"].length > 0){
-        const data = resultJson["active"]["celery@Huang-SP"];
-        renderTable(data, 'data-redis-table', ["id", "time_start"]);
-    }
-    else{
-        console.log("No task queue data found!");
+// async function fetchTaskQueueRedis(){
+//     const result = await fetch("./task-status/", {
+//         method:"GET"
+//     });
+//     const resultJson = await result.json();
+//     console.log(resultJson);
+//     console.log(resultJson["active"]["celery@Huang-SP"]);
+//     if (resultJson["active"]["celery@Huang-SP"].length > 0){
+//         const data = resultJson["active"]["celery@Huang-SP"];
+//         renderTable(data, 'data-redis-table', ["id", "time_start"]);
+//     }
+//     else{
+//         console.log("No task queue data found!");
+//     }
+// }
+
+async function fetchTaskQueueRedis() {
+    try {
+        const result = await fetch("./task-status/", {
+            method: "GET"
+        });
+        const resultJson = await result.json();
+        console.log(resultJson);
+
+        const allTasks = [];
+
+        if (resultJson["active"]) {
+            // Iterate over each worker in the 'active' tasks
+            for (const workerName in resultJson["active"]) {
+                if (resultJson["active"].hasOwnProperty(workerName)) {
+                    const tasks = resultJson["active"][workerName];
+                    
+                    tasks.forEach(task => {
+                        task.worker = workerName;  // Add worker name to each task object
+                    });
+
+                    allTasks.push(...tasks);  // Combine all tasks into one list
+                }
+            }
+
+            if (allTasks.length > 0) {
+                renderTable(allTasks, 'data-redis-table', ["worker", "id", "time_start"]);
+            } else {
+                console.log("No task queue data found!");
+            }
+        } else {
+            console.log("No active tasks found!");
+        }
+    } catch (error) {
+        console.error("Error fetching task queue:", error);
     }
 }
 

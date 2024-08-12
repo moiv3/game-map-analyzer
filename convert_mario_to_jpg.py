@@ -2,6 +2,7 @@ from pytube import YouTube
 from datetime import datetime
 import cv2
 import numpy as np
+import os
 
 # pytube temp fix
 from pytube.innertube import _default_clients
@@ -39,7 +40,7 @@ def download_youtube(youtube_id: str):
     return output_filename
 
 # Extract frames from the video using OpenCV, saves to own folder with filename "frame_xxx.jpg"
-def extract_frames(filename: str, start_time, end_time, interval_frames, output_folder="output_test_0808"):
+def extract_frames(filename: str, start_time, end_time, interval_frames, output_folder):
     # Video capture setup
     input_video_path = filename
     cap = cv2.VideoCapture(input_video_path)
@@ -51,6 +52,12 @@ def extract_frames(filename: str, start_time, end_time, interval_frames, output_
     # Initialize variables
     result = []
     frame_count = 0
+    frame_list = []
+
+    # Create folder if not exist
+    output_folder_path = output_folder
+    if not os.path.exists(output_folder_path):
+        os.makedirs(output_folder_path)
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -64,6 +71,7 @@ def extract_frames(filename: str, start_time, end_time, interval_frames, output_
             cv2.imwrite(output_filename_full, frame)
             output_filename_short = f"frame_{frame_count:04d}.jpg"
             result.append(output_filename_full)
+            frame_list.append(frame_count)
 
         frame_count += 1
 
@@ -75,7 +83,7 @@ def extract_frames(filename: str, start_time, end_time, interval_frames, output_
         print(f"{frame_count} frames captured! Returning captured frames as list")
     
     print(result)
-    return result
+    return result, frame_list
 
 # extract_frames('mario1-1.mp4',20,25,6)
 

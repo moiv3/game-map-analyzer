@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 import mario_check_white_ratio
-import pprint
+import json
 
 # threshold: This value (ranging from 0 to 255) determines what pixel values are considered "non-black."
 # For example, if threshold is set to 10, any pixel with a value greater than 10 will be counted as a "non-black" pixel.
@@ -53,39 +53,68 @@ def get_image_title_black_game_attr(folder_path):
             else:
                 image_black_values[filename] = "game"
 
+    print("[black_threshold_test.get_image_title_black_game_attr] image_black_values:")
     print(image_black_values)
+
     return image_black_values
 
-def infer_starting_frame(dict_to_infer, start_frame: int, end_frame: int, threshold_frames=8):
+def get_image_title_black_game_attr_filelist_input(files):
+    image_black_values = {}
+    
+    for filename in files:
+        title_screen_have_words = mario_check_white_ratio.check_if_stage_title(filename)
+        title_screen_black_enough = mario_check_white_ratio.check_if_black_screen(filename, threshold_ratio=0.05)
+        is_black_screen = mario_check_white_ratio.check_if_black_screen(filename)
+
+        filename_without_path = filename[-14:]
+
+        if title_screen_have_words and title_screen_black_enough:
+            image_black_values[filename_without_path] = "title"
+        elif is_black_screen:
+            image_black_values[filename_without_path] = "black"
+        else:
+            image_black_values[filename_without_path] = "game"
+
+    print(image_black_values)
+
+    return image_black_values
+
+def infer_starting_frame(dict_to_infer, start_frame: int, end_frame: int, capture_per_n_frames: int, fps: float):
+
+    threshold_frames = round(fps * 8 / 30)
+
     if start_frame < 0 or start_frame >= 10000 or end_frame < 0 or end_frame >= 10000:
         print("[infer_starting_frame] frame number not supported yet")
         return False
     else:
-        for frame_number in range(end_frame - start_frame - threshold_frames * 3):
+        for frame_number in range(int((end_frame - start_frame) / capture_per_n_frames) - threshold_frames * 3):
 
-            real_frame_number = start_frame + frame_number + threshold_frames * 3
+            real_frame_number = start_frame + frame_number * capture_per_n_frames + threshold_frames * 3
             title_count = 0
             black_count = 0
             game_count = 0
 
-            for i in range(threshold_frames):
+            number_of_pics_to_check = round(threshold_frames / capture_per_n_frames)
+
+            for i in range(number_of_pics_to_check):
                 # check first third
-                if dict_to_infer[f"frame_{(start_frame + frame_number + i):04d}.jpg"] == "title":
+                if dict_to_infer[f"frame_{(start_frame + (frame_number + i) * capture_per_n_frames):04d}.jpg"] == "title":
                     title_count += 1
                 # check second third
-                if dict_to_infer[f"frame_{(start_frame + frame_number + threshold_frames * 1 + i):04d}.jpg"] == "black":
+                if dict_to_infer[f"frame_{(start_frame + (threshold_frames * 1 + frame_number + i) * capture_per_n_frames):04d}.jpg"] == "black":
                     black_count += 1
                 # check last third
-                if dict_to_infer[f"frame_{(start_frame + frame_number + threshold_frames * 2 + i):04d}.jpg"] == "game":
+                if dict_to_infer[f"frame_{(start_frame + (threshold_frames * 2 + frame_number + i) * capture_per_n_frames):04d}.jpg"] == "game":
                     game_count += 1
             
-            if title_count >= (threshold_frames - 2) and black_count >= (threshold_frames - 2) and game_count >= (threshold_frames - 2):
+            if title_count >= max((threshold_frames * 0.7, 2)) and black_count >= max((threshold_frames * 0.7, 2)) and game_count >= max((threshold_frames * 0.7, 2)):
                 starting_frame = start_frame + frame_number + threshold_frames * 2 + 1
                 print("GOT STARTING FRAME! Frame", starting_frame)
                 return starting_frame
-            print(frame_number, title_count, black_count, game_count)
+            print(f"{frame_number} {title_count} {black_count} {game_count}")
     
     print("Did not find a starting frame, will return 0")
+    raise Exception("Test end")
     return 0
 
 # dict_to_infer = get_image_title_black_game_attr("output_test_0808")
