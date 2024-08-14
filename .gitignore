@@ -144,3 +144,4 @@ cython_debug/
 *.jpg
 *.mp4
 *.csv
+*.exe

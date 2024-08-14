@@ -21,6 +21,8 @@ def crop_image(image, x, y, width, height):
 
 # main function, "images" is a list of image filenames
 def infer_and_combine_to_jpg(images, task_id, fps, output_filename = "output.jpg"):
+    # init total infer result
+    all_image_result = []
     # init processed_frames
     processed_frames = []
     # init this_pos, last_pos
@@ -47,17 +49,14 @@ def infer_and_combine_to_jpg(images, task_id, fps, output_filename = "output.jpg
         results = model(image, conf=0.7)[0]
         detections = sv.Detections.from_ultralytics(results)
 
-        # draw a bounding box, then save to somewhere
-        for result in results:
-            for bbox in result.boxes:
-                x1, y1, x2, y2 = bbox.xyxy[0].int().tolist()
-                confidence = bbox.conf[0]
-                label = model.names[int(bbox.cls[0])]
-                cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(image, f"{label} {confidence:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        # append infer result as dict
+        single_image_dict={}
+        single_image_dict["filename"] = single_image
+        num_part = int(single_image.split('frame_')[1].split('.')[0])
+        single_image_dict["frame_number"] = num_part
+        single_image_dict["detections"] = detections
+        all_image_result.append(single_image_dict)
 
-        # Write the frame with the boxes to the output video
-        output_video.write(image)
 
         print("Detection Data:")
         print(detections.data)
@@ -182,12 +181,24 @@ def infer_and_combine_to_jpg(images, task_id, fps, output_filename = "output.jpg
             processed_frames.append(cropped_frame)
             break
 
+        # draw a bounding box, then save to somewhere
+        for result in results:
+            for bbox in result.boxes:
+                x1, y1, x2, y2 = bbox.xyxy[0].int().tolist()
+                confidence = bbox.conf[0]
+                label = model.names[int(bbox.cls[0])]
+                cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(image, f"{label} {confidence:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+        # Write the frame with the boxes to the output video
+        output_video.write(image)
+
         # TODO: check underground
         # 1st: check if consecutive black for 5 frames. use black_threshold_test.check_black_image_with_threshold
         # 2nd: Toggle underground mode.
         # 3rd: Assume only one screen in underground (Fix this later)
-        # 4th:尋找新的定位點
-        # 5th:先試著用影像辨識，然後如果不行，
+        # 4th: 尋找新的定位點
+        # 5th: 先試著用影像辨識，然後如果不行，
         # 6th: 畫三條線(最上面三個block)分析亮度，猜出移動了多少
     output_video.release()
 
@@ -196,10 +207,10 @@ def infer_and_combine_to_jpg(images, task_id, fps, output_filename = "output.jpg
         cv2.imwrite(output_filename, combined_image)
 
         print("Inference complete. Combined image saved to:", output_filename)
-        return output_filename
+        return output_filename, all_image_result
     else:
         print("No frames were captured from the video.")
-        return False
+        return None, None
         
 
 
@@ -466,7 +477,13 @@ def infer_images(images, output_filename = "inference_result.csv", save_to_csvfi
         print("An exception occured:")
         traceback.print_exc()
         return None
-    
+
+def get_first_and_last_frame(infer_result):
+    sorted_frames = sorted(infer_result, key=lambda x: x['frame_number'])
+    first_frame = sorted_frames[0]['frame_number']
+    last_frame = sorted_frames[-1]['frame_number']
+    return first_frame, last_frame
+
 def calculate_motion(infer_result):
     sorted_frames = sorted(infer_result, key=lambda x: x['frame_number'])
     frames_to_compare = len(sorted_frames) - 1
@@ -520,6 +537,23 @@ def infer_jumping_and_landing(motion_result_with_jumping):
         return jumping_and_landing_result
     else:
         return None
+    
+def generate_jump_inference_from_infer_result(infer_result):
+    motion_result = calculate_motion(infer_result)
+    print(motion_result)
+    motion_result_with_jump = infer_jumping(motion_result)
+    print(motion_result_with_jump)
+    motion_result_with_jump_inference = infer_jumping_and_landing(motion_result_with_jump)
+    print(motion_result_with_jump_inference)
+    first_frame,last_frame = get_first_and_last_frame(infer_result)
+    print("first_frame, last_frame:", first_frame, last_frame)
+    
+    output = {}
+    output["first_frame"] = first_frame
+    output["last_frame"] = last_frame
+    output["jump"] = motion_result_with_jump_inference
+
+    return output
 
 if __name__ == "__main__":
     images=[]

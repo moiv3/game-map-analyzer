@@ -3,6 +3,7 @@ import get_video_info_cv2
 import black_threshold_test
 import pprint
 import csv
+import json
 import filter_frames
 import test_one_frame_detect_0801
 import traceback
@@ -28,7 +29,12 @@ def mario_parser_function(task_id, youtube_id = "PI2o0fNKD8g"):
         # 1. load video, save as "test_video%Y%m%d%H%M%S.mp4"
         # This works, stop downloading a new video everytime, fix when infer logic ready
         # output_filename = convert_mario_to_jpg.download_youtube(youtube_id)
-        output_filename = 'test_video20240808153123.mp4'
+        output_filename = convert_mario_to_jpg.download_youtube_new(youtube_id, task_id)
+        # Short video test: 15 minutes 30s: 5 min
+        # output_filename = 'test_video20240808153123.mp4'
+        # Long video test: 30 fps 60s: 23 min
+        # output_filename = 'test_video20240808164421.mp4'
+
         print("[Main program] Download complete, filename:", output_filename)
 
         # 2. Get the video data
@@ -50,6 +56,19 @@ def mario_parser_function(task_id, youtube_id = "PI2o0fNKD8g"):
 
         # 4. Try to get the starting frame
         dict_to_infer = black_threshold_test.get_image_title_black_game_attr(output_folder)
+
+        # Check if is valid video, if not, raise an exception
+        count_game_image = sum(1 for v in dict_to_infer.values() if v in ["game", "title"])
+        total_images = len(dict_to_infer)
+        game_image_ratio = count_game_image / total_images
+        game_image_ratio_threshold = 0.5
+        if game_image_ratio < game_image_ratio_threshold:
+            raise Exception("Not a valid video")
+        
+        # For debugging
+        with open("color_infer_result.json","w") as fp:
+            json.dump(dict_to_infer, fp)
+
         if frame_list:
             first_frame = frame_list[0]
         else:
@@ -62,9 +81,14 @@ def mario_parser_function(task_id, youtube_id = "PI2o0fNKD8g"):
         print("Actual captured frames to infer:",filtered_captured_frames)
         
         # 6. use the new captured_frames list to do inference
-        infer_filename = test_one_frame_detect_0801.infer_and_combine_to_jpg(images=filtered_captured_frames, task_id=task_id, fps=video_data["fps"], output_filename = f"{task_id}.jpg")
-        print("[Main program] Infer complete, result:", infer_filename)
-        return {"ok": True, "file": infer_filename}
+        infer_filename, infer_result = test_one_frame_detect_0801.infer_and_combine_to_jpg(images=filtered_captured_frames, task_id=task_id, fps=video_data["fps"], output_filename = f"{task_id}.jpg")
+        print("[Main program] Infer complete, jpg:", infer_filename)
+        # print("[Main program] Infer complete, text:", infer_result)
+
+        motion_result_with_jump_inference = test_one_frame_detect_0801.generate_jump_inference_from_infer_result(infer_result)
+        print("[Main program] Jumping motion infer complete, text:", motion_result_with_jump_inference)
+
+        return {"ok": True, "file": infer_filename, "text": motion_result_with_jump_inference}
     
     except Exception:
         traceback.print_exc()

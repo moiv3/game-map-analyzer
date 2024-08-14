@@ -41,17 +41,22 @@ def get_image_title_black_game_attr(folder_path):
         if filename.endswith('.jpg'):
             # Construct full file path
             file_path = os.path.join(folder_path, filename)
-
+            
+            #TODO: 這些function開開關關，應該要整併為一個
             title_screen_have_words = mario_check_white_ratio.check_if_stage_title(file_path)
             title_screen_black_enough = mario_check_white_ratio.check_if_black_screen(file_path, threshold_ratio=0.05)
             is_black_screen = mario_check_white_ratio.check_if_black_screen(file_path)
+            is_blue_game_background = bool(mario_check_white_ratio.check_color_ratio(file_path,((240, 255), (120, 155), (70, 100))) > 0.5)
 
             if title_screen_have_words and title_screen_black_enough:
                 image_black_values[filename] = "title"
             elif is_black_screen:
                 image_black_values[filename] = "black"
-            else:
+            elif is_blue_game_background:
                 image_black_values[filename] = "game"
+            else:
+                image_black_values[filename] = "other"
+
 
     print("[black_threshold_test.get_image_title_black_game_attr] image_black_values:")
     print(image_black_values)
@@ -107,14 +112,14 @@ def infer_starting_frame(dict_to_infer, start_frame: int, end_frame: int, captur
                 if dict_to_infer[f"frame_{(start_frame + (threshold_frames * 2 + frame_number + i) * capture_per_n_frames):04d}.jpg"] == "game":
                     game_count += 1
             
-            if title_count >= max((threshold_frames * 0.7, 2)) and black_count >= max((threshold_frames * 0.7, 2)) and game_count >= max((threshold_frames * 0.7, 2)):
+            if title_count >= max((threshold_frames * 0.7, 2)) and black_count >= max((threshold_frames * 0.4, 2)) and game_count >= max((threshold_frames * 0.7, 2)):
                 starting_frame = start_frame + frame_number + threshold_frames * 2 + 1
                 print("GOT STARTING FRAME! Frame", starting_frame)
                 return starting_frame
             print(f"{frame_number} {title_count} {black_count} {game_count}")
     
     print("Did not find a starting frame, will return 0")
-    raise Exception("Test end")
+    raise Exception("No starting frame found!")
     return 0
 
 # dict_to_infer = get_image_title_black_game_attr("output_test_0808")

@@ -116,7 +116,7 @@ def process_video(self, video_id: str, api_key: str):
     # THE FAKE FUNCTION
     try:
         # DUMMY SEQUENCE
-        mario_parser_0809.mario_parser_function(task_id, youtube_id=video_id)
+        parse_result = mario_parser_0809.mario_parser_function(task_id, youtube_id=video_id)
 
         # dummy filepath
         file_path = f"{task_id}.jpg"
@@ -146,9 +146,12 @@ def process_video(self, video_id: str, api_key: str):
 
         #TEST SEQUENCE TOmmorow MORNING, THEN DEAL WITH JSON
 
-
-        # DUMMY JSON
-        data_dict = {"start_frame":0,"end_frame":0, "clear_stage":True, "jumps":[{"jump":20, "fall":30},{"jump":40, "fall":50},{"jump":60, "fall":70},]}
+        if parse_result["ok"]:
+            # REAL JSON
+            data_dict = parse_result["text"]
+        else:
+            # DUMMY JSON
+            data_dict = {"start_frame":0,"end_frame":0, "jumps":[{"jump":20, "fall":30},{"jump":40, "fall":50},{"jump":60, "fall":70},]}
         
         # Upload dummy json dataConvert dictionary to JSON string
         json_data = json.dumps(data_dict)

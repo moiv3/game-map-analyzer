@@ -3,6 +3,7 @@ from datetime import datetime
 import cv2
 import numpy as np
 import os
+import yt_dlp
 
 # pytube temp fix
 from pytube.innertube import _default_clients
@@ -27,6 +28,53 @@ def crop_image(image, x, y, width, height):
 # Main functions
 
 # Download desired YouTube video URL
+def download_youtube_new(youtube_id: str, task_id: str):
+    # Upper bound of video duration
+    video_duration_limit = 90
+
+    downloaded_filename = None
+
+    # Define a custom hook to capture the filename
+    def my_hook(d):
+        nonlocal downloaded_filename
+        if d['status'] == 'finished':
+            downloaded_filename = d['filename']
+
+    video_url = 'https://www.youtube.com/watch?v=' + youtube_id
+
+    # video info options
+    info_options = {
+        'quiet': True,  # Suppress output
+        'no_warnings': True,
+    }
+
+    outtmpl = f"youtube_{task_id}.%(ext)s"
+    # video download options
+    download_options = {
+        'format': 'bestvideo[ext=mp4][height<=480]+bestaudio[ext=m4a]/best[ext=mp4][height<=480]',  # Restrict to MP4 format and max 480p resolution,
+        'outtmpl': outtmpl,  # Output template
+        'progress_hooks': [my_hook],  # Add the hook here
+    }
+
+    with yt_dlp.YoutubeDL(info_options) as ydl:
+        # Extract information
+        info_dict = ydl.extract_info(video_url, download=False)
+        
+        # Retrieve and print the video duration (in seconds)
+        video_duration = info_dict.get('duration', None)
+        print(f"Video Duration: {video_duration} seconds")
+        if video_duration and video_duration < 90:
+            # Initialize yt-dlp with download options
+            with yt_dlp.YoutubeDL(download_options) as ydl_download:
+                ydl_download.download([video_url])        
+                print("Download complete!")
+                downloaded_filename_new = f"youtube_{task_id}.mp4"
+                return downloaded_filename_new
+
+        else:
+            print("Video too long. Returning None")
+            return None
+
 def download_youtube(youtube_id: str):
     video_url = 'https://www.youtube.com/watch?v=' + youtube_id
 
