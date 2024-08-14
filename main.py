@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response, Depends, Header
+from fastapi import FastAPI, Request, Response, Depends, Header, File, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -18,6 +18,8 @@ import traceback
 from celery.result import AsyncResult
 from celery_config import celery_app
 import celery_config
+import boto3
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 load_dotenv()
 
@@ -29,6 +31,16 @@ db_pw = os.getenv("db_pw")
 db_database = os.getenv("db_database")
 
 secret_key = os.getenv("jwt_secret_key")
+
+# AWS S3 config
+s3_client = boto3.client('s3', region_name=os.getenv("region_name"), 
+                         aws_access_key_id=os.getenv("aws_access_key_id"),
+                         aws_secret_access_key=os.getenv("aws_secret_access_key"))
+
+BUCKET_NAME = os.getenv("s3_bucket_name")
+CLOUDFRONT_URL = os.getenv("cloudfront_distribution_domain_name")
+
+
 
 # token config
 from datetime import timedelta
@@ -64,6 +76,10 @@ def api_keys_page():
 def task_queue_page():
     return FileResponse("static/task_queue.html")
 
+@app.get("/upload_video")
+def upload_video_page():
+    return FileResponse("static/upload_video.html")
+
 @app.get("/api/process-video/")
 def process_video(video_id: str = "DGQGvAwqpbE"):
     task = mario_parser.mario_parser_function(video_id)
@@ -93,7 +109,7 @@ def test_api():
 
 
 
-# user sisnin/signout, taken from stage2
+# user signin/signout, taken from stage2
 
 class Error(BaseModel):
     error: bool
@@ -408,6 +424,88 @@ def get_all_task_status_db():
     
     print(tasks)
     return tasks
+
+@app.post("/api/upload", summary="上傳一個影片")
+async def upload_file(file: UploadFile = File(...), token_data: TokenOut = Depends(get_token_header)):
+    try:
+        signin_status = check_user_signin_status_return_bool(token_data)
+        # TODO: Exception for signin status?
+        if not signin_status:
+            raise HTTPException(status_code=401, detail="登入資訊異常，請重新登入")
+        else:
+            user_id = signin_status["id"]
+            unique_id = str(uuid.uuid4())
+            unique_filename = f"{unique_id}.mp4"
+            s3_client.upload_fileobj(file.file, BUCKET_NAME, unique_filename)
+            file_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{unique_filename}"
+            # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
+            """
+            create table uploaded_video(
+            id int auto_increment,
+            user_id int not null,
+            video_id varchar(255) not null,
+            video_url varchar(255) not null,
+            create_time datetime not null default current_timestamp,
+            primary key(id)
+            );
+            """        
+
+            # save to database
+            website_db = mysql.connector.connect(host=db_host, user=db_user, password=db_pw, database=db_database)
+            website_db_cursor = website_db.cursor()
+            
+            cmd = "INSERT INTO uploaded_video (user_id, video_id, video_url) VALUES (%s, %s, %s)"
+            website_db_cursor.execute(cmd, (user_id, unique_id, file_url))
+            website_db.commit()
+
+            return {"ok": True, "filename": unique_filename}
+    except (NoCredentialsError, PartialCredentialsError):
+        raise HTTPException(status_code=403, detail="Could not authenticate to S3")
+    except Exception as e:
+        print(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/get_uploaded_videos", summary="取得影片")
+async def get_uploaded_videos(token_data: TokenOut = Depends(get_token_header)):
+    # try / except
+    signin_status = check_user_signin_status_return_bool(token_data)
+    if not signin_status:
+        return JSONResponse(status_code=401, content=(Error(error="true", message="登入資訊異常，請重新登入").dict()))
+    else:
+        user_id = signin_status["id"]
+        website_db = mysql.connector.connect(
+            host=db_host, user=db_user, password=db_pw, database=db_database)
+        website_db_cursor = website_db.cursor()
+        
+        final_output = {}
+
+        # Select user's valid API keys
+        cmd = "SELECT user_id, video_id, video_url, create_time FROM uploaded_video WHERE user_id = %s LIMIT 10"
+        website_db_cursor.execute(cmd, (user_id,))
+        uploaded_video_result = website_db_cursor.fetchall()
+        if uploaded_video_result:
+            output_video_all = []
+            for video in uploaded_video_result:
+                output_video_single = {}
+                output_video_single["user_id"] = video[0]
+                output_video_single["video_id"] = video[1]
+                output_video_single["video_url"] = video[2]
+                output_video_single["create_time"] = video[3]
+                output_video_all.append(output_video_single)
+        else:
+            output_video_all = []
+        final_output["uploaded_videos"] = output_video_all
+
+        return final_output
+
+#20240815: 急!增加從上傳列表進行解析的功能
+@app.post("/api/get_uploaded_videos", summary="使用影片")
+async def analyze_video_by_video_id(token_data: TokenOut = Depends(get_token_header)):
+    #檢查登入狀態
+    #從S3下載影片
+    #開始解析
+    #回傳結果
+    return{"ok": True}
 
 
 

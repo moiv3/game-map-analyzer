@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../static/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
+  <title class="attraction-title">Game Map Analyzer - Upload Video</title>
+</head>
+<body>
+  <div class="navbar-background">
+    <div class="navbar-container">
+      <a href="/"><div class="navbar-title cyan-70 header-2">Game Map Analyzer</div></a>
+      <div class="navbar-topright-container">
+        <button class="navbar-button gray-70 body api-docs-button">使用說明</button>
+        <button class="navbar-button gray-70 body signin-button"></button><!--renders 登入/註冊 or 登出系統-->
+      </div>
+    </div>
+    <div class="hr attraction-header-hr"></div>
+  </div>
+  <div class="attraction-main-container">
+    <div class="order-details-form body" style="height: 200px">
+    <div class="header-3 bold">上傳影片：
+    </div>
+    請在此上傳影片！<br/>
+    Youtube download目前無法支援EC2 IP，相關fix管理員積極對應中。造成您的不便，敬請見諒。如希望知道目前進展請不吝聯繫管理員。
+    請使用Youtube Video ID，以POST method送出request到以下URL: http://traces.fun/api/process-video/<br/>
+    並傳入body: {"youtubeid":(需要下載的video id), "token":(您的API token)}<br/>
+    伺服器會下載您的影片進行解析。<br/>
+    <div>為確保服務品質，測試期間開放長度小於1分鐘的Youtube影片。請確保您的Youtube影片為公開。</div>
+    (未登入的使用者，render 範例圖片)<br/>
+    (有登入的使用者，render Web介面)<br/>
+    </div>
+    <div class="body bold" style="height: 30px"></div>
+
+    <div class="api-form body" id="api-web-signed-out" style="height: 300px">
+      <div class="body bold" style="height: 30px">如何下載Youtube影片</div>
+    </div>
+
+      <div class="body bold" style="height: 30px"></div>
+      
+    <div class="api-form body" id="api-web-signed-out" style="height: 300px">
+      <div class="body bold" style="height: 30px">上傳下載完成的Youtube影片</div>
+      
+      <div id="message-upload">
+        <form id="upload-form">
+            <!-- <div>
+                <label for="text-id">Your message: (max. 255 characters)</label>
+                <input type="text" id="text-id" name="text-name" placeholder="Enter message">
+            </div> -->
+            <div><label for="file-id">選擇希望上傳的影片: (支援格式：mp4, 影片最大容量：15 MB, 影片時間上限：90秒)</label></div>
+            <div><input type="file" id="file-id" name="file-name"></div>
+            <div><button type="submit">上傳影片</button></div>
+        </form>
+      </div>
+  
+      <h3 id="upload-status-message"></h3>
+      <h3 id="upload-response-message"></h3>
+  
+      </div>
+        <div class="body bold" style="height: 30px"></div>
+
+    <div class="api-form body" id="api-web-signed-in" style="height: 1000px;">
+      <div class="bold">您上傳的影片</div>
+      <div class="bold">Do stuff here!</div>
+      <table id="uploaded-videos-table" border="1">
+        <thead>
+            <tr>
+                <!-- Table headers will be populated here -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Table data will be populated here -->
+        </tbody>
+    </table>
+
+      <div id="submit-query"></div>
+    </div>
+  </div>
+<!-- <div class="footer body bold">COPYRIGHT &copy; 2024 台北一日遊</div> -->
+<script src="../static/scripts/script_general.js"></script>
+<script src="../static/scripts/script_upload_video.js" defer></script>
+<!-- <script src="../static/scripts/script_attraction.js"></script> -->
+</body>
+</html>
