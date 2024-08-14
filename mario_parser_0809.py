@@ -29,9 +29,9 @@ def mario_parser_function(task_id, youtube_id = "PI2o0fNKD8g"):
         # 1. load video, save as "test_video%Y%m%d%H%M%S.mp4"
         # This works, stop downloading a new video everytime, fix when infer logic ready
         # output_filename = convert_mario_to_jpg.download_youtube(youtube_id)
-        output_filename = convert_mario_to_jpg.download_youtube_new(youtube_id, task_id)
+        # output_filename = convert_mario_to_jpg.download_youtube_new(youtube_id, task_id)
         # Short video test: 15 minutes 30s: 5 min
-        # output_filename = 'test_video20240808153123.mp4'
+        output_filename = 'test_video20240808153123.mp4'
         # Long video test: 30 fps 60s: 23 min
         # output_filename = 'test_video20240808164421.mp4'
 
