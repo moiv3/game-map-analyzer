@@ -118,9 +118,8 @@ def infer_starting_frame(dict_to_infer, start_frame: int, end_frame: int, captur
                 return starting_frame
             print(f"{frame_number} {title_count} {black_count} {game_count}")
     
-    print("Did not find a starting frame, will return 0")
-    raise Exception("No starting frame found!")
-    return 0
+    print("[infer_starting_frame] Did not find a starting frame, will return False")
+    return False
 
 # dict_to_infer = get_image_title_black_game_attr("output_test_0808")
 # starting_frame = infer_starting_frame(dict_to_infer, start_frame=0, end_frame=1566)
