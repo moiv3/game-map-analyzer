@@ -491,7 +491,7 @@ async def get_uploaded_videos(token_data: TokenOut = Depends(get_token_header)):
         final_output = {}
 
         # Select user's valid API keys
-        cmd = "SELECT user_id, video_id, status, error_message, create_time FROM uploaded_video WHERE user_id = %s LIMIT 10"
+        cmd = "SELECT user_id, video_id, status, error_message, create_time FROM uploaded_video WHERE user_id = %s ORDER BY create_time DESC LIMIT 10"
         website_db_cursor.execute(cmd, (user_id,))
         uploaded_video_result = website_db_cursor.fetchall()
         if uploaded_video_result:
