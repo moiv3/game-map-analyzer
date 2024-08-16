@@ -4,6 +4,18 @@ import cv2
 import numpy as np
 import os
 import yt_dlp
+import boto3
+import traceback
+from dotenv import load_dotenv
+load_dotenv()
+
+# boto config
+s3_client = boto3.client('s3', region_name=os.getenv("region_name"), 
+                         aws_access_key_id=os.getenv("aws_access_key_id"),
+                         aws_secret_access_key=os.getenv("aws_secret_access_key"))
+
+BUCKET_NAME = os.getenv("s3_bucket_name")
+CLOUDFRONT_URL = os.getenv("cloudfront_distribution_domain_name")
 
 # pytube temp fix
 from pytube.innertube import _default_clients
@@ -26,6 +38,17 @@ def crop_image(image, x, y, width, height):
     return image[y:y+height, x:x+width]
 
 # Main functions
+
+# Download desired s3 URL
+def download_s3(video_id: str, task_id: str):
+    try:
+        s3_filename = f"{video_id}.mp4"
+        downloaded_filename = f"s3_{video_id}.mp4"
+        s3_client.download_file(Bucket=BUCKET_NAME, Key=s3_filename, Filename=downloaded_filename)
+        return downloaded_filename
+    except Exception:
+        traceback.print_exc()
+        return None
 
 # Download desired YouTube video URL
 def download_youtube_new(youtube_id: str, task_id: str):

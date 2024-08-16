@@ -1,12 +1,10 @@
 const getCurrentKeyButton = document.querySelector("#current-key");
 getCurrentKeyButton.addEventListener("click", async function(event){
     const signinStatusToken = window.localStorage.getItem('token');
-    // maybe...add actual auth here?
+    const systemStatus = document.querySelector("#system-status");
     if (!signinStatusToken){
-        console.log("No token!")
-        // edit TEXT on the webpage
-        const systemStatus = document.querySelector("#system-status");
-        systemStatus.textContent = "Not signed in, please refresh page, thx"
+        console.log("No token!");
+        systemStatus.textContent = "登入驗證異常，請重新整理後，再試一次";
         return false;
     }
     else{
@@ -18,22 +16,27 @@ getCurrentKeyButton.addEventListener("click", async function(event){
             }
         });
         const currentKeyJson = await currentKey.json();
-        console.log(currentKeyJson);
+        const newKeyResultText = document.querySelector("#get-new-key-result");
         const currentKeyResultText = document.querySelector("#current-key-result");
-        currentKeyResultText.textContent = currentKeyJson.api_keys;
-
+        if(currentKeyJson.ok){
+            newKeyResultText.textContent = "";
+            currentKeyResultText.textContent = `API key：${currentKeyJson.api_keys}`;
+        }
+        else{
+            newKeyResultText.textContent = "";
+            currentKeyResultText.textContent = "";
+            systemStatus.textContent = "取得API key資訊時發生異常，請重新整理後，再試一次";
+        }
     }
 })
 
 const getNewKeyButton = document.querySelector("#get-new-key");
 getNewKeyButton.addEventListener("click", async function(event){
     const signinStatusToken = window.localStorage.getItem('token');
-    // maybe...add actual auth here?
     if (!signinStatusToken){
-        console.log("No token!")
-        // edit TEXT on the webpage
+        console.log("No token!");
         const systemStatus = document.querySelector("#system-status");
-        systemStatus.textContent = "Not signed in, please refresh page, thx"
+        systemStatus.textContent = "登入驗證異常，請重新整理後，再試一次";
         return false;
     }
     else{
@@ -46,8 +49,18 @@ getNewKeyButton.addEventListener("click", async function(event){
         });
         const newKeyJson = await newKey.json();
         console.log(newKeyJson);
-        const newKeyResultText = document.querySelector("#get-new-key-result");
-        newKeyResultText.textContent = newKeyJson.api_key;
+        if(newKeyJson.ok){
+            const newKeyResultText = document.querySelector("#get-new-key-result");
+            newKeyResultText.textContent = `申請/更新成功，您的API key：${newKeyJson.api_key}`;
+            const currentKeyResultText = document.querySelector("#current-key-result");
+            currentKeyResultText.textContent = `API key：${newKeyJson.api_key}`;
+        }
+        else{
+            newKeyResultText.textContent = "";
+            currentKeyResultText.textContent = "";
+            systemStatus.textContent = "申請/更新API key時發生異常，請重新整理後，再試一次";
+        }
+
 
     }
 })

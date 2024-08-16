@@ -1,18 +1,3 @@
-// async function fetchTaskQueueRedis(){
-//     const result = await fetch("./task-status/", {
-//         method:"GET"
-//     });
-//     const resultJson = await result.json();
-//     console.log(resultJson);
-//     console.log(resultJson["active"]["celery@Huang-SP"]);
-//     if (resultJson["active"]["celery@Huang-SP"].length > 0){
-//         const data = resultJson["active"]["celery@Huang-SP"];
-//         renderTable(data, 'data-redis-table', ["id", "time_start"]);
-//     }
-//     else{
-//         console.log("No task queue data found!");
-//     }
-// }
 
 async function fetchTaskQueueRedis() {
     try {
@@ -52,8 +37,13 @@ async function fetchTaskQueueRedis() {
 }
 
 async function fetchTaskQueueDb(){
+    const signinStatusToken = window.localStorage.getItem('token');
     const result = await fetch("./task-status-db/", {
-        method:"GET"
+        method:"GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${signinStatusToken}`
+        },
     });
     const resultJson = await result.json();
     console.log(resultJson);

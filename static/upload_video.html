@@ -14,25 +14,30 @@
     <div class="navbar-container">
       <a href="/"><div class="navbar-title cyan-70 header-2">Game Map Analyzer</div></a>
       <div class="navbar-topright-container">
-        <button class="navbar-button gray-70 body api-docs-button">使用說明</button>
-        <button class="navbar-button gray-70 body signin-button"></button><!--renders 登入/註冊 or 登出系統-->
+        <a href="use_api"><button class="navbar-button gray-70 body" id="api-docs-button">使用說明</button></a>
+        <a href="upload_video"><button class="navbar-button gray-70 body" id="upload-video-button">影片上傳</button></a>
+        <a href="member"><button class="navbar-button gray-70 body" id="member-page-button">會員中心</button></a>
+        <a href="#"><button class="navbar-button gray-70 body" id="signin-button"></button></a><!--renders 登入/註冊 or 登出系統-->
       </div>
     </div>
     <div class="hr attraction-header-hr"></div>
   </div>
   <div class="attraction-main-container">
+    <div class="body bold" style="height: 30px"></div>
     <div class="order-details-form body" style="height: 200px">
     <div class="header-3 bold">上傳影片：
     </div>
     請在此上傳影片！<br/>
     Youtube download目前無法支援EC2 IP，相關fix管理員積極對應中。造成您的不便，敬請見諒。如希望知道目前進展請不吝聯繫管理員。
-    請使用Youtube Video ID，以POST method送出request到以下URL: http://traces.fun/api/process-video/<br/>
-    並傳入body: {"youtubeid":(需要下載的video id), "token":(您的API token)}<br/>
-    伺服器會下載您的影片進行解析。<br/>
-    <div>為確保服務品質，測試期間開放長度小於1分鐘的Youtube影片。請確保您的Youtube影片為公開。</div>
-    (未登入的使用者，render 範例圖片)<br/>
-    (有登入的使用者，render Web介面)<br/>
     </div>
+
+    <div class="body bold" style="height: 30px"></div>
+
+    <div class="api-form body" id="api-key" style="height: 100px">
+      <div class="body bold" style="height: 30px">您的API key</div>
+      <div class="body" id="api-key-result">Your API key: <span id="api-key-result-text"></span><button id="fetch-api-key-button">Check current API key</button><span id="system-message"></span></div>
+    </div>
+
     <div class="body bold" style="height: 30px"></div>
 
     <div class="api-form body" id="api-web-signed-out" style="height: 300px">
@@ -64,7 +69,7 @@
 
     <div class="api-form body" id="api-web-signed-in" style="height: 1000px;">
       <div class="bold">您上傳的影片</div>
-      <div class="bold">Do stuff here!</div>
+      <div class="bold" id="video-process-status-message">影片分析訊息</div>
       <table id="uploaded-videos-table" border="1">
         <thead>
             <tr>

@@ -23,8 +23,8 @@ async function checkToken(){
 // signout function
 async function removeSigninToken(){
     localStorage.removeItem("token");
-    // alert("您已成功登出！");
-    window.location.reload();
+    alert("您已成功登出，即將為您導向至首頁！");
+    window.location.href = "/";
 }
 
 // creates HTML elements of curtain and signin form
@@ -105,7 +105,7 @@ function createCurtainAndSigninForm(){
 }
 
 // curtain element (signin/signup form) activation and deactivation
-function activateCurtain2(event){
+function activateCurtain(event){
     let curtainElement = document.querySelector(".curtain");
     // curtain is already created => deactivate
     if (curtainElement){
@@ -188,8 +188,8 @@ function toggleSignupPrompt(){
 
 
 // signin/signup related functions and event handlers
-async function signin(e){
-    e.preventDefault;
+async function signin(event){
+    event.preventDefault;
     console.log("sign-in event listener triggered!");
     const signinFormData = {};
     signinFormData["email"] = document.querySelector("#username_id").value;
@@ -200,7 +200,7 @@ async function signin(e){
         body: JSON.stringify(signinFormData),
         headers: new Headers({ "Content-Type":"application/json" })
     })
-    signinResponseJSON = await signinResponse.json();
+    const signinResponseJSON = await signinResponse.json();
     if (signinResponseJSON.error){
         console.log("Sign in unsuccessful.");
         const signinResponseElement = document.querySelector(".signin-response-text");
@@ -213,13 +213,10 @@ async function signin(e){
         console.log("Successfully signed in!");
         window.localStorage.setItem('token', signinResponseJSON.token);
 
-        // test function to use cookies, it is NOT WORKING yet!
-        // setCookie('token', signinResponseJSON.token, 7);
-
         const signinResponseElement = document.querySelector(".signin-response-text");
-        signinResponseElement.textContent = "登入成功！即將重新整理畫面...";
+        signinResponseElement.textContent = "登入成功！即將導向至會員中心...";
         signinResponseElement.style.display = "block";
-        setTimeout(() => window.location.reload(), 3000);
+        setTimeout(() => window.location.href = "member", 3000);
     }
     else{
         //其他狀況暫放
@@ -257,7 +254,7 @@ async function signup(e){
         setTimeout(() => signupResponseElement.style.display = "none", 3000);
     }
     else{
-        //其他狀況暫放
+        // other cases
         console.log("Unknown error, please notify admin to check logs");
     }
 }
@@ -278,132 +275,37 @@ async function handleSignupEvent(event){
     setTimeout(() => signinButton.disabled = false, 3000);
 }
 
-// only on page load, initialize signin/signup button
-async function initializeSignedInElements(){
-    let tokenStatus = await checkToken();
-    console.log("Signin status:", tokenStatus);
-    if (tokenStatus){
-        // handle signin button
-        let signinButton = document.querySelector(".signin-button");
-        signinButton.remove();
-        const newButton = document.createElement("button");
-        newButton.textContent = "登出系統";
-        newButton.classList = "navbar-button gray-70 body";
-        newButton.addEventListener("click", (event) => {
-            removeSigninToken()
-        });
-        const buttonContainer = document.querySelector(".navbar-topright-container");
-        buttonContainer.appendChild(newButton);
-
-        // handle booking button. in this case, booking button has redirect function
-        let bookingButton = document.querySelector(".booking-button-topright");
-        bookingButton.addEventListener("click", (event) => {
-            window.location.href = "/use_api";
-        });
-
-    }
-    else{
-        // when not logged in, handle signin button and booking button have same function (activate curtain).
-        let signinButton = document.querySelector(".signin-button");
-        signinButton.textContent = "登入/註冊";
-        signinButton.addEventListener("click", activateCurtain2);
-        
-        // adjust use_api behavior after signin is finished
-        let bookingButton = document.querySelector(".booking-button-topright");
-        bookingButton.addEventListener("click", (event) => {
-            window.location.href = "/use_api";
-        });
-
-        // handle booking button. in this case, booking button has the same function as signin/signup button
-        // let bookingButton = document.querySelector(".booking-button-topright");
-        // bookingButton.addEventListener("click", activateCurtain2);
-    }
-}
-
-// only on page load, initialize signin/signup button  //20240627 without fetchingAPI
-async function initializeSignedInElementsNew(tokenStatus){
+// Initialize signin/signup button
+async function initializeSignedInElements(tokenStatus){
     if (tokenStatus){
         // handle (remove) signin button
-        let signinButton = document.querySelector(".signin-button");
-        signinButton.remove();
-
-        // handle (create) member button
-        const newMemberButton = document.createElement("button");
-        newMemberButton.textContent = "會員中心";
-        newMemberButton.classList = "navbar-button gray-70 body";
-        newMemberButton.addEventListener("click", (event) => {
-            window.location.href = "/member";
+        let signinButton = document.querySelector("#signin-button");
+        // signinButton.remove();
+        signinButton.textContent = "登出系統";
+        signinButton.addEventListener("click", (event) => {
+            removeSigninToken();
         });
-        const memberButtonContainer = document.querySelector(".navbar-topright-container");
-        memberButtonContainer.appendChild(newMemberButton);
-
-        // handle (create) signout button
-        const newButton = document.createElement("button");
-        newButton.textContent = "登出系統";
-        newButton.classList = "navbar-button gray-70 body";
-        newButton.addEventListener("click", (event) => {
-            removeSigninToken()
-        });
-        const buttonContainer = document.querySelector(".navbar-topright-container");
-        buttonContainer.appendChild(newButton);
-
-        
-
-        // handle booking button. in this case, booking button has redirect function
-        let apiDocsButton = document.querySelector(".api-docs-button");
-        apiDocsButton.addEventListener("click", (event) => {
-            window.location.href = "/use_api";
-        });
-
     }
     else{
         // when not logged in, handle signin button and booking button have same function (activate curtain).
-        let signinButton = document.querySelector(".signin-button");
+        let signinButton = document.querySelector("#signin-button");
         signinButton.textContent = "登入/註冊";
-        signinButton.addEventListener("click", activateCurtain2);
+        signinButton.addEventListener("click", activateCurtain);
 
         // adjust use_api behavior after signin is finished
-        let apiDocsButton = document.querySelector(".api-docs-button");
-        apiDocsButton.addEventListener("click", (event) => {
-            window.location.href = "/use_api";
-        });
-
-        // handle booking button. in this case, booking button has the same function as signin/signup button
-        // let bookingButton = document.querySelector(".booking-button-topright");
-        // bookingButton.addEventListener("click", activateCurtain2);
+        const uploadVideoButton = document.querySelector("#upload-video-button");
+        uploadVideoButton.remove();
+        const memberPageButton = document.querySelector("#member-page-button");
+        memberPageButton.remove();
 
     }
 }
-
-// Initialize sequence, wait for DOMContentLoaded event //20240627 deprecation test
-// function initializeSequenceGeneral(){
-//     addEventListener("DOMContentLoaded", () => {
-//         // add correct button (signin or signout) to DOM and their event listeners
-//         initializeSignedInElements();
-//     })
-//     // this space reserved for later
-// }
-// initializeSequenceGeneral();
-
-// test function: setCookie (This is for Week 5 discussion)
-// function setCookie(name, value, days) {
-//     let expires = "";
-//     if (days) {
-//         const date = new Date();
-//         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-//         expires = "; expires=" + date.toUTCString();
-//     }
-//     //check GPT log for more parameters, testing only
-//     document.cookie = name + "=" + (value || "") + expires + "; path=/; secure; samesite=strict; HttpOnly";
-//     document.cookie = name + "=" + (value || "") + expires + "; path=/";
-// }
 
 function initializeSequenceGeneral(){
     addEventListener("DOMContentLoaded", async () => {
         const tokenStatus = await checkToken();
-        console.log("After DOMContentLoaded, token status:", tokenStatus);
-        initializeSignedInElementsNew(tokenStatus);
+        console.log("Token status:", tokenStatus);
+        initializeSignedInElements(tokenStatus);
     })
-    // this space reserved for later
 }
 initializeSequenceGeneral();

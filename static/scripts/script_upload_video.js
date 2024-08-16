@@ -81,7 +81,7 @@ async function fetchUploadedVideos(){
 
     if (resultJson["uploaded_videos"].length > 0){
         const data = resultJson["uploaded_videos"];
-        renderTable(data, 'uploaded-videos-table', ["user_id", "video_id", "video_url", "create_time"]);
+        renderTable(data, 'uploaded-videos-table', ["user_id", "video_id", "status", "error_message", "create_time"]);
     }
     else{
         console.log("No uploaded video data found!");
@@ -104,9 +104,6 @@ function renderTable(data, tableId, headers) {
     // Get keys (headers) from the first object
     // const headers = Object.keys(data[0]);
 
-    // Brian: if headers defined:
-    // const headers = ["id", "time_start"]
-
     // Create table headers
     headers.forEach(header => {
         const th = document.createElement('th');
@@ -119,13 +116,113 @@ function renderTable(data, tableId, headers) {
         const tr = document.createElement('tr');
         headers.forEach(header => {
             const td = document.createElement('td');
-            td.textContent = item[header];
+
+            // Check if the status is 'NOT PROCESSED' and add a button
+            if (header === 'status' && item[header] === 'NOT PROCESSED') {
+                td.textContent = item[header];
+                const button = document.createElement('button');
+                button.textContent = '點此開始分析';
+                button.onclick = () => processVideo(item, button);
+
+                td.appendChild(button);
+            } else {
+                td.textContent = item[header];
+            }
+
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
     });
 }
 
+async function checkApiKey() {
+    console.log("Entering function checkApiKey");
+    const signinStatusToken = window.localStorage.getItem('token');
+    if (!signinStatusToken){
+        const resultText = document.querySelector("#api-key-result-text");
+        resultText.textContent = "Not signed in, please sign in again!";
+        return false;
+    }
+    else{
+        const apiKey = await fetch("./api/get_current_key",{
+            method: "get",
+            headers: {Authorization: `Bearer ${signinStatusToken}`}
+        });
+        const apiKeyJson = await apiKey.json();
+        console.log(apiKeyJson.api_keys);
+
+        if (apiKeyJson.user_id && apiKeyJson.api_keys){
+            const resultText = document.querySelector("#api-key-result-text");
+            resultText.textContent = apiKeyJson.api_keys;
+            apiKeyGlobal = apiKeyJson.api_keys[0];
+            return apiKeyJson.api_keys[0];
+        }
+        else if (apiKeyJson.user_id){
+            const resultText = document.querySelector("#api-key-result-text");
+            resultText.textContent = "尚未取得有效的API key, 請至會員中心生成";
+            return false;
+        }
+        else{
+            const resultText = document.querySelector("#api-key-result-text");
+            resultText.textContent = `Error: ${apiKeyJson.message}`;
+            return false;
+        }
+    }
+}
+
+async function processVideo(item, button) {
+    const signinStatusToken = window.localStorage.getItem('token');
+    const uploadStatusMessage = document.querySelector("#video-process-status-message");
+
+    if (!signinStatusToken){
+        uploadStatusMessage.textContent = "登入狀態異常，請重新整理頁面"
+        return false;
+    }
+    if (!confirm("即將開始分析，請確認是否送出分析需求？")){
+        return false;
+
+    }
+    if (!apiKeyGlobal){
+        console.log("test");
+        uploadStatusMessage.textContent = "無API key, 請點選上面按鈕讀取，或至會員中心申請API key";
+        return false;
+    }
+
+    button.disabled = true;
+    button.textContent = '已送出需求，請稍候';
+
+    // check API key
+    console.log(`Processing video with ID: ${item.video_id}`);
+    console.log(`API key: ${apiKeyGlobal}`);
+    // fetch and update 結果
+    result = await fetch("./api/process_uploaded_video",{
+        method:"POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${signinStatusToken}`
+        },
+        body: JSON.stringify({
+            "video_id": item.video_id,
+            "api_key": apiKeyGlobal
+        })
+    });
+    const resultJson = await result.json();
+    console.log(resultJson);
+
+    if (resultJson.ok){
+        uploadStatusMessage.textContent = "成功送出需求，請到會員中心確認結果";
+        button.textContent = '需求送出成功！';
+
+    }
+    else{
+        console.log(resultJson.message);
+        uploadStatusMessage.textContent = "送出需求失敗，請聯繫管理員確認";
+        button.textContent = '需求送出失敗';
+    }
+}
 
 addUploadButtonListener();
 fetchUploadedVideos();
+let apiKeyGlobal;
+const fetchApiKeyButton = document.querySelector("#fetch-api-key-button");
+fetchApiKeyButton.addEventListener("click", checkApiKey);

@@ -27,19 +27,19 @@ button {
 .header-1 {
     font-size: 28px; 
     font-weight: bold;
-    line-height: 24px;
+    /* line-height: 24px; */
 }
   
 .header-2 {
     font-size: 30px; 
     font-weight: bold;
-    line-height: 34px;
+    /* line-height: 34px; */
 }
 
 .header-3 {
     font-size: 24px;
     font-weight: normal;
-    line-height: 24px;
+    /* line-height: 24px; */
 }
 
 .btn {
@@ -406,7 +406,7 @@ button {
 .order-details-form{
     border-radius: 5px;
     background-color: #E8E8E8;
-    min-height: 300px;
+    min-height: 200px;
     bottom: 0;
     padding: 15px 20px 15px 20px;
     box-sizing: border-box;
@@ -416,10 +416,6 @@ button {
     align-items: flex-start; /*維持預約button的大小*/
     line-height: 2rem;
 }
-
-.order-details-form > * { /* select child elements (僅一階)*/
-    margin-bottom: 15px;
-    }
 
 .order-details-form-subtitle {
     margin-right: 5px;
@@ -1041,7 +1037,7 @@ button {
     border: 1px solid red;
     border-radius: 5px;
     background-color: #E8E8E8;
-    min-height: 300px;
+    min-height: 200px;
     bottom: 0;
     padding: 15px 20px 15px 20px;
     box-sizing: border-box;

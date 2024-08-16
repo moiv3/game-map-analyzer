@@ -8,34 +8,41 @@ import filter_frames
 import test_one_frame_detect_0801
 import traceback
 
-def mario_parser_function(task_id, youtube_id = "PI2o0fNKD8g"):
+def mario_parser_function(task_id: str, source: str, video_id: str):
     try:
-        # config
-        # Super Mario Bros (NES) Level 1-1
-        # youtube_id = "-avspZlbOWU"
-        # Super Mario Bros (NES) Level 2-1
-        # youtube_id = "PI2o0fNKD8g"
-
+        # main config
         start_time_sec = 0
-        # end_time_sec = 5
-        capture_per_n_secs = 0.05
-        folder_path = "output_test_0808"
-        output_csv = "output_test_0808_1-4.csv"
+        capture_per_n_frames = 1
         output_folder = task_id
 
-        # Starting text
-        print("[Main program] Starting...")
+        if not (source == "S3" or source == "Youtube"):
+            return {"error": True, "message": "Not a valid source, source must be 'Youtube' or 'S3'"}
+        elif source == "Youtube":
+            # Youtube config
+            # Super Mario Bros (NES) Level 1-1
+            # youtube_id = "-avspZlbOWU"
+            # Super Mario Bros (NES) Level 2-1
+            # youtube_id = "PI2o0fNKD8g"
 
-        # 1. load video, save as "test_video%Y%m%d%H%M%S.mp4"
-        # This works, stop downloading a new video everytime, fix when infer logic ready
-        # output_filename = convert_mario_to_jpg.download_youtube(youtube_id)
-        # output_filename = convert_mario_to_jpg.download_youtube_new(youtube_id, task_id)
-        # Short video test: 15 minutes 30s: 5 min
-        output_filename = 'test_video20240808153123.mp4'
-        # Long video test: 30 fps 60s: 23 min
-        # output_filename = 'test_video20240808164421.mp4'
+            # Starting text
+            print("[Main program] Starting...")
 
-        print("[Main program] Download complete, filename:", output_filename)
+            # 1. load video, save as "test_video%Y%m%d%H%M%S.mp4"
+            # This works, stop downloading a new video everytime, fix when infer logic ready
+            # output_filename = convert_mario_to_jpg.download_youtube(video_id)
+            # output_filename = convert_mario_to_jpg.download_youtube_new(video_id, task_id)
+            # Short video test: 15 minutes 30s: 5 min
+            output_filename = 'test_video20240808153123.mp4'
+            # Long video test: 30 fps 60s: 23 min
+            # output_filename = 'test_video20240808164421.mp4'
+
+            print("[Main program] Download complete, filename:", output_filename)
+            
+        # source == "S3"
+        else:
+            print("[Main program] Starting...")
+            output_filename = convert_mario_to_jpg.download_s3(video_id, task_id)
+            print("[Main program] Download complete, filename:", output_filename)
 
         # 2. Get the video data
         #TODO: 包成一個function
@@ -44,7 +51,7 @@ def mario_parser_function(task_id, youtube_id = "PI2o0fNKD8g"):
         # end_time_sec = 11
         # capture_per_n_frames = round(video_data["fps"] * capture_per_n_secs)
         
-        capture_per_n_frames = 1
+        
         total_frames = int(video_data["fps"] * video_data["duration"])
         print("Video data:", video_data)
         print(f"Capturing per {capture_per_n_frames} frames")
@@ -63,7 +70,7 @@ def mario_parser_function(task_id, youtube_id = "PI2o0fNKD8g"):
         game_image_ratio = count_game_image / total_images
         game_image_ratio_threshold = 0.5
         if game_image_ratio < game_image_ratio_threshold:
-            raise Exception("Not a valid video")
+            return {"error": True, "message": "Not a valid gameplay video"}
         
         # For debugging
         with open("color_infer_result.json","w") as fp:
@@ -92,7 +99,7 @@ def mario_parser_function(task_id, youtube_id = "PI2o0fNKD8g"):
     
     except Exception:
         traceback.print_exc()
-        return {"error": True}
+        return {"error": True, "message": "An exception happened, check traceback logs"}
 
 if __name__ == '__main__':
     mario_parser_function("DGQGvAwqpbE")

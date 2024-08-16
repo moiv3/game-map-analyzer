@@ -30,6 +30,9 @@ def infer_and_combine_to_jpg(images, task_id, fps, output_filename = "output.jpg
     this_pos={}
     # init clear detection
     clear_detection = 0
+    # clear detection starts counting only if 15 seconds has passed (first_frame + fps * 15 seconds)
+    first_frame = int(images[0].split('frame_')[1].split('.')[0])
+    clear_detection_starting_frame = int(first_frame + fps * 15)
 
     # unpack image width, define border detection. min border = 5px for small pics
     first_image = cv2.imread(images[0])
@@ -163,22 +166,29 @@ def infer_and_combine_to_jpg(images, task_id, fps, output_filename = "output.jpg
                     crop_pixels_max = sorted(crop_pixels.values(), reverse=True)[1]
                 print("New value:",crop_pixels_max)
                 cropped_frame = crop_image(image, 0, 0, crop_pixels_max, ud_height)
-                processed_frames.append(cropped_frame)
+                cropped_frame_deep_copy = np.copy(cropped_frame)
+                processed_frames.append(cropped_frame_deep_copy)
+                # processed_frames.append(cropped_frame)
             elif crop_pixels_max > 1:
                 cropped_frame = crop_image(image, 0, 0, crop_pixels_max, ud_height)
-                processed_frames.append(cropped_frame)
+                cropped_frame_deep_copy = np.copy(cropped_frame)
+                processed_frames.append(cropped_frame_deep_copy)
+                # processed_frames.append(cropped_frame)
+                
 
         else:
             print("No marker_classes gave a crop_pixel count. This frame is not cropped.")
 
         # check flagpole and castle
-        if "cl" in detections.data["class_name"] and "castle" in detections.data["class_name"]:
+        if "cl" in detections.data["class_name"] and "castle" in detections.data["class_name"] and num_part >= clear_detection_starting_frame:
             clear_detection += 1
 
         if clear_detection >= 20:
             print("Clear detection triggered, appending this frame")
             cropped_frame = crop_image(image, 0, 0, lr_width, ud_height)
-            processed_frames.append(cropped_frame)
+            cropped_frame_deep_copy = np.copy(cropped_frame)
+            processed_frames.append(cropped_frame_deep_copy)
+            # processed_frames.append(cropped_frame)
             break
 
         # draw a bounding box, then save to somewhere

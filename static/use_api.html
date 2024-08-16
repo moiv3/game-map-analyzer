@@ -14,30 +14,61 @@
     <div class="navbar-container">
       <a href="/"><div class="navbar-title cyan-70 header-2">Game Map Analyzer</div></a>
       <div class="navbar-topright-container">
-        <button class="navbar-button gray-70 body api-docs-button">使用說明</button>
-        <button class="navbar-button gray-70 body signin-button"></button><!--renders 登入/註冊 or 登出系統-->
+        <a href="use_api"><button class="navbar-button gray-70 body" id="api-docs-button">使用說明</button></a>
+        <a href="upload_video"><button class="navbar-button gray-70 body" id="upload-video-button">影片上傳</button></a>
+        <a href="member"><button class="navbar-button gray-70 body" id="member-page-button">會員中心</button></a>
+        <a href="#"><button class="navbar-button gray-70 body" id="signin-button"></button></a><!--renders 登入/註冊 or 登出系統-->
       </div>
     </div>
     <div class="hr attraction-header-hr"></div>
   </div>
   <div class="attraction-main-container">
-    <div class="order-details-form body" style="height: 200px">
-    <div class="header-3 bold">如何使用GMA API：
-    </div>
-    請先加入會員後，即可取得API key進行影片解析。<br/>
-    請使用Youtube Video ID，以POST method送出request到以下URL: http://traces.fun/api/process-video/<br/>
-    並傳入body: {"youtubeid":(需要下載的video id), "token":(您的API token)}<br/>
-    伺服器會下載您的影片進行解析。<br/>
-    <div>為確保服務品質，測試期間開放長度小於1分鐘的Youtube影片。請確保您的Youtube影片為公開。</div>
-    (未登入的使用者，render 範例圖片)<br/>
-    (有登入的使用者，render Web介面)<br/>
+    <div class="body bold" style="height: 30px"></div>
+    <div class="order-details-form body">
+      <div class="header-3 bold">Game Map Analyzer是什麼？</div>
+      <div>Game map analyzer是一個分析遊玩影片的API。</div>
+      <div>利用Machine Learning技術進行物件辨識，再進行物件之間的相對距離計算。</div>
+      <div>上傳一個影片，您將可以得到以下資訊，作為遊玩的攻略參考！
+        <ul>
+          <li>關卡的全景圖</li>
+          <li>移動與跳躍的軌跡</li>
+          <li>物件辨識的影片</li>
+        </ul>
+      </div>
     </div>
     <div class="body bold" style="height: 30px"></div>
-    <div class="api-form body" id="api-web-signed-out" style="height: 300px">
-      <div class="body bold" style="height: 30px">範例圖片範例圖片範例圖片</div>
+
+    <div class="order-details-form body">
+      <div class="header-3 bold">如何使用Game Map Analyzer？</div>
+      <div>請先免費加入會員，即可取得API key進行影片解析。</div>
+      <div>API docs:</div>
+      <div>使用方法目前有兩種：</div>
+      <ol>
+        <li>使用者錄製並上傳遊戲影片後，使用網站介面或API送出申請。</li>
+        <li>使用者上傳遊戲影片至Youtube後，使用網站介面或API送出申請，由伺服器下載影片進行解析(Youtube改版，目前此功能維護中)</li>
+      </ol>
+      <div>為確保服務品質，測試期間開放長度小於90秒的Youtube影片。</div>
+    </div>
+
+    <div class="body bold" style="height: 30px"></div>
+
+    <div class="order-details-form body" id="api-web-examples" style="height: 300px">
+      <div class="header-3 bold">解析範例：</div>
+    </div>
+
+    <div class="body bold" style="height: 30px"></div>
+
+    <div class="order-details-form body" id="api-web-signed-out">
+      <div class="header-3 bold">開始使用Game Map Analyzer!</div>
+      <div>請點選以下連結，開始使用：</div>
+      <a href="#" id="signup-anchor" onclick="activateCurtain2();">點選此連結，註冊/登入會員</a>
+      <a href="member" id="signin-anchor">點選此連結，進入會員中心</a>
+
     </div>
       <div class="body bold" style="height: 30px"></div>
-    <div class="api-form body" id="api-web-signed-in" style="height: 1000px; display: none;">
+
+    <div class="order-details-form body" id="api-web-signed-in" style="display: none;">
+      <div class="header-3 bold">Try it out!</div>
       <div class="bold">您也可以使用以下Web介面，輸入Youtube video id, 可以確認並預覽您的影片！</div>
       <div>Game Map Analyzer - Web (For demo: DGQGvAwqpbE) (Also works: PI2o0fNKD8g)</div>
       <input class="youtube-url-input" type="url" id="youtube-url" placeholder="DGQGvAwqpbE"></input>

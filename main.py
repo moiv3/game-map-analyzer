@@ -139,6 +139,10 @@ class VideoParseInfo(BaseModel):
     youtube_id: str
     api_key: str
 
+class VideoParseInfoUploaded(BaseModel):
+    video_id: str
+    api_key: str
+
 def get_password_hash(password):
     return pwd_context.hash(password)
 
@@ -271,7 +275,7 @@ def get_new_api_key(token_data):
             website_db.commit()
             print("New keys added and activated")
 
-            return {"id": user_id, "api_key": new_api_key}
+            return {"ok": True, "id": user_id, "api_key": new_api_key}
 
         except Exception:
             traceback.print_exc()
@@ -303,8 +307,9 @@ def get_current_api_key(token_data):
                 for item in valid_api_key_result:
                     valid_api_keys.append(item[0])
                 valid_api_key_output["api_keys"] = valid_api_keys
+                valid_api_key_output["ok"] = True
             else:
-                valid_api_key_output["api_keys"] = None
+                return {"error": True}
             
             print(valid_api_key_output)
             return valid_api_key_output
@@ -344,50 +349,56 @@ async def process_fake_video(request: Request, response: Response, video_info: V
         return JSONResponse(status_code=401, content=(Error(error="true", message="API key不正確，請確認輸入資訊").dict()))
 
 @app.get("/task-status-db/")
-def get_all_task_status_db():
-    website_db = mysql.connector.connect(
-        host=db_host, user=db_user, password=db_pw, database=db_database)
-    website_db_cursor = website_db.cursor()
-    
-    final_output = {}
-
-    # Select user's valid API keys
-    cmd = "SELECT task_id, api_key, youtube_id, status, date_updated FROM task_status WHERE status = 'PROCESSING' OR status = 'ERROR' ORDER BY date_updated DESC LIMIT 10;"
-    website_db_cursor.execute(cmd)
-    tasks_wip_result = website_db_cursor.fetchall()
-    if tasks_wip_result:
-        output_task_part_all=[]
-        for task in tasks_wip_result:
-            output_task_part_single={}
-            output_task_part_single["task_id"] = task[0]
-            output_task_part_single["api_key"] = task[1]
-            output_task_part_single["youtube_id"] = task[2]
-            output_task_part_single["status"] = task[3]
-            output_task_part_single["date_updated"] = task[4]
-            output_task_part_all.append(output_task_part_single)
+def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
+    signin_status = check_user_signin_status_return_bool(token_data)
+    if not check_user_signin_status_return_bool(token_data):
+        return JSONResponse(status_code=403, content={"error":True, "message": "使用者驗證失敗，請先登入"})
     else:
-        output_task_part_all = []
-    final_output["tasks_wip"] = output_task_part_all
+        user_id = signin_status["id"]
+        website_db = mysql.connector.connect(
+            host=db_host, user=db_user, password=db_pw, database=db_database)
+        website_db_cursor = website_db.cursor()
+        
+        final_output = {}
 
-    cmd = "SELECT task_id, api_key, youtube_id, status, date_updated FROM task_status WHERE status = 'COMPLETED' ORDER BY date_updated DESC LIMIT 10;"
-    website_db_cursor.execute(cmd)
-    tasks_completed_result = website_db_cursor.fetchall()
-    if tasks_completed_result:
-        output_task_part_all=[]
-        for task in tasks_completed_result:
-            output_task_part_single={}
-            output_task_part_single["task_id"] = task[0]
-            output_task_part_single["api_key"] = task[1]
-            output_task_part_single["youtube_id"] = task[2]
-            output_task_part_single["status"] = task[3]
-            output_task_part_single["date_updated"] = task[4]
-            output_task_part_all.append(output_task_part_single)
-    else:
-        output_task_part_all = []
-    final_output["tasks_completed"] = output_task_part_all
+        # Select user's valid API keys
+        # cmd = "SELECT task_id, api_key, youtube_id, status, date_updated FROM task_status WHERE status = 'PROCESSING' OR status = 'ERROR' ORDER BY date_updated DESC LIMIT 10;"
+        cmd = "SELECT task_id, task_status.api_key, youtube_id, status, date_updated FROM task_status JOIN api_key ON task_status.api_key = api_key.api_key WHERE (api_key.user_id = %s AND (status = 'PROCESSING' OR status = 'ERROR')) ORDER BY date_updated DESC LIMIT 5"
+        website_db_cursor.execute(cmd,(user_id,))
+        tasks_wip_result = website_db_cursor.fetchall()
+        if tasks_wip_result:
+            output_task_part_all=[]
+            for task in tasks_wip_result:
+                output_task_part_single={}
+                output_task_part_single["task_id"] = task[0]
+                output_task_part_single["api_key"] = task[1]
+                output_task_part_single["youtube_id"] = task[2]
+                output_task_part_single["status"] = task[3]
+                output_task_part_single["date_updated"] = task[4]
+                output_task_part_all.append(output_task_part_single)
+        else:
+            output_task_part_all = []
+        final_output["tasks_wip"] = output_task_part_all
 
-    print(final_output)
-    return final_output
+        cmd = "SELECT task_id, task_status.api_key, youtube_id, status, date_updated FROM task_status JOIN api_key ON task_status.api_key = api_key.api_key WHERE (api_key.user_id = %s AND (status = 'COMPLETED')) ORDER BY date_updated DESC LIMIT 5"
+        website_db_cursor.execute(cmd, (user_id,))
+        tasks_completed_result = website_db_cursor.fetchall()
+        if tasks_completed_result:
+            output_task_part_all=[]
+            for task in tasks_completed_result:
+                output_task_part_single={}
+                output_task_part_single["task_id"] = task[0]
+                output_task_part_single["api_key"] = task[1]
+                output_task_part_single["youtube_id"] = task[2]
+                output_task_part_single["status"] = task[3]
+                output_task_part_single["date_updated"] = task[4]
+                output_task_part_all.append(output_task_part_single)
+        else:
+            output_task_part_all = []
+        final_output["tasks_completed"] = output_task_part_all
+
+        print(final_output)
+        return final_output
 
     
 
@@ -454,8 +465,8 @@ async def upload_file(file: UploadFile = File(...), token_data: TokenOut = Depen
             website_db = mysql.connector.connect(host=db_host, user=db_user, password=db_pw, database=db_database)
             website_db_cursor = website_db.cursor()
             
-            cmd = "INSERT INTO uploaded_video (user_id, video_id, video_url) VALUES (%s, %s, %s)"
-            website_db_cursor.execute(cmd, (user_id, unique_id, file_url))
+            cmd = "INSERT INTO uploaded_video (user_id, video_id, video_url, status) VALUES (%s, %s, %s, %s)"
+            website_db_cursor.execute(cmd, (user_id, unique_id, file_url, "NOT PROCESSED"))
             website_db.commit()
 
             return {"ok": True, "filename": unique_filename}
@@ -480,7 +491,7 @@ async def get_uploaded_videos(token_data: TokenOut = Depends(get_token_header)):
         final_output = {}
 
         # Select user's valid API keys
-        cmd = "SELECT user_id, video_id, video_url, create_time FROM uploaded_video WHERE user_id = %s LIMIT 10"
+        cmd = "SELECT user_id, video_id, status, error_message, create_time FROM uploaded_video WHERE user_id = %s LIMIT 10"
         website_db_cursor.execute(cmd, (user_id,))
         uploaded_video_result = website_db_cursor.fetchall()
         if uploaded_video_result:
@@ -489,19 +500,56 @@ async def get_uploaded_videos(token_data: TokenOut = Depends(get_token_header)):
                 output_video_single = {}
                 output_video_single["user_id"] = video[0]
                 output_video_single["video_id"] = video[1]
-                output_video_single["video_url"] = video[2]
-                output_video_single["create_time"] = video[3]
+                output_video_single["status"] = video[2]
+                output_video_single["error_message"] = video[3]
+                output_video_single["create_time"] = video[4]
                 output_video_all.append(output_video_single)
         else:
             output_video_all = []
         final_output["uploaded_videos"] = output_video_all
 
         return final_output
+    
+@app.post("/api/process_uploaded_video_test_route", summary="解析從S3上傳的影片")
+async def process_video_by_id(process_info: VideoParseInfoUploaded, token_data: TokenOut = Depends(get_token_header)):
+    print(process_info)
+    return{"ok": True}
 
-#20240815: 急!增加從上傳列表進行解析的功能
-@app.post("/api/get_uploaded_videos", summary="使用影片")
-async def analyze_video_by_video_id(token_data: TokenOut = Depends(get_token_header)):
-    #檢查登入狀態
+@app.post("/api/process_uploaded_video", summary="解析從S3上傳的影片")
+async def process_video_by_id(process_info: VideoParseInfoUploaded, token_data: TokenOut = Depends(get_token_header)):
+    # 檢查登入狀態
+    signin_status = check_user_signin_status_return_bool(token_data)
+    if not signin_status:
+        return JSONResponse(status_code=401, content=(Error(error="true", message="登入資訊異常，請重新登入").dict()))
+    
+    # 檢查video_id & API key狀態
+    else:
+        user_id = signin_status["id"]
+        api_key = process_info.api_key
+        uploaded_video_id = process_info.video_id
+
+        website_db = mysql.connector.connect(
+            host=db_host, user=db_user, password=db_pw, database=db_database)
+        website_db_cursor = website_db.cursor()
+        
+        # Check if everything is there
+        cmd = "SELECT member.id, uploaded_video.video_id, uploaded_video.video_url, uploaded_video.status FROM member JOIN uploaded_video JOIN api_key WHERE member.id = %s AND api_key.api_key = %s AND api_key.validity = 1 AND uploaded_video.video_id = %s"
+        # cmd = "SELECT member.id, uploaded_video.video_id, uploaded_video.video_url FROM member JOIN uploaded_video JOIN api_key WHERE member.id = 2 AND api_key.api_key = 'accb8d65-9183-4f72-8f4a-629d8c89e9e0' AND api_key.validity = 1 AND uploaded_video.video_id = '13446a32-800d-460e-8b31-f4b7814a524b'"
+        website_db_cursor.execute(cmd, (user_id, api_key, uploaded_video_id))
+        db_fetch_result = website_db_cursor.fetchone()
+        print(db_fetch_result)
+
+        if not db_fetch_result:
+            return JSONResponse(status_code=401, content=(Error(error="true", message="影片資訊或API key不正確，請重新確認").dict()))
+        elif not db_fetch_result[3] == "NOT PROCESSED":
+            return JSONResponse(status_code=400, content=(Error(error="true", message="影片正在處理中，請至會員中心確認結果").dict()))
+        else:
+            cmd = "UPDATE uploaded_video SET status = %s WHERE video_id = %s"
+            website_db_cursor.execute(cmd, ("PROCESSING", uploaded_video_id))
+            website_db.commit()
+
+            task = celery_config.process_uploaded_video.delay(uploaded_video_id, api_key)
+            return {"ok": True, "task_id": task.id, "video_id": uploaded_video_id, "message": f"已經排入處理佇列，請至會員中心確認結果"}
     #從S3下載影片
     #開始解析
     #回傳結果
