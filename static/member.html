@@ -24,12 +24,19 @@
   </div>
   <div class="attraction-main-container">
     <div class="body bold" style="height: 30px"></div>
-    <div class="order-details-form body" style="height: 200px">
-        <div class="header-3 bold">會員中心</div>
-        <div id="member-greeting">您好！</div>
-        <div>請選擇您需要的服務：</div>
-        <a href="./api_keys">取得/更新 API key
-        <a href="./task_queue"><div>分析隊列確認</div>
+    <div class="order-details-form body">
+      <div class="header-3 bold">會員中心</div>
+      <div id="member-greeting">您好！</div>
+      <div>目前已解析 {x} 部影片。</div>
+      <div>請從以下服務列表中選擇需要的服務：</div>
+    </div>
+    <div class="body bold" style="height: 30px"></div>
+      <div class="order-details-form body">
+      <div class="header-3 bold">服務列表</div>
+
+      <a href="./api_keys" class="bold">取得/更新 API key</a> — 申請API key以使用本服務
+      <a href="./upload_video" class="bold">影片上傳</a> — 在此上傳影片，也可同時提交解析需求
+      <a href="./task_queue" class="bold">分析隊列確認</a> — 確認分析的進度，並下載相關分析結果
     </div>
     <div class="body bold" style="height: 30px"></div>
   </div>

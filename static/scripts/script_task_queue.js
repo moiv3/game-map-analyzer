@@ -48,21 +48,26 @@ async function fetchTaskQueueDb(){
     const resultJson = await result.json();
     console.log(resultJson);
 
-    if (resultJson["tasks_wip"].length > 0){
-        const data = resultJson["tasks_wip"];
-        renderTable(data, 'data-db-wip-table', ["task_id", "api_key", "youtube_id", "status", "date_updated"]);
-    }
-    else{
-        console.log("No task queue data found! (DB, WIP)");
-    }
+        const wipData = resultJson["tasks_wip"];
+        console.log(wipData);
+        renderTable(wipData, 'data-db-wip-table', ["task_id", "source", "video_id", "status", "date_updated"]);
+        const compData = resultJson["tasks_completed"];
+        console.log(compData);
+        renderTable(compData, 'data-db-comp-table', ["task_id", "source", "video_id", "status", "date_updated", "image", "video", "json", "message"]);
+    // if (resultJson["tasks_wip"].length > 0){
+    //     }
+    // else{
+    //     console.log("No task queue data found! (DB, WIP)");
+    // }
 
-    if (resultJson["tasks_completed"].length > 0){
-        const data = resultJson["tasks_completed"];
-        renderTable(data, 'data-db-comp-table', ["task_id", "api_key", "youtube_id", "status", "date_updated"]);
-    }
-    else{
-        console.log("No task queue data found! (DB, COMP)");
-    }
+    // if (resultJson["tasks_completed"].length > 0){
+    //     const compData = resultJson["tasks_completed"];
+    //     console.log(compData);
+    //     renderTable(compData, 'data-db-comp-table', ["task_id", "source", "video_id", "status", "date_updated", "image", "video", "json", "message"]);
+    // }
+    // else{
+    //     console.log("No task queue data found! (DB, COMP)");
+    // }
 }
 
 fetchTaskQueueRedis();
@@ -86,6 +91,11 @@ function renderTable(data, tableId, headers) {
     thead.innerHTML = '';
     tbody.innerHTML = '';
 
+    // Check if the data array is empty
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="' + headers.length + '">無符合條件的任務。</td></tr>';
+        return;
+    }
     // Get keys (headers) from the first object
     // const headers = Object.keys(data[0]);
 
@@ -95,7 +105,7 @@ function renderTable(data, tableId, headers) {
     // Create table headers
     headers.forEach(header => {
         const th = document.createElement('th');
-        th.textContent = header.charAt(0).toUpperCase() + header.slice(1);
+        th.textContent = header;
         thead.appendChild(th);
     });
 
@@ -103,9 +113,22 @@ function renderTable(data, tableId, headers) {
     data.forEach(item => {
         const tr = document.createElement('tr');
         headers.forEach(header => {
-            const td = document.createElement('td');
-            td.textContent = item[header];
-            tr.appendChild(td);
+            if (header === "image" || header === "video" || header === "json"){
+               const span = document.createElement('span')
+               span.textContent = "Link";
+               const anchor = document.createElement('a');
+               anchor.href=item[header];
+               anchor.appendChild(span);
+               const td = document.createElement('td');
+               td.appendChild(anchor);
+               tr.appendChild(td);
+            }
+            else{
+                const td = document.createElement('td');
+                td.textContent = item[header];
+                tr.appendChild(td);
+            }
+
         });
         tbody.appendChild(tr);
     });

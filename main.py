@@ -363,7 +363,7 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
 
         # Select user's valid API keys
         # cmd = "SELECT task_id, api_key, youtube_id, status, date_updated FROM task_status WHERE status = 'PROCESSING' OR status = 'ERROR' ORDER BY date_updated DESC LIMIT 10;"
-        cmd = "SELECT task_id, task_status.api_key, youtube_id, status, date_updated FROM task_status JOIN api_key ON task_status.api_key = api_key.api_key WHERE (api_key.user_id = %s AND (status = 'PROCESSING' OR status = 'ERROR')) ORDER BY date_updated DESC LIMIT 5"
+        cmd = "SELECT task_id, video_source, youtube_id, status, date_updated FROM task_status JOIN api_key ON task_status.api_key = api_key.api_key WHERE (api_key.user_id = %s AND (status = 'PROCESSING')) ORDER BY date_updated DESC LIMIT 5"
         website_db_cursor.execute(cmd,(user_id,))
         tasks_wip_result = website_db_cursor.fetchall()
         if tasks_wip_result:
@@ -371,8 +371,8 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
             for task in tasks_wip_result:
                 output_task_part_single={}
                 output_task_part_single["task_id"] = task[0]
-                output_task_part_single["api_key"] = task[1]
-                output_task_part_single["youtube_id"] = task[2]
+                output_task_part_single["source"] = task[1]
+                output_task_part_single["video_id"] = task[2]
                 output_task_part_single["status"] = task[3]
                 output_task_part_single["date_updated"] = task[4]
                 output_task_part_all.append(output_task_part_single)
@@ -380,7 +380,7 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
             output_task_part_all = []
         final_output["tasks_wip"] = output_task_part_all
 
-        cmd = "SELECT task_id, task_status.api_key, youtube_id, status, date_updated FROM task_status JOIN api_key ON task_status.api_key = api_key.api_key WHERE (api_key.user_id = %s AND (status = 'COMPLETED')) ORDER BY date_updated DESC LIMIT 5"
+        cmd = "SELECT task_id, video_source, youtube_id, status, date_updated, result_picture_url, result_video_url, result_text FROM task_status JOIN api_key ON task_status.api_key = api_key.api_key WHERE (api_key.user_id = %s AND (status = 'COMPLETED' OR status = 'ERROR')) ORDER BY date_updated DESC LIMIT 5"
         website_db_cursor.execute(cmd, (user_id,))
         tasks_completed_result = website_db_cursor.fetchall()
         if tasks_completed_result:
@@ -388,10 +388,13 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
             for task in tasks_completed_result:
                 output_task_part_single={}
                 output_task_part_single["task_id"] = task[0]
-                output_task_part_single["api_key"] = task[1]
-                output_task_part_single["youtube_id"] = task[2]
+                output_task_part_single["source"] = task[1]
+                output_task_part_single["video_id"] = task[2]
                 output_task_part_single["status"] = task[3]
                 output_task_part_single["date_updated"] = task[4]
+                output_task_part_single["image"] = task[5]
+                output_task_part_single["video"] = task[6]
+                output_task_part_single["json"] = task[7]
                 output_task_part_all.append(output_task_part_single)
         else:
             output_task_part_all = []

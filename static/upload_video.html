@@ -25,10 +25,12 @@
   <div class="attraction-main-container">
     <div class="body bold" style="height: 30px"></div>
     <div class="order-details-form body" style="height: 200px">
-    <div class="header-3 bold">上傳影片：
-    </div>
+    <div class="header-3 bold">上傳影片：</div>
     請在此上傳影片！<br/>
-    Youtube download目前無法支援EC2 IP，相關fix管理員積極對應中。造成您的不便，敬請見諒。如希望知道目前進展請不吝聯繫管理員。
+    Youtube download目前無法支援EC2 IP，相關對應方式，開發人員極對應中。造成您的不便，敬請見諒。<br/>
+    目前，本系統開放使用瀏覽器上傳影片的方式，對您上傳的影片進行解析。<br/>
+    <a href="#">如何下載Youtube影片</a>
+
     </div>
 
     <div class="body bold" style="height: 30px"></div>
@@ -39,15 +41,9 @@
     </div>
 
     <div class="body bold" style="height: 30px"></div>
-
-    <div class="api-form body" id="api-web-signed-out" style="height: 300px">
-      <div class="body bold" style="height: 30px">如何下載Youtube影片</div>
-    </div>
-
-      <div class="body bold" style="height: 30px"></div>
       
-    <div class="api-form body" id="api-web-signed-out" style="height: 300px">
-      <div class="body bold" style="height: 30px">上傳下載完成的Youtube影片</div>
+    <div class="api-form body" id="api-web-signed-out">
+      <div class="body bold" style="height: 30px">上傳您的影片</div>
       
       <div id="message-upload">
         <form id="upload-form">
@@ -56,8 +52,7 @@
                 <input type="text" id="text-id" name="text-name" placeholder="Enter message">
             </div> -->
             <div><label for="file-id">選擇希望上傳的影片: (支援格式：mp4, 影片最大容量：15 MB, 影片時間上限：90秒)</label></div>
-            <div><input type="file" id="file-id" name="file-name"></div>
-            <div><button type="submit" id="submit-video-button">上傳影片</button></div>
+            <div><input type="file" id="file-id" name="file-name" placeholder="AAA"><span><button type="submit" id="submit-video-button">上傳影片</button></span></div>
         </form>
       </div>
   
