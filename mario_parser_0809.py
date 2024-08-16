@@ -83,7 +83,7 @@ def mario_parser_function(task_id: str, source: str, video_id: str):
         starting_frame = black_threshold_test.infer_starting_frame(dict_to_infer, start_frame=first_frame, end_frame=total_frames, capture_per_n_frames=capture_per_n_frames, fps=video_data["fps"])
         print("Starting frame:", starting_frame)
         if starting_frame is False:
-            {"error": True, "message": "No starting frame was found"}
+            return {"error": True, "message": "No starting frame was found"}
 
         # 5. Having the starting frame, Drop the frames before starting frame from captured_frames list
         filtered_captured_frames = filter_frames.filter_frames(filenames=captured_frames, threshold=starting_frame)
