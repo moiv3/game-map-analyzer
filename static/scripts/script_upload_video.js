@@ -3,12 +3,13 @@ function addUploadButtonListener(){
     document.getElementById('upload-form').addEventListener('submit', async function(event){
         event.preventDefault();
 
-        if (!confirm("Are you sure to upload this video?")){
+        if (!confirm("確認上傳這部影片？")){
             return false;
         }
 
         const signinStatusToken = window.localStorage.getItem('token');
         if (!signinStatusToken){
+            alert("登入狀態異常，請重新整理後再試一次");
             console.log("No token detected!");
             return false;
         }
@@ -19,7 +20,7 @@ function addUploadButtonListener(){
         const file = fileInput.files[0];
 
         if (!file){
-            document.querySelector('#upload-status-message').textContent = 'Error: No file selected.';
+            document.querySelector('#upload-status-message').textContent = '錯誤：請選擇上傳影片';
             return;
         }
 
@@ -38,6 +39,9 @@ function addUploadButtonListener(){
         }
         else {        
             document.querySelector('#upload-status-message').textContent = '請稍候，檔案上傳中...';
+
+            submitVideoButton = document.querySelector("#submit-video-button");
+            submitVideoButton.disabled = true;
 
             const formData = new FormData();
             formData.append('file', file);
@@ -60,6 +64,7 @@ function addUploadButtonListener(){
             catch (error) {
                 document.querySelector('#upload-response-message').textContent = `Error: ${error.message}`;
             }
+            submitVideoButton.disabled = false;
             return;
         }
     });
