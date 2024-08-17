@@ -292,3 +292,93 @@ def process_uploaded_video(self, video_id: str, api_key: str):
     # END OF THE REAL FUNCTION
 
     return {"status": "completed", "video_id": video_id}
+
+# For video uploaded via S3
+@celery_app.task(bind=True)
+def process_uploaded_video_dummy(self, video_id: str, api_key: str):
+    task_id = self.request.id
+    print(f"Processing DUMMY video {video_id} with task ID {task_id} by key {api_key}")
+
+    # 20240807 add database support
+    website_db = mysql.connector.connect(
+        host=db_host, user=db_user, password=db_pw, database=db_database)
+    website_db_cursor = website_db.cursor()
+
+    # update task status
+    cmd = "INSERT INTO task_status (task_id, api_key, youtube_id, status, video_source) VALUES (%s, %s, %s, %s, %s)"
+    website_db_cursor.execute(cmd, (task_id, api_key, video_id, "PROCESSING", "DUMMY"))
+    website_db.commit()
+
+    # update upload_video status
+    cmd = "UPDATE uploaded_video SET status = %s WHERE video_id = %s"
+    website_db_cursor.execute(cmd, ("PROCESSING", video_id))
+    website_db.commit()
+
+    # THE REAL FUNCTION
+    try:
+        # DUMMY parse sequence
+        for i in range(60):
+            if i % 10 == 0:
+                print(f"{i/10} seconds passed")
+            time.sleep(0.1)
+        parse_result = {"ok": True}
+
+        # reuse function
+        if "error" in parse_result and parse_result["error"]:
+            # log error to database
+            cmd = "UPDATE task_status SET status = %s WHERE task_id = %s"
+            website_db_cursor.execute(cmd, ("ERROR", task_id))
+            website_db.commit()
+
+            cmd = "UPDATE uploaded_video SET status = %s, error_message = %s WHERE video_id = %s"
+            website_db_cursor.execute(cmd, ("UNSUCCESS", parse_result["message"], video_id))
+            website_db.commit()
+
+            return parse_result
+        
+        elif "ok" in parse_result and parse_result["ok"]:
+            # filepath
+            file_path = f"{task_id}.jpg"
+
+            # UPDATE database with picture url
+            cmd = "UPDATE task_status SET result_picture_url = %s WHERE task_id = %s"
+            website_db_cursor.execute(cmd, ("TEST_VALUE_PICTURE", task_id))
+            website_db.commit()
+
+            # UPDATE database with video url
+            cmd = "UPDATE task_status SET result_video_url = %s WHERE task_id = %s"
+            website_db_cursor.execute(cmd, ("TEST_VALUE_VIDEO", task_id))
+            website_db.commit()
+
+            # UPDATE database with json url
+            cmd = "UPDATE task_status set result_text = %s WHERE task_id = %s"
+            website_db_cursor.execute(cmd, ("TEST_VALUE_TEXT", task_id))
+            website_db.commit()
+
+            # UPDATE task status
+            cmd = "UPDATE task_status SET status = %s WHERE task_id = %s"
+            website_db_cursor.execute(cmd, ("COMPLETED", task_id))
+            website_db.commit()
+
+            # update upload_video status
+            cmd = "UPDATE uploaded_video SET status = %s WHERE video_id = %s"
+            website_db_cursor.execute(cmd, ("SUCCESS", video_id))
+            website_db.commit()
+
+        else:
+            print("Something weird happened! Please check logs.")
+            return{"error": True, "message": "An unknown exception happened"}
+
+    except Exception:
+        traceback.print_exc()
+        cmd = "UPDATE task_status SET status = %s WHERE task_id = %s"
+        website_db_cursor.execute(cmd, ("ERROR", task_id))
+        website_db.commit()
+
+        cmd = "UPDATE uploaded_video SET status = %s, error_message = %s WHERE video_id = %s"
+        website_db_cursor.execute(cmd, ("UNSUCCESS", "Internal server exception", video_id))
+        website_db.commit()
+
+    # END OF THE REAL FUNCTION
+
+    return {"status": "completed", "video_id": video_id}

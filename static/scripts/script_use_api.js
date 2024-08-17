@@ -180,7 +180,7 @@ async function generateCorrectSigninElements(){
     const tokenStatus = await checkToken();
     if (tokenStatus){
         apiWebDiv = document.querySelector("#api-web-signed-in");
-        apiWebDiv.style.display = "block";
+        // apiWebDiv.style.display = "block";
     }
 
 }

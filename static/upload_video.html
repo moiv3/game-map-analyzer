@@ -36,14 +36,14 @@
     <div class="body bold" style="height: 30px"></div>
 
     <div class="api-form body" id="api-key" style="height: 100px">
-      <div class="body bold" style="height: 30px">您的API key</div>
+      <div class="header-3 bold" style="height: 30px">您的API key</div>
       <div class="body" id="api-key-result">Your API key: <span id="api-key-result-text"></span><button id="fetch-api-key-button">Check current API key</button><span id="system-message"></span></div>
     </div>
 
     <div class="body bold" style="height: 30px"></div>
       
     <div class="api-form body" id="api-web-signed-out">
-      <div class="body bold" style="height: 30px">上傳您的影片</div>
+      <div class="header-3 bold" style="height: 30px">上傳您的影片</div>
       
       <div id="message-upload">
         <form id="upload-form">
@@ -51,8 +51,8 @@
                 <label for="text-id">Your message: (max. 255 characters)</label>
                 <input type="text" id="text-id" name="text-name" placeholder="Enter message">
             </div> -->
-            <div><label for="file-id">選擇希望上傳的影片: (支援格式：mp4, 影片最大容量：15 MB, 影片時間上限：90秒)</label></div>
-            <div><input type="file" id="file-id" name="file-name" placeholder="AAA"><span><button type="submit" id="submit-video-button">上傳影片</button></span></div>
+            <div><label for="file-id">選擇希望上傳的影片: (支援格式：mp4, 影片最大容量：5 MB, 影片時間上限：90秒)</label></div>
+            <div><input type="file" id="file-id" name="file-name"><span><button type="submit" id="submit-video-button">上傳影片</button></span></div>
         </form>
       </div>
   
@@ -63,8 +63,8 @@
         <div class="body bold" style="height: 30px"></div>
 
     <div class="api-form body" id="api-web-signed-in" style="height: 1000px;">
-      <div class="bold">您上傳的影片</div>
-      <div class="bold" id="video-process-status-message">影片分析訊息</div>
+      <div class="header-3 bold">已上傳的影片</div>
+      <div class="bold" id="video-process-status-message"></div>
       <table id="uploaded-videos-table" border="1">
         <thead>
             <tr>

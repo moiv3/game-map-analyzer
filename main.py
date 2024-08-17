@@ -52,7 +52,7 @@ from celery.result import AsyncResult
 from celery_config import celery_app, process_video
 import mario_parser
 
-app = FastAPI()
+app = FastAPI(openapi_url=None)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -447,6 +447,15 @@ async def upload_file(file: UploadFile = File(...), token_data: TokenOut = Depen
         if not signin_status:
             raise HTTPException(status_code=401, detail="登入資訊異常，請重新登入")
         else:
+            # Check file size by seeking to the end of the stream
+            file.file.seek(0, 2)  # Move to the end of the file
+            file_size = file.file.tell()  # Get the size in bytes
+            file.file.seek(0)  # Reset to the beginning of the file
+            print(file_size)
+            MAX_FILE_SIZE = 5 * 1024 * 1024 # 5 MB file size limit
+            if file_size > MAX_FILE_SIZE:
+                raise HTTPException(status_code=413, detail="檔案大於5MB")
+
             user_id = signin_status["id"]
             unique_id = str(uuid.uuid4())
             unique_filename = f"{unique_id}.mp4"
@@ -535,6 +544,14 @@ async def process_video_by_id(process_info: VideoParseInfoUploaded, token_data: 
             host=db_host, user=db_user, password=db_pw, database=db_database)
         website_db_cursor = website_db.cursor()
         
+        # 先確認目前有多少 PROCESSING
+        cmd = "SELECT COUNT(*) FROM uploaded_video WHERE status = %s"
+        website_db_cursor.execute(cmd, ("PROCESSING",))
+        processing_items_result = website_db_cursor.fetchone()[0]
+        print("Processing items:", processing_items_result)
+        if processing_items_result >= 3:
+            return JSONResponse(status_code=500, content=(Error(error="true", message="目前有太多請求，請稍後再試").dict()))
+
         # Check if everything is there
         cmd = "SELECT member.id, uploaded_video.video_id, uploaded_video.video_url, uploaded_video.status FROM member JOIN uploaded_video JOIN api_key WHERE member.id = %s AND api_key.api_key = %s AND api_key.validity = 1 AND uploaded_video.video_id = %s"
         # cmd = "SELECT member.id, uploaded_video.video_id, uploaded_video.video_url FROM member JOIN uploaded_video JOIN api_key WHERE member.id = 2 AND api_key.api_key = 'accb8d65-9183-4f72-8f4a-629d8c89e9e0' AND api_key.validity = 1 AND uploaded_video.video_id = '13446a32-800d-460e-8b31-f4b7814a524b'"
@@ -553,13 +570,62 @@ async def process_video_by_id(process_info: VideoParseInfoUploaded, token_data: 
 
             task = celery_config.process_uploaded_video.delay(uploaded_video_id, api_key)
             return {"ok": True, "task_id": task.id, "video_id": uploaded_video_id, "message": f"已經排入處理佇列，請至會員中心確認結果"}
-    #從S3下載影片
-    #開始解析
-    #回傳結果
-    return{"ok": True}
 
 
+@app.post("/api/process_uploaded_video_dummy", summary="解析從S3上傳的影片")
+async def process_video_dummy(process_info: VideoParseInfoUploaded, token_data: TokenOut = Depends(get_token_header)):
+    # 檢查登入狀態
+    signin_status = check_user_signin_status_return_bool(token_data)
+    if not signin_status:
+        return JSONResponse(status_code=401, content=(Error(error="true", message="登入資訊異常，請重新登入").dict()))
+    
+    # 檢查video_id & API key狀態
+    else:
+        website_db = mysql.connector.connect(
+            host=db_host, user=db_user, password=db_pw, database=db_database)
+        website_db_cursor = website_db.cursor()
 
+        # 先確認目前有多少 PROCESSING
+        cmd = "SELECT COUNT(*) FROM uploaded_video WHERE status = %s"
+        website_db_cursor.execute(cmd, ("PROCESSING",))
+        processing_items_result = website_db_cursor.fetchone()[0]
+        print("Processing items:", processing_items_result)
+        if processing_items_result >= 3:
+            return JSONResponse(status_code=500, content=(Error(error="true", message="目前有太多請求，請稍後再試").dict()))
+
+        user_id = signin_status["id"]
+        api_key = process_info.api_key
+        # uploaded_video_id = process_info.video_id
+
+        # dummy upload data
+        unique_id = str(uuid.uuid4())
+        file_url = unique_id
+        uploaded_video_id = unique_id
+
+        # add a video id to upload_video
+        cmd = "INSERT INTO uploaded_video (user_id, video_id, video_url, status) VALUES (%s, %s, %s, %s)"
+        website_db_cursor.execute(cmd, (user_id, unique_id, file_url, "NOT PROCESSED"))
+        website_db.commit()
+        
+        # Check if everything is there
+        cmd = "SELECT member.id, uploaded_video.video_id, uploaded_video.video_url, uploaded_video.status FROM member JOIN uploaded_video JOIN api_key WHERE member.id = %s AND api_key.api_key = %s AND api_key.validity = 1 AND uploaded_video.video_id = %s"
+        # cmd = "SELECT member.id, uploaded_video.video_id, uploaded_video.video_url FROM member JOIN uploaded_video JOIN api_key WHERE member.id = 2 AND api_key.api_key = 'accb8d65-9183-4f72-8f4a-629d8c89e9e0' AND api_key.validity = 1 AND uploaded_video.video_id = '13446a32-800d-460e-8b31-f4b7814a524b'"
+        website_db_cursor.execute(cmd, (user_id, api_key, uploaded_video_id))
+        db_fetch_result = website_db_cursor.fetchone()
+        print(db_fetch_result)
+
+        if not db_fetch_result:
+            return JSONResponse(status_code=401, content=(Error(error="true", message="影片資訊或API key不正確，請重新確認").dict()))
+        elif not db_fetch_result[3] == "NOT PROCESSED":
+            return JSONResponse(status_code=400, content=(Error(error="true", message="影片正在處理中，請至會員中心確認結果").dict()))
+        else:
+        
+            cmd = "UPDATE uploaded_video SET status = %s WHERE video_id = %s"
+            website_db_cursor.execute(cmd, ("PROCESSING", uploaded_video_id))
+            website_db.commit()
+
+            task = celery_config.process_uploaded_video_dummy.delay(uploaded_video_id, api_key)
+            return {"ok": True, "task_id": task.id, "video_id": uploaded_video_id, "message": f"已經排入處理隊列，請至會員中心確認結果"}
 
 #Exception Block
 @app.exception_handler(RequestValidationError)

@@ -33,7 +33,7 @@ function addUploadButtonListener(){
         if (!re.exec(fileName)) {
             document.querySelector('#upload-status-message').textContent = '錯誤：不支援此檔案格式，請再試一次。';
         }
-        else if (fileSizeMb > 15) {        
+        else if (fileSizeMb > 5) {        
             document.querySelector('#upload-status-message').textContent = '錯誤：檔案大小超出上限(' + fileSizeMb + 'MB)，請再試一次。';
             return;
         }
@@ -188,7 +188,6 @@ async function processVideo(item, button) {
 
     }
     if (!apiKeyGlobal){
-        console.log("test");
         uploadStatusMessage.textContent = "無API key, 請點選上面按鈕讀取，或至會員中心申請API key";
         return false;
     }
@@ -221,7 +220,7 @@ async function processVideo(item, button) {
     }
     else{
         console.log(resultJson.message);
-        uploadStatusMessage.textContent = "送出需求失敗，請聯繫管理員確認";
+        uploadStatusMessage.textContent = `送出需求失敗：${resultJson.message}`;
         button.textContent = '需求送出失敗';
     }
 }
