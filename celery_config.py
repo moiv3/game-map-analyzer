@@ -241,7 +241,7 @@ def process_uploaded_video(self, video_id: str, api_key: str):
             video_file_path = f"video_{task_id}.mp4"
             video_filename = f"video_{task_id}.mp4"
             print("Uploading video...")
-            s3_client.upload_file(video_file_path, BUCKET_NAME, video_filename, ExtraArgs={'ContentType': 'video/mp4'})
+            s3_client.upload_file(video_file_path, BUCKET_NAME, video_filename)
             print("Uploading complete.")
             video_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{video_filename}"
             # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"

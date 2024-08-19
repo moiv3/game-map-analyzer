@@ -44,7 +44,7 @@ def infer_and_combine_to_jpg(images, task_id, fps, output_filename = "output.jpg
 
     # Define the codec and create VideoWriter object for output video
     output_video_path = f"video_{task_id}.mp4"
-    output_video = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'avc1'), fps, (lr_width, ud_height))
+    output_video = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (lr_width, ud_height))
 
     for single_image in images:
         print("Reading image:", single_image)
