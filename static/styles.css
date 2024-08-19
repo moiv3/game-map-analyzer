@@ -1056,3 +1056,12 @@ button {
 .order-details-form-subtitle {
     margin-right: 5px;
 } */
+
+.example-img-box{
+    max-width: 100%;
+}
+
+.example-img-box img {
+    max-width: 100%;
+    object-fit: contain;
+  }
