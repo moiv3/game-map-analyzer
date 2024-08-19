@@ -1034,7 +1034,7 @@ button {
 }
 
 .api-form{
-    border: 1px solid red;
+    /* border: 1px solid red; */
     border-radius: 5px;
     background-color: #E8E8E8;
     min-height: 200px;

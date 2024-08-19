@@ -14,6 +14,11 @@ function addUploadButtonListener(){
             return false;
         }
 
+        if (!apiKeyGlobal){
+            document.querySelector('#upload-status-message').textContent = "無API key, 請點選上面按鈕讀取，或至會員中心申請API key";
+            return false;
+        }
+
         const fileInput = document.querySelector('#file-id');
         console.log(fileInput);
         console.log(fileInput.files[0]);
@@ -47,22 +52,26 @@ function addUploadButtonListener(){
             formData.append('file', file);
 
             try {
-                const response = await fetch('./api/upload/', {
+                const response = await fetch('./api/upload', {
                     method: 'POST',
                     body: formData,
-                    headers: {Authorization: `Bearer ${signinStatusToken}`}
+                    headers: {Authorization: `Bearer ${signinStatusToken}`, ApiKey: apiKeyGlobal}
                 });
 
                 const result = await response.json();
-                if (response.ok) {
-                    document.querySelector('#upload-response-message').textContent = `File uploaded successfully: ${result.filename}`;
+                console.log(result);
+                if (result.error) {
+                    document.querySelector('#upload-response-message').textContent = `錯誤：${result.message}`;
+                    }
+                else if (result.ok) {
+                    document.querySelector('#upload-response-message').textContent = `成功上傳影片，檔名：${result.filename}。系統訊息：${result.message}`;
                 }
                 else {
-                    document.querySelector('#upload-response-message').textContent = `Error: ${result.detail}`;
+                    document.querySelector('#upload-response-message').textContent = `錯誤：${result.detail}`;
                 }
             }
             catch (error) {
-                document.querySelector('#upload-response-message').textContent = `Error: ${error.message}`;
+                document.querySelector('#upload-response-message').textContent = `錯誤：${error.message}`;
             }
             submitVideoButton.disabled = false;
             return;

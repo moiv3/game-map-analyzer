@@ -65,7 +65,7 @@ def mario_parser_function(task_id: str, source: str, video_id: str):
         dict_to_infer = black_threshold_test.get_image_title_black_game_attr(output_folder)
 
         # Check if is valid video, if not, raise an exception
-        count_game_image = sum(1 for v in dict_to_infer.values() if v in ["game", "title"])
+        count_game_image = sum(1 for v in dict_to_infer.values() if v in ["game", "title", "game_blackbg"])
         total_images = len(dict_to_infer)
         game_image_ratio = count_game_image / total_images
         game_image_ratio_threshold = 0.5

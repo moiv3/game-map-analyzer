@@ -47,6 +47,8 @@ def get_image_title_black_game_attr(folder_path):
             title_screen_black_enough = mario_check_white_ratio.check_if_black_screen(file_path, threshold_ratio=0.05)
             is_black_screen = mario_check_white_ratio.check_if_black_screen(file_path)
             is_blue_game_background = bool(mario_check_white_ratio.check_color_ratio(file_path,((240, 255), (120, 155), (70, 100))) > 0.5)
+            is_black_game_background = bool(mario_check_white_ratio.check_color_ratio(file_path,((0, 16), (0, 16), (0, 16))) > 0.75)
+
 
             if title_screen_have_words and title_screen_black_enough:
                 image_black_values[filename] = "title"
@@ -54,6 +56,8 @@ def get_image_title_black_game_attr(folder_path):
                 image_black_values[filename] = "black"
             elif is_blue_game_background:
                 image_black_values[filename] = "game"
+            elif is_black_game_background:
+                image_black_values[filename] = "game_blackbg"                
             else:
                 image_black_values[filename] = "other"
 
@@ -109,7 +113,7 @@ def infer_starting_frame(dict_to_infer, start_frame: int, end_frame: int, captur
                 if dict_to_infer[f"frame_{(start_frame + (threshold_frames * 1 + frame_number + i) * capture_per_n_frames):04d}.jpg"] == "black":
                     black_count += 1
                 # check last third
-                if dict_to_infer[f"frame_{(start_frame + (threshold_frames * 2 + frame_number + i) * capture_per_n_frames):04d}.jpg"] == "game":
+                if dict_to_infer[f"frame_{(start_frame + (threshold_frames * 2 + frame_number + i) * capture_per_n_frames):04d}.jpg"] == "game" or dict_to_infer[f"frame_{(start_frame + (threshold_frames * 2 + frame_number + i) * capture_per_n_frames):04d}.jpg"] == "gameblack":
                     game_count += 1
             
             if title_count >= max((threshold_frames * 0.7, 2)) and black_count >= max((threshold_frames * 0.4, 2)) and game_count >= max((threshold_frames * 0.7, 2)):
@@ -118,8 +122,8 @@ def infer_starting_frame(dict_to_infer, start_frame: int, end_frame: int, captur
                 return starting_frame
             print(f"{frame_number} {title_count} {black_count} {game_count}")
     
-    print("[infer_starting_frame] Did not find a starting frame, will return False")
-    return False
+    print("[infer_starting_frame] Did not find a starting frame, will return 0")
+    return 0
 
 # dict_to_infer = get_image_title_black_game_attr("output_test_0808")
 # starting_frame = infer_starting_frame(dict_to_infer, start_frame=0, end_frame=1566)

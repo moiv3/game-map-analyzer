@@ -113,11 +113,12 @@ function renderTable(data, tableId, headers) {
     data.forEach(item => {
         const tr = document.createElement('tr');
         headers.forEach(header => {
-            if (header === "image" || header === "video" || header === "json"){
-               const span = document.createElement('span')
+            if ((header === "image" || header === "video" || header === "json") && item[header]){
+               const span = document.createElement('span');
                span.textContent = "Link";
                const anchor = document.createElement('a');
                anchor.href=item[header];
+               anchor.setAttribute("target", "_blank");
                anchor.appendChild(span);
                const td = document.createElement('td');
                td.appendChild(anchor);

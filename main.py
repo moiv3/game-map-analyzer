@@ -440,48 +440,75 @@ def get_all_task_status_db():
     return tasks
 
 @app.post("/api/upload", summary="上傳一個影片")
-async def upload_file(file: UploadFile = File(...), token_data: TokenOut = Depends(get_token_header)):
+async def upload_file(file: UploadFile = File(...), token_data: TokenOut = Depends(get_token_header), ApiKey: str = Header(...)):
     try:
         signin_status = check_user_signin_status_return_bool(token_data)
+        api_key = ApiKey
         # TODO: Exception for signin status?
         if not signin_status:
             raise HTTPException(status_code=401, detail="登入資訊異常，請重新登入")
         else:
-            # Check file size by seeking to the end of the stream
-            file.file.seek(0, 2)  # Move to the end of the file
-            file_size = file.file.tell()  # Get the size in bytes
-            file.file.seek(0)  # Reset to the beginning of the file
-            print(file_size)
-            MAX_FILE_SIZE = 5 * 1024 * 1024 # 5 MB file size limit
-            if file_size > MAX_FILE_SIZE:
-                raise HTTPException(status_code=413, detail="檔案大於5MB")
-
-            user_id = signin_status["id"]
-            unique_id = str(uuid.uuid4())
-            unique_filename = f"{unique_id}.mp4"
-            s3_client.upload_fileobj(file.file, BUCKET_NAME, unique_filename)
-            file_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{unique_filename}"
-            # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
-            """
-            create table uploaded_video(
-            id int auto_increment,
-            user_id int not null,
-            video_id varchar(255) not null,
-            video_url varchar(255) not null,
-            create_time datetime not null default current_timestamp,
-            primary key(id)
-            );
-            """        
-
-            # save to database
             website_db = mysql.connector.connect(host=db_host, user=db_user, password=db_pw, database=db_database)
             website_db_cursor = website_db.cursor()
-            
-            cmd = "INSERT INTO uploaded_video (user_id, video_id, video_url, status) VALUES (%s, %s, %s, %s)"
-            website_db_cursor.execute(cmd, (user_id, unique_id, file_url, "NOT PROCESSED"))
-            website_db.commit()
 
-            return {"ok": True, "filename": unique_filename}
+            # Check API key
+            print(api_key)
+            cmd = "SELECT * from api_key WHERE api_key = %s AND validity = 1"
+            website_db_cursor.execute(cmd, (api_key,))
+            api_key_result = website_db_cursor.fetchone()
+            if not api_key_result:
+                return {"error": True, "message": "無效的API key"}
+            else:
+                # Check file size by seeking to the end of the stream
+                file.file.seek(0, 2)  # Move to the end of the file
+                file_size = file.file.tell()  # Get the size in bytes
+                file.file.seek(0)  # Reset to the beginning of the file
+                print(file_size)
+                MAX_FILE_SIZE = 5 * 1024 * 1024 # 5 MB file size limit
+                if file_size > MAX_FILE_SIZE:
+                    return JSONResponse(status_code=413, content=(Error(error="true", message="檔案大小超出上限").dict()))
+
+                user_id = signin_status["id"]
+                unique_id = str(uuid.uuid4())
+                unique_filename = f"{unique_id}.mp4"
+                s3_client.upload_fileobj(file.file, BUCKET_NAME, unique_filename)
+                file_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{unique_filename}"
+                # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
+
+                # save to database            
+                cmd = "INSERT INTO uploaded_video (user_id, video_id, video_url, status) VALUES (%s, %s, %s, %s)"
+                website_db_cursor.execute(cmd, (user_id, unique_id, file_url, "NOT PROCESSED"))
+                website_db.commit()
+
+                # 先確認目前有多少 PROCESSING
+                cmd = "SELECT COUNT(*) FROM uploaded_video WHERE status = %s"
+                website_db_cursor.execute(cmd, ("PROCESSING",))
+                processing_items_result = website_db_cursor.fetchone()[0]
+                print("Processing items:", processing_items_result)
+                # If too many items processing, not process, return ok
+                if processing_items_result >= 3:
+                    return {"error": True, "filename": unique_filename, "message": "目前有請求數量超出伺服器上限，已上傳此影片，但未開始分析，請稍後再送出分析需求。"}
+                # If not too many items, start the process
+                else:
+                # Check if everything is there
+                    cmd = "SELECT member.id, uploaded_video.video_id, uploaded_video.video_url, uploaded_video.status FROM member JOIN uploaded_video JOIN api_key WHERE member.id = %s AND api_key.api_key = %s AND api_key.validity = 1 AND uploaded_video.video_id = %s"
+                    # cmd = "SELECT member.id, uploaded_video.video_id, uploaded_video.video_url FROM member JOIN uploaded_video JOIN api_key WHERE member.id = 2 AND api_key.api_key = 'accb8d65-9183-4f72-8f4a-629d8c89e9e0' AND api_key.validity = 1 AND uploaded_video.video_id = '13446a32-800d-460e-8b31-f4b7814a524b'"
+                    website_db_cursor.execute(cmd, (user_id, api_key, unique_id))
+                    db_fetch_result = website_db_cursor.fetchone()
+                    print(db_fetch_result)
+
+                    if not db_fetch_result:
+                        return JSONResponse(status_code=401, content=(Error(error="true", message="影片資訊或API key不正確，請重新確認").dict()))
+                    elif not db_fetch_result[3] == "NOT PROCESSED":
+                        return JSONResponse(status_code=400, content=(Error(error="true", message="影片正在處理中，請至會員中心確認結果").dict()))
+                    else:
+                        cmd = "UPDATE uploaded_video SET status = %s WHERE video_id = %s"
+                        website_db_cursor.execute(cmd, ("PROCESSING", unique_id))
+                        website_db.commit()
+
+                        task = celery_config.process_uploaded_video.delay(unique_id, api_key)
+                        return {"ok": True, "filename": unique_id, "message": f"已經排入處理佇列，請至會員中心確認結果"}
+                    
     except (NoCredentialsError, PartialCredentialsError):
         raise HTTPException(status_code=403, detail="Could not authenticate to S3")
     except Exception as e:

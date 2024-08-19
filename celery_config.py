@@ -227,7 +227,7 @@ def process_uploaded_video(self, video_id: str, api_key: str):
             # UPLOAD A PICTURE TO S3 SEQUENCE
             map_filename = f"map_{file_path}"
             print("Uploading map...")
-            s3_client.upload_file(file_path, BUCKET_NAME, map_filename)
+            s3_client.upload_file(file_path, BUCKET_NAME, map_filename, ExtraArgs={'ContentType': 'image/jpeg'})
             print("Uploading complete.")
             picture_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{map_filename}"
             # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
@@ -241,7 +241,7 @@ def process_uploaded_video(self, video_id: str, api_key: str):
             video_file_path = f"video_{task_id}.mp4"
             video_filename = f"video_{task_id}.mp4"
             print("Uploading video...")
-            s3_client.upload_file(video_file_path, BUCKET_NAME, video_filename)
+            s3_client.upload_file(video_file_path, BUCKET_NAME, video_filename, ExtraArgs={'ContentType': 'video/mp4'})
             print("Uploading complete.")
             video_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{video_filename}"
             # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
