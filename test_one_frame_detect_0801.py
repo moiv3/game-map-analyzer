@@ -3,12 +3,14 @@ import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 import black_threshold_test
+import background_movement
 from math import sqrt
 import traceback
 
 # Config 
 # Training Model
 model = YOLO("./training_data/20240801mariov2/best.pt")
+model_sonic = YOLO("./training_data/20240820sonicv1/sonicbestv2.pt")
 # ratio of image to 視為邊界
 lr_margin_ratio = 0.005
 
@@ -565,35 +567,239 @@ def generate_jump_inference_from_infer_result(infer_result):
 
     return output
 
+# main function, "images" is a list of image filenames
+def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "output.jpg"):
+    # init total infer result
+    all_image_result = []
+    # init processed_frames
+    processed_frames = []
+    # init this_pos, last_pos
+    last_pos={}
+    this_pos={}
+    # init clear detection
+    clear_detection = 0
+    # clear detection starts counting only if 15 seconds has passed (first_frame + fps * 15 seconds)
+    first_frame = int(images[0].split('frame_')[1].split('.')[0])
+    clear_detection_starting_frame = int(first_frame + fps * 15)
+    last_frame = int(images[-1].split('frame_')[1].split('.')[0])
+
+    # unpack image width, define border detection. min border = 5px for small pics
+    first_image = cv2.imread(images[0])
+    ud_height, lr_width, _ = first_image.shape
+    # min border = 5px for small pics
+    lr_margin = max(int(lr_width * lr_margin_ratio), 5)
+    print("Image width:", lr_width, ", border judge:", lr_margin, "px")
+    print("image.shape", first_image.shape)
+
+    # Define the codec and create VideoWriter object for output video
+    output_video_path = f"video_{task_id}.mp4"
+    output_video = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (lr_width, ud_height))
+    image_count = last_frame - first_frame + 1
+    output_list = []
+    for nth_frame in range(image_count - 1):
+        single_frame_output = {}
+        single_frame_output["frame"] = first_frame + nth_frame
+        single_image = images[nth_frame]
+        next_image =  images[nth_frame + 1]
+        bg_movement_x, bg_movement_y = background_movement.check_background_movement(single_image,next_image)
+        print("Background movement:", bg_movement_x, bg_movement_y)
+
+        print("Reading image:", single_image)
+        image = cv2.imread(single_image)
+        results = model_sonic(image, conf=0.7)[0]
+        detections = sv.Detections.from_ultralytics(results)
+
+        # append infer result as dict
+        single_image_dict={}
+        single_image_dict["filename"] = single_image
+        num_part = int(single_image.split('frame_')[1].split('.')[0])
+        single_image_dict["frame_number"] = num_part
+        single_image_dict["detections"] = detections
+        all_image_result.append(single_image_dict)
+
+
+        print("Detection Data:")
+        print(detections.data)
+
+        marker_classes = ['sonic']
+        last_pos = this_pos
+        this_pos = {}
+
+        for i in range(len(detections.data["class_name"])):
+            class_of_object = detections.data["class_name"][i]
+            if class_of_object in marker_classes:
+                if class_of_object not in this_pos:
+                    this_pos[class_of_object]=[]
+                    this_pos[class_of_object].append(detections.xyxy[i])
+                else:
+                    this_pos[class_of_object].append(detections.xyxy[i])
+
+        print("last_pos", last_pos)
+        print("this_pos", this_pos)
+
+        crop_pixels = {}
+        character_movement_x = 0
+        character_movement_y = 0
+        for marker_class in marker_classes:             
+            print("Dealing with marker class:", marker_class)
+
+            if marker_class not in last_pos or marker_class not in this_pos:
+                print("Marker class not detected in last or this pos")
+            elif marker_class in last_pos and marker_class in this_pos:
+                print("last pos for this marker class:", last_pos[marker_class])
+                print("this pos for this marker class:", this_pos[marker_class])
+                character_movement_x = (this_pos[marker_class][0][0] + this_pos[marker_class][0][2]) / 2 - (last_pos[marker_class][0][0] + last_pos[marker_class][0][2]) / 2
+                character_movement_y = (this_pos[marker_class][0][1] + this_pos[marker_class][0][3]) / 2 - (last_pos[marker_class][0][1] + last_pos[marker_class][0][3]) / 2
+                print("Sonic's movement:", character_movement_x, character_movement_y)
+
+                continue
+
+                # change cloud to marker
+                distance_cloud_AB_to_CD = []
+                for cloud in this_pos[marker_class]:
+                    distance_cloud_A_to_CD = []
+                    for last_cloud in last_pos[marker_class]:
+                        distance_cloud_A_to_C = []
+
+                        # lr_margin and lr_width are calculated above
+                        if cloud[0] < lr_margin or cloud[0] > lr_width - lr_margin or \
+                            last_cloud[0] < lr_margin or last_cloud[0] > lr_width - lr_margin:
+                            print("margin detected, not appending")
+                        else:
+                            distance_ul = sqrt((cloud[0]-last_cloud[0]) ** 2 + (cloud[1]-last_cloud[1]) ** 2)
+                            distance_cloud_A_to_C.append(distance_ul)
+
+                        if cloud[2] < lr_margin or cloud[2] > lr_width - lr_margin or \
+                            last_cloud[2] < lr_margin or last_cloud[2] > lr_width - lr_margin:
+                            print("margin detected, not appending")
+                        else:
+                            distance_dr = sqrt((cloud[2]-last_cloud[2]) ** 2 + (cloud[3]-last_cloud[3]) ** 2)
+                            distance_cloud_A_to_C.append(distance_dr)
+                        
+                        print("distance_cloud_A_to_C is:")
+                        print(distance_cloud_A_to_C)
+
+                        if not distance_cloud_A_to_C:
+                            print("no distance were appended")
+                        elif len(distance_cloud_A_to_C) == 1:
+                            print("only one distance")
+                            distance_cloud_A_to_CD.append(distance_cloud_A_to_C[0])
+
+                        elif len(distance_cloud_A_to_C) == 2 and abs(distance_cloud_A_to_C[0] - distance_cloud_A_to_C[1]) <= 3:
+                            print("two distance and match, getting average")
+                            distance_cloud_A_to_CD.append((distance_cloud_A_to_C[0] + distance_cloud_A_to_C[1]) / 2)
+                        else:
+                            print("two distance and mismatch, getting minimum")
+                            distance_cloud_A_to_CD.append(min(distance_cloud_A_to_C[0], distance_cloud_A_to_C[1]))
+                        # 可能要處理關於雲消失(從由邊或左邊)的部分
+                        # 如果端點太左或太右，則不append
+                    if distance_cloud_A_to_CD:
+                        print("min distance of cloud & last_cloud:", min(distance_cloud_A_to_CD))
+                        distance_cloud_AB_to_CD.append(min(distance_cloud_A_to_CD))
+                print(distance_cloud_AB_to_CD)
+                if distance_cloud_AB_to_CD:
+                    print("min distance of all, should crop this many pixels", int(min(distance_cloud_AB_to_CD)))
+                    crop_pixels[marker_class] = round(min(distance_cloud_AB_to_CD))
+                else:
+                    print("no marker classes detected, using value 0 for this class")
+                    crop_pixels[marker_class] = 0
+        character_actual_movement_x = character_movement_x - bg_movement_x
+        character_actual_movement_y = character_movement_y - bg_movement_y
+
+        print("Sonic's actual movement:", character_actual_movement_x, character_actual_movement_y)
+        single_frame_output["character_movement_x"] = character_movement_x
+        single_frame_output["character_movement_y"] = character_movement_y
+        single_frame_output["bg_movement_x"] = bg_movement_x
+        single_frame_output["bg_movement_y"] = bg_movement_y
+        output_list.append(single_frame_output)
+        
+        print("All marker_classes analyzed. Crop pixel check:", crop_pixels)
+
+        if crop_pixels:
+            # # Average way
+            # crop_pixels_total = 0
+            # for item in crop_pixels:
+            #     crop_pixels_total += crop_pixels[item]
+            # crop_pixels_avg = round(crop_pixels_total / len(crop_pixels))
+
+            # print("Average crop pixel check:", crop_pixels_avg)
+            # # crop the pixels and save to np array
+            # if crop_pixels_avg >= 1:
+            #     cropped_frame = crop_image(image, 0, 0, crop_pixels_avg, ud_height)
+            #     processed_frames.append(cropped_frame)
+
+            # Max way
+            crop_pixels_max = sorted(crop_pixels.values(), reverse=True)[0]
+            print("Max crop pixel check:", crop_pixels_max)
+            # crop the pixels and save to np array
+            if crop_pixels_max > 50:
+                print("Anomaly detected, getting second largest value if exists")
+                if len(crop_pixels.values()) >= 2:
+                    crop_pixels_max = sorted(crop_pixels.values(), reverse=True)[1]
+                print("New value:",crop_pixels_max)
+                cropped_frame = crop_image(image, 0, 0, crop_pixels_max, ud_height)
+                cropped_frame_deep_copy = np.copy(cropped_frame)
+                processed_frames.append(cropped_frame_deep_copy)
+                # processed_frames.append(cropped_frame)
+            elif crop_pixels_max > 1:
+                cropped_frame = crop_image(image, 0, 0, crop_pixels_max, ud_height)
+                cropped_frame_deep_copy = np.copy(cropped_frame)
+                processed_frames.append(cropped_frame_deep_copy)
+                # processed_frames.append(cropped_frame)
+                
+
+        else:
+            print("No marker_classes gave a crop_pixel count. This frame is not cropped.")
+
+        # check flagpole and castle
+        if "cl" in detections.data["class_name"] and "castle" in detections.data["class_name"] and num_part >= clear_detection_starting_frame:
+            clear_detection += 1
+
+        if clear_detection >= 20:
+            print("Clear detection triggered, appending this frame")
+            cropped_frame = crop_image(image, 0, 0, lr_width, ud_height)
+            cropped_frame_deep_copy = np.copy(cropped_frame)
+            processed_frames.append(cropped_frame_deep_copy)
+            # processed_frames.append(cropped_frame)
+            break
+
+        # draw a bounding box, then save to somewhere
+        for result in results:
+            for bbox in result.boxes:
+                x1, y1, x2, y2 = bbox.xyxy[0].int().tolist()
+                confidence = bbox.conf[0]
+                label = model.names[int(bbox.cls[0])]
+                cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(image, f"{label} {confidence:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+        # Write the frame with the boxes to the output video
+        output_video.write(image)
+
+        # TODO: check underground
+        # 1st: check if consecutive black for 5 frames. use black_threshold_test.check_black_image_with_threshold
+        # 2nd: Toggle underground mode.
+        # 3rd: Assume only one screen in underground (Fix this later)
+        # 4th: 尋找新的定位點
+        # 5th: 先試著用影像辨識，然後如果不行，
+        # 6th: 畫三條線(最上面三個block)分析亮度，猜出移動了多少
+    output_video.release()
+
+    print(output_list)
+
+    if processed_frames:
+        combined_image = np.hstack(processed_frames)
+        cv2.imwrite(output_filename, combined_image)
+
+        print("Inference complete. Combined image saved to:", output_filename)
+        return output_filename, all_image_result
+    else:
+        print("No frames were captured from the video.")
+        return None, None
+    
 if __name__ == "__main__":
     images=[]
-    for i in range(522):
-        images.append(f"output_test_0809/frame_{i:04d}.jpg")
-
-    infer_start(images)
-    import sys
-    sys.exit()
-    # images=["output_test_0809/frame_0121.jpg",
-    #         "output_test_0809/frame_0122.jpg",
-    #         "output_test_0809/frame_0123.jpg",
-    #         "output_test_0809/frame_0124.jpg",
-    #         "output_test_0809/frame_0125.jpg",
-    #         ]
-    print(images)
-    # infer_result = infer_images(images, save_to_csvfile=True)
-    infer_result = np.load("npy_test.npy", allow_pickle=True)
-    motion_result = calculate_motion(infer_result)
-    print(motion_result)
-    motion_result_with_jump = infer_jumping(motion_result)
-    print(motion_result_with_jump)
-    motion_result_with_jump_inference = infer_jumping_and_landing(motion_result_with_jump)
-    print(motion_result_with_jump_inference)
-    # np.savetxt(fname="infer_result_0811.csv", X=motion_result_with_jump, delimiter=',', newline='\n', fmt='%s')
-    # # Sort the list by 'frame_number', in case it is not
-    # sorted_frames = sorted(infer_result, key=lambda x: x['frame_number'])
-    # frames_to_compare = len(sorted_frames) - 1
-    # for i in range(frames_to_compare):
-    #     print(calculate_movement_of_mario(detection_data_last_frame=sorted_frames[i],
-    #                                       detection_data_this_frame=sorted_frames[i+1],
-    #                                       marker_class='sm', margin_detection=False, lr_width=720, lr_margin=5))
-        
+    for i in range(1,51):
+        images.append(f"sonic_test_0820_2/frame_{i:04}.jpg")
+        task_id = 3
+        fps = 25
+    infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "output.jpg")

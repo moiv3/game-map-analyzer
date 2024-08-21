@@ -8,7 +8,7 @@ import filter_frames
 import test_one_frame_detect_0801
 import traceback
 
-def mario_parser_function(task_id: str, source: str, video_id: str):
+def mario_parser_function(task_id: str, source: str, video_id: str, game_type: str = "mario"):
     try:
         # main config
         start_time_sec = 0
@@ -61,44 +61,60 @@ def mario_parser_function(task_id: str, source: str, video_id: str):
         # print("[Check black screen] Extract complete, captured frame list:", captured_frames)
         print("[Check black screen] Extract complete")
 
-        # 4. Try to get the starting frame
-        dict_to_infer = black_threshold_test.get_image_title_black_game_attr(output_folder)
+        # 分歧: mario
+        if game_type == "mario":
+            # 4. Try to get the starting frame
+            dict_to_infer = black_threshold_test.get_image_title_black_game_attr(output_folder)
 
-        # Check if is valid video, if not, raise an exception
-        count_game_image = sum(1 for v in dict_to_infer.values() if v in ["game", "title", "game_blackbg"])
-        total_images = len(dict_to_infer)
-        game_image_ratio = count_game_image / total_images
-        game_image_ratio_threshold = 0.5
-        if game_image_ratio < game_image_ratio_threshold:
-            return {"error": True, "message": "Not a valid gameplay video"}
+            # Check if is valid video, if not, raise an exception
+            count_game_image = sum(1 for v in dict_to_infer.values() if v in ["game", "title", "game_blackbg"])
+            total_images = len(dict_to_infer)
+            game_image_ratio = count_game_image / total_images
+            game_image_ratio_threshold = 0.5
+            if game_image_ratio < game_image_ratio_threshold:
+                return {"error": True, "message": "Not a valid gameplay video"}
+            
+            # For debugging
+            # with open("color_infer_result.json","w") as fp:
+            #     json.dump(dict_to_infer, fp)
+
+            if frame_list:
+                first_frame = frame_list[0]
+            else:
+                first_frame = 0
+            starting_frame = black_threshold_test.infer_starting_frame(dict_to_infer, start_frame=first_frame, end_frame=total_frames, capture_per_n_frames=capture_per_n_frames, fps=video_data["fps"])
+            print("Starting frame:", starting_frame)
+            if starting_frame is False:
+                return {"error": True, "message": "No starting frame was found"}
+
+            # 5. Having the starting frame, Drop the frames before starting frame from captured_frames list
+            filtered_captured_frames = filter_frames.filter_frames(filenames=captured_frames, threshold=starting_frame)
+            print("Actual captured frames to infer:",filtered_captured_frames)
+            
+            # 6. use the new captured_frames list to do inference
+            infer_filename, infer_result = test_one_frame_detect_0801.infer_and_combine_to_jpg(images=filtered_captured_frames, task_id=task_id, fps=video_data["fps"], output_filename = f"{task_id}.jpg")
+            print("[Main program] Infer complete, jpg:", infer_filename)
+            # print("[Main program] Infer complete, text:", infer_result)
+
+            motion_result_with_jump_inference = test_one_frame_detect_0801.generate_jump_inference_from_infer_result(infer_result)
+            print("[Main program] Jumping motion infer complete, text:", motion_result_with_jump_inference)
+
+            return {"ok": True, "file": infer_filename, "text": motion_result_with_jump_inference}
         
-        # For debugging
-        with open("color_infer_result.json","w") as fp:
-            json.dump(dict_to_infer, fp)
+        elif game_type == "sonic":
+            # 4. Try to get the starting frame
 
-        if frame_list:
-            first_frame = frame_list[0]
+            # Check if is valid video, if not, raise an exception
+
+            # 5. Having the starting frame, Drop the frames before starting frame from captured_frames list
+            
+            # 6. use the new captured_frames list to do inference
+            infer_filename, infer_result = test_one_frame_detect_0801.infer_and_combine_to_jpg_sonic(images=captured_frames, task_id=task_id, fps=video_data["fps"], output_filename = f"{task_id}.jpg")
+
+
+            pass
         else:
-            first_frame = 0
-        starting_frame = black_threshold_test.infer_starting_frame(dict_to_infer, start_frame=first_frame, end_frame=total_frames, capture_per_n_frames=capture_per_n_frames, fps=video_data["fps"])
-        print("Starting frame:", starting_frame)
-        if starting_frame is False:
-            return {"error": True, "message": "No starting frame was found"}
-
-        # 5. Having the starting frame, Drop the frames before starting frame from captured_frames list
-        filtered_captured_frames = filter_frames.filter_frames(filenames=captured_frames, threshold=starting_frame)
-        print("Actual captured frames to infer:",filtered_captured_frames)
-        
-        # 6. use the new captured_frames list to do inference
-        infer_filename, infer_result = test_one_frame_detect_0801.infer_and_combine_to_jpg(images=filtered_captured_frames, task_id=task_id, fps=video_data["fps"], output_filename = f"{task_id}.jpg")
-        print("[Main program] Infer complete, jpg:", infer_filename)
-        # print("[Main program] Infer complete, text:", infer_result)
-
-        motion_result_with_jump_inference = test_one_frame_detect_0801.generate_jump_inference_from_infer_result(infer_result)
-        print("[Main program] Jumping motion infer complete, text:", motion_result_with_jump_inference)
-
-        return {"ok": True, "file": infer_filename, "text": motion_result_with_jump_inference}
-    
+            return {"error": True, "message": "Not a valid game type!"}
     except Exception:
         traceback.print_exc()
         return {"error": True, "message": "An exception happened, check traceback logs"}

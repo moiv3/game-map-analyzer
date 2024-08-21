@@ -5,6 +5,7 @@ import uuid
 import json
 import traceback
 import mario_parser_0809
+import send_email
 
 # db config
 from dotenv import load_dotenv
@@ -194,6 +195,13 @@ def process_uploaded_video(self, video_id: str, api_key: str):
         host=db_host, user=db_user, password=db_pw, database=db_database)
     website_db_cursor = website_db.cursor()
 
+    # get user email and name
+    cmd = "SELECT member.id, member.name, member.email from uploaded_video JOIN member on uploaded_video.user_id = member.id WHERE uploaded_video.video_id = %s"
+    website_db_cursor.execute(cmd, (video_id,))
+    user_info = website_db_cursor.fetchone()
+    user_name = user_info[1]
+    user_email = user_info[2]
+
     # update task status
     cmd = "INSERT INTO task_status (task_id, api_key, youtube_id, status, video_source) VALUES (%s, %s, %s, %s, %s)"
     website_db_cursor.execute(cmd, (task_id, api_key, video_id, "PROCESSING", "S3"))
@@ -217,6 +225,9 @@ def process_uploaded_video(self, video_id: str, api_key: str):
             cmd = "UPDATE uploaded_video SET status = %s, error_message = %s WHERE video_id = %s"
             website_db_cursor.execute(cmd, ("UNSUCCESS", parse_result["message"], video_id))
             website_db.commit()
+
+            # send mail to user
+            send_email.send_email_to_address(user_email, user_name, "分析未成功")
 
             return parse_result
         
@@ -275,8 +286,13 @@ def process_uploaded_video(self, video_id: str, api_key: str):
             website_db_cursor.execute(cmd, ("SUCCESS", video_id))
             website_db.commit()
 
+            # send mail to user
+            send_email.send_email_to_address(user_email, user_name, "分析成功")
+
         else:
             print("Something weird happened! Please check logs.")
+            # send mail to user
+            send_email.send_email_to_address(user_email, user_name, "分析未成功")
             return{"error": True, "message": "An unknown exception happened"}
 
     except Exception:
@@ -288,6 +304,9 @@ def process_uploaded_video(self, video_id: str, api_key: str):
         cmd = "UPDATE uploaded_video SET status = %s, error_message = %s WHERE video_id = %s"
         website_db_cursor.execute(cmd, ("UNSUCCESS", "Internal server exception", video_id))
         website_db.commit()
+
+        # send mail to user
+        send_email.send_email_to_address(user_email, user_name, "分析未成功")
 
     # END OF THE REAL FUNCTION
 
@@ -303,6 +322,13 @@ def process_uploaded_video_dummy(self, video_id: str, api_key: str):
     website_db = mysql.connector.connect(
         host=db_host, user=db_user, password=db_pw, database=db_database)
     website_db_cursor = website_db.cursor()
+
+    # get user email and name
+    cmd = "SELECT member.id, member.name, member.email from uploaded_video JOIN member on uploaded_video.user_id = member.id WHERE uploaded_video.video_id = %s"
+    website_db_cursor.execute(cmd, (video_id,))
+    user_info = website_db_cursor.fetchone()
+    user_name = user_info[1]
+    user_email = user_info[2]
 
     # update task status
     cmd = "INSERT INTO task_status (task_id, api_key, youtube_id, status, video_source) VALUES (%s, %s, %s, %s, %s)"
@@ -333,6 +359,9 @@ def process_uploaded_video_dummy(self, video_id: str, api_key: str):
             cmd = "UPDATE uploaded_video SET status = %s, error_message = %s WHERE video_id = %s"
             website_db_cursor.execute(cmd, ("UNSUCCESS", parse_result["message"], video_id))
             website_db.commit()
+
+            # send mail to user
+            send_email.send_email_to_address(user_email, user_name, "分析未成功")
 
             return parse_result
         
@@ -365,6 +394,9 @@ def process_uploaded_video_dummy(self, video_id: str, api_key: str):
             website_db_cursor.execute(cmd, ("SUCCESS", video_id))
             website_db.commit()
 
+            # send mail to user
+            send_email.send_email_to_address(user_email, user_name, "分析成功")
+
         else:
             print("Something weird happened! Please check logs.")
             return{"error": True, "message": "An unknown exception happened"}
@@ -379,6 +411,9 @@ def process_uploaded_video_dummy(self, video_id: str, api_key: str):
         website_db_cursor.execute(cmd, ("UNSUCCESS", "Internal server exception", video_id))
         website_db.commit()
 
+        # send mail to user
+        send_email.send_email_to_address(user_email, user_name, "分析未成功")
+        
     # END OF THE REAL FUNCTION
 
     return {"status": "completed", "video_id": video_id}
