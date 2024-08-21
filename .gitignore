@@ -145,5 +145,4 @@ cython_debug/
 *.mp4
 *.csv
 *.exe
-*.pt
 *.webm
