@@ -1,0 +1,51 @@
+== DB SCHEMA ==
+
+| member | CREATE TABLE `member` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `hashed_password` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `validity` tinyint(1) NOT NULL DEFAULT '1',
+  `send_mail` tinyint(1) NOT NULL DEFAULT '1',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
+
+| video | CREATE TABLE `video` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `video_id` varchar(255) NOT NULL,
+  `video_url` varchar(255) NOT NULL,
+  `video_source` varchar(255) NOT NULL,
+  `video_hash` varchar(255) DEFAULT NULL,
+  `game_type` varchar(255) NOT NULL,
+  `times_analyzed` int NOT NULL DEFAULT '0',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `uploaded_video_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `member` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
+
+| task  | CREATE TABLE `task` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `task_id` varchar(255) NOT NULL,
+  `user_id` int NOT NULL,
+  `video_id` int NOT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'NOT PROCESSED',
+  `result_map` varchar(255) DEFAULT NULL,
+  `result_movement` varchar(255) DEFAULT NULL,
+  `result_video` varchar(255) DEFAULT NULL,
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `video_id` (`video_id`),
+  CONSTRAINT `task_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `task_ibfk_2` FOREIGN KEY (`video_id`) REFERENCES `video` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
+
+ALTER TABLE task ADD FOREIGN KEY (video_id) REFERENCES video(video_id);
+
+ALTER TABLE task ADD UNIQUE (video_id);

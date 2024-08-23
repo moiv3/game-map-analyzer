@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+import os
+import shift_image
 from matplotlib import pyplot as plt
 
 # checks background movement between 2 frames
@@ -90,10 +92,147 @@ def check_background_movement(curr_frame_path, next_frame_path):
 
     return bg_movement_x, bg_movement_y
 
+def align_images(images):
+    # Convert the first image to grayscale and use it as the reference
+    ref_img = cv2.imread(images[0])
+    ref_img_gray = cv2.cvtColor(ref_img, cv2.COLOR_BGR2GRAY)
+
+    aligned_images = [ref_img]  # Start with the reference image
+
+    for i in range(1, len(images)):
+        # Load the next image and convert it to grayscale
+        img_path = images[i]
+        img = cv2.imread(img_path)
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # Calculate optical flow between the reference image and the current image
+        flow = cv2.calcOpticalFlowFarneback(ref_img_gray, img_gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
+        # Calculate the median flow along x and y axes
+        median_flow_x = np.median(flow[..., 0])
+        median_flow_y = np.median(flow[..., 1])
+
+        # Shift the current image to align it with the reference image
+        rows, cols = img.shape[:2]
+        transformation_matrix = np.float32([[1, 0, -median_flow_x], [0, 1, -median_flow_y]])
+
+        # Warp the current image based on the flow
+        aligned_img = cv2.warpAffine(img, transformation_matrix, (cols, rows))
+
+        # Append the aligned image to the list
+        aligned_images.append(aligned_img)
+
+    return aligned_images
+
+def stack_images_old(aligned_images):
+    # Initialize the result with the first image
+    stacked_image = aligned_images[0].astype(np.float32)
+
+    # Add and blend subsequent images
+    for i in range(1, len(aligned_images)):
+        stacked_image = cv2.addWeighted(stacked_image, (i / (i + 1)), aligned_images[i].astype(np.float32), (1 / (i + 1)), 0)
+
+    # Convert the stacked image back to uint8 format
+    stacked_image = stacked_image.astype(np.uint8)
+
+    return stacked_image
+
+def stack_images_without_blending(aligned_images):
+    # Start with the first image
+    stacked_image = aligned_images[0].copy()
+
+    # Place each subsequent image on top of the previous image
+    for i in range(1, len(aligned_images)):
+        # Mask to determine where to paste the new image
+        mask = np.any(aligned_images[i] > 0, axis=-1)  # Assuming non-black pixels indicate content
+        
+        # Place the new image on top of the stacked image, preserving the underlying image
+        stacked_image[mask] = aligned_images[i][mask]
+
+    return stacked_image
+
+import cv2
+import numpy as np
+
+def calculate_shift_and_align(reference_img, image):
+    # Convert images to grayscale for optical flow
+    ref_img_gray = cv2.cvtColor(reference_img, cv2.COLOR_BGR2GRAY)
+    img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Calculate optical flow to determine the background movement
+    flow = cv2.calcOpticalFlowFarneback(ref_img_gray, img_gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
+    # Calculate the median flow along x and y axes (background movement)
+    median_flow_x = np.median(flow[..., 0])
+    median_flow_y = np.median(flow[..., 1])
+
+    # Calculate the reverse of the background movement
+    shift_x = -median_flow_x
+    shift_y = -median_flow_y
+
+    # Shift the image based on the reverse movement
+    rows, cols = image.shape[:2]
+    transformation_matrix = np.float32([[1, 0, shift_x], [0, 1, shift_y]])
+
+    # Apply the transformation to align the image with the reference image's background
+    aligned_image = cv2.warpAffine(image, transformation_matrix, (cols, rows))
+
+    return aligned_image
+
+def stack_images(images):
+    # Use the first image as the reference image
+    reference_img = cv2.imread(images[0])
+    stacked_image = reference_img.copy()
+
+    # Align and stack each subsequent image on top of the reference image
+    for i in range(1, len(images)):
+        # Load the current image
+        image = cv2.imread(images[i])
+
+        # Align the image with the reference image
+        aligned_image = calculate_shift_and_align(reference_img, image)
+
+        # Stack the aligned image on top of the current stacked image
+        mask = np.any(aligned_image > 0, axis=-1)  # Assuming non-black pixels indicate content
+        stacked_image[mask] = aligned_image[mask]
+
+    return stacked_image
+
+def get_all_background_movement_from_folder(task_id):
+    frames = []
+    movement_x = []
+    movement_y = []
+    files = os.listdir(task_id)
+    sorted_files=sorted(files, key=lambda x: int(x.split('frame_')[1].split('.')[0]))
+    for frame_num in range(len(sorted_files)-1):
+        curr_frame_path = f"{task_id}/{sorted_files[frame_num]}"
+        next_frame_path = f"{task_id}/{sorted_files[frame_num+1]}"
+        bg_movement_x, bg_movement_y = check_background_movement(curr_frame_path, next_frame_path)
+        frames.append(sorted_files[frame_num])
+        movement_x.append(round(bg_movement_x))
+        movement_y.append(round(bg_movement_y))
+        print(f"{frame_num} / {len(sorted_files)-1} frames analyzed.")
+    print("Finished analysis.")
+    return task_id, frames, movement_x, movement_y
 
 if __name__ == "__main__":
-    for i in range(1, 12):
-        curr_frame = f"sonic_test_0820/frame_{i:02}.jpg"
-        next_frame = f"sonic_test_0820/frame_{i+1:02}.jpg"
-        print(curr_frame)
-        check_background_movement(curr_frame, next_frame)
+    task_id, frames, movement_x, movement_y = get_all_background_movement_from_folder("7529efda-1910-47e7-8e29-ec10d055d20e")
+    final_img = shift_image.combine_images(task_id, frames, movement_x, movement_y, game="sonic")
+#     print(image_paths)
+#     # Example usage:
+#     # List of image paths
+#     # image_paths = ['frame1.jpg', 'frame2.jpg', 'frame3.jpg', ..., 'frameN.jpg']
+
+#     # Align the images
+#     aligned_images = align_images(image_paths)
+
+#     # Stack the aligned images
+#     stacked_result = stack_images_without_blending(aligned_images)
+
+#     # Display the final stacked image
+#     cv2.imshow('Stacked Image', stacked_result)
+#     cv2.waitKey(0)
+#     cv2.destroyAllWindows()
+
+#     # Optionally, save the result
+

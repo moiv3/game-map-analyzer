@@ -27,7 +27,7 @@ def send_email_to_address(receiver_email, user, analysis_result):
         <p>Hi, {user}：</p>
         <p>這是來自Game Map Analyzer的訊息。</p>
         <p>您上傳的影片已經分析完畢，結果為： {analysis_result} 。</p>
-        <p>您可點選 <a href='https://traces.fun/task_queue'>此連結</a> ，進入會員中心，以下載相關分析結果。</p>
+        <p>您可點選<a href='https://traces.fun'>此連結</a>，進入會員中心，以下載相關分析結果。</p>
         <p>祝您有個美好的一天！</p>
         <p>Game Map Analyzer(GMA)</p>
     </body>

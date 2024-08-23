@@ -14,11 +14,6 @@ function addUploadButtonListener(){
             return false;
         }
 
-        if (!apiKeyGlobal){
-            document.querySelector('#upload-status-message').textContent = "無API key, 請點選上面按鈕讀取，或至會員中心申請API key";
-            return false;
-        }
-
         const fileInput = document.querySelector('#file-id');
         console.log(fileInput);
         console.log(fileInput.files[0]);
@@ -48,14 +43,18 @@ function addUploadButtonListener(){
             submitVideoButton = document.querySelector("#submit-video-button");
             submitVideoButton.disabled = true;
 
+            const gameType = document.querySelector("#game-type").value;
+            console.log(gameType);
+
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('gameType', gameType);
 
             try {
                 const response = await fetch('./api/upload', {
                     method: 'POST',
                     body: formData,
-                    headers: {Authorization: `Bearer ${signinStatusToken}`, ApiKey: apiKeyGlobal}
+                    headers: {Authorization: `Bearer ${signinStatusToken}`}
                 });
 
                 const result = await response.json();
@@ -194,11 +193,6 @@ async function processVideo(item, button) {
     }
     if (!confirm("即將開始分析，請確認是否送出分析需求？")){
         return false;
-
-    }
-    if (!apiKeyGlobal){
-        uploadStatusMessage.textContent = "無API key, 請點選上面按鈕讀取，或至會員中心申請API key";
-        return false;
     }
 
     button.disabled = true;
@@ -206,7 +200,6 @@ async function processVideo(item, button) {
 
     // check API key
     console.log(`Processing video with ID: ${item.video_id}`);
-    console.log(`API key: ${apiKeyGlobal}`);
     // fetch and update 結果
     result = await fetch("./api/process_uploaded_video",{
         method:"POST",
@@ -236,6 +229,6 @@ async function processVideo(item, button) {
 
 addUploadButtonListener();
 fetchUploadedVideos();
-let apiKeyGlobal;
-const fetchApiKeyButton = document.querySelector("#fetch-api-key-button");
-fetchApiKeyButton.addEventListener("click", checkApiKey);
+// let apiKeyGlobal;
+// const fetchApiKeyButton = document.querySelector("#fetch-api-key-button");
+// fetchApiKeyButton.addEventListener("click", checkApiKey);

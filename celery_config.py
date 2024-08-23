@@ -186,9 +186,12 @@ def process_video(self, video_id: str, api_key: str):
 
 # For video uploaded via S3
 @celery_app.task(bind=True)
-def process_uploaded_video(self, video_id: str, api_key: str):
+def process_uploaded_video(self, video_id: str, user_id: int, game: str):
+    if game not in ["mario", "sonic"]:
+        return{"error": True, "message": "Not a currently supported game"}
+        
     task_id = self.request.id
-    print(f"Processing uploaded video {video_id} with task ID {task_id} by key {api_key}")
+    print(f"Processing uploaded video {video_id} with task ID {task_id} by user_id {user_id}, game: {game}")
 
     # 20240807 add database support
     website_db = mysql.connector.connect(
@@ -196,35 +199,32 @@ def process_uploaded_video(self, video_id: str, api_key: str):
     website_db_cursor = website_db.cursor()
 
     # get user email and name
-    cmd = "SELECT member.id, member.name, member.email from uploaded_video JOIN member on uploaded_video.user_id = member.id WHERE uploaded_video.video_id = %s"
-    website_db_cursor.execute(cmd, (video_id,))
+    cmd = "SELECT id, name, email FROM member WHERE id = %s"
+    website_db_cursor.execute(cmd, (user_id,))
     user_info = website_db_cursor.fetchone()
     user_name = user_info[1]
     user_email = user_info[2]
 
     # update task status
-    cmd = "INSERT INTO task_status (task_id, api_key, youtube_id, status, video_source) VALUES (%s, %s, %s, %s, %s)"
-    website_db_cursor.execute(cmd, (task_id, api_key, video_id, "PROCESSING", "S3"))
-    website_db.commit()
-
-    # update upload_video status
-    cmd = "UPDATE uploaded_video SET status = %s WHERE video_id = %s"
-    website_db_cursor.execute(cmd, ("PROCESSING", video_id))
+    cmd = "INSERT into task (task_id, user_id, video_id, status) VALUES (%s, %s, %s, %s)"
+    website_db_cursor.execute(cmd, (task_id, user_id, video_id, "PROCESSING"))
     website_db.commit()
 
     # THE REAL FUNCTION
     try:
         # parse sequence
-        parse_result = mario_parser_0809.mario_parser_function(task_id, source="S3", video_id=video_id)
+        parse_result = mario_parser_0809.mario_parser_function(task_id, source="S3", video_id=video_id, game_type=game)
         if "error" in parse_result and parse_result["error"]:
             # log error to database
-            cmd = "UPDATE task_status SET status = %s WHERE task_id = %s"
-            website_db_cursor.execute(cmd, ("ERROR", task_id))
+            message = parse_result["message"]
+            cmd = "UPDATE task SET status = %s, message = %s WHERE task_id = %s"
+            website_db_cursor.execute(cmd, ("UNSUCCESS", message, task_id))
             website_db.commit()
 
-            cmd = "UPDATE uploaded_video SET status = %s, error_message = %s WHERE video_id = %s"
-            website_db_cursor.execute(cmd, ("UNSUCCESS", parse_result["message"], video_id))
-            website_db.commit()
+            # 測試後預計刪除
+            # cmd = "UPDATE uploaded_video SET status = %s, error_message = %s WHERE video_id = %s"
+            # website_db_cursor.execute(cmd, ("UNSUCCESS", parse_result["message"], video_id))
+            # website_db.commit()
 
             # send mail to user
             send_email.send_email_to_address(user_email, user_name, "分析未成功")
@@ -233,18 +233,18 @@ def process_uploaded_video(self, video_id: str, api_key: str):
         
         elif "ok" in parse_result and parse_result["ok"]:
             # filepath
-            file_path = f"{task_id}.jpg"
+            # file_path = f"{task_id}.jpg"
 
             # UPLOAD A PICTURE TO S3 SEQUENCE
-            map_filename = f"map_{file_path}"
+            map_filename = parse_result["file"]
             print("Uploading map...")
-            s3_client.upload_file(file_path, BUCKET_NAME, map_filename, ExtraArgs={'ContentType': 'image/jpeg'})
+            s3_client.upload_file(map_filename, BUCKET_NAME, map_filename, ExtraArgs={'ContentType': 'image/jpeg'})
             print("Uploading complete.")
             picture_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{map_filename}"
             # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
 
             # UPDATE database with picture url
-            cmd = "UPDATE task_status SET result_picture_url = %s WHERE task_id = %s"
+            cmd = "UPDATE task SET result_map = %s WHERE task_id = %s"
             website_db_cursor.execute(cmd, (picture_url, task_id))
             website_db.commit()
 
@@ -258,32 +258,35 @@ def process_uploaded_video(self, video_id: str, api_key: str):
             # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
 
             # UPDATE database with video url
-            cmd = "UPDATE task_status SET result_video_url = %s WHERE task_id = %s"
+            cmd = "UPDATE task SET result_video = %s WHERE task_id = %s"
             website_db_cursor.execute(cmd, (video_url, task_id))
             website_db.commit()
 
-            # Upload dummy json dataConvert dictionary to JSON string
-            data_dict = parse_result["text"]
-            json_data = json.dumps(data_dict)
-            json_file_name = f"movement_{task_id}.json"
-            json_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{json_file_name}"
-            print("Uploading JSON...")
-            s3_client.put_object(Bucket=BUCKET_NAME, Key=json_file_name, Body=json_data)
-            print("Uploading complete.")
+            if game == "mario":
+                # Upload json data, convert dictionary to JSON string
+                data_dict = parse_result["text"]
+                json_data = json.dumps(data_dict)
+                json_file_name = f"movement_{task_id}.json"
+                movement_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{json_file_name}"
+                print("Uploading JSON...")
+                s3_client.put_object(Bucket=BUCKET_NAME, Key=json_file_name, Body=json_data)
+                print("Uploading complete.")
+            if game == "sonic":
+                movement_file_path = f"movement_{task_id}.jpg"
+                movement_filename = f"movement_{task_id}.jpg"
+                movement_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{movement_filename}"
+                print("Uploading movement...")
+                s3_client.upload_file(movement_file_path, BUCKET_NAME, movement_filename, ExtraArgs={'ContentType': 'image/jpeg'})
+                print("Uploading complete.")
 
             # UPDATE database with json url
-            cmd = "UPDATE task_status set result_text = %s WHERE task_id = %s"
-            website_db_cursor.execute(cmd, (json_url, task_id))
+            cmd = "UPDATE task set result_movement = %s WHERE task_id = %s"
+            website_db_cursor.execute(cmd, (movement_url, task_id))
             website_db.commit()
 
             # UPDATE task status
-            cmd = "UPDATE task_status SET status = %s WHERE task_id = %s"
+            cmd = "UPDATE task SET status = %s WHERE task_id = %s"
             website_db_cursor.execute(cmd, ("COMPLETED", task_id))
-            website_db.commit()
-
-            # update upload_video status
-            cmd = "UPDATE uploaded_video SET status = %s WHERE video_id = %s"
-            website_db_cursor.execute(cmd, ("SUCCESS", video_id))
             website_db.commit()
 
             # send mail to user
@@ -297,12 +300,8 @@ def process_uploaded_video(self, video_id: str, api_key: str):
 
     except Exception:
         traceback.print_exc()
-        cmd = "UPDATE task_status SET status = %s WHERE task_id = %s"
-        website_db_cursor.execute(cmd, ("ERROR", task_id))
-        website_db.commit()
-
-        cmd = "UPDATE uploaded_video SET status = %s, error_message = %s WHERE video_id = %s"
-        website_db_cursor.execute(cmd, ("UNSUCCESS", "Internal server exception", video_id))
+        cmd = "UPDATE task SET status = %s, message = %s WHERE task_id = %s"
+        website_db_cursor.execute(cmd, ("ERROR", "內部系統異常", task_id))
         website_db.commit()
 
         # send mail to user

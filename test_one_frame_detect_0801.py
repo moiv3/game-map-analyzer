@@ -9,7 +9,7 @@ import traceback
 
 # Config 
 # Training Model
-model = YOLO("./training_data/20240801mariov2/best.pt")
+model_mario = YOLO("./training_data/20240801mariov2/best.pt")
 model_sonic = YOLO("./training_data/20240820sonicv1/sonicbestv2.pt")
 # ratio of image to 視為邊界
 lr_margin_ratio = 0.005
@@ -23,6 +23,8 @@ def crop_image(image, x, y, width, height):
 
 # main function, "images" is a list of image filenames
 def infer_and_combine_to_jpg(images, task_id, fps, output_filename = "output.jpg"):
+    # this is the mario function
+    model = model_mario
     # init total infer result
     all_image_result = []
     # init processed_frames
@@ -459,8 +461,11 @@ def infer_start(images = None, folder_path = None):
     print("Starting frame:", starting_frame)
     return starting_frame
 
-
-def infer_images(images, output_filename = "inference_result.csv", save_to_csvfile=False):   
+# check if still needed
+def infer_images(images, output_filename = "inference_result.csv", save_to_csvfile=False):
+    # temp filler
+    model = model_mario
+    
     all_image_result = []
 
     try:
@@ -569,6 +574,7 @@ def generate_jump_inference_from_infer_result(infer_result):
 
 # main function, "images" is a list of image filenames
 def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "output.jpg"):
+    model = model_sonic
     # init total infer result
     all_image_result = []
     # init processed_frames
@@ -606,7 +612,7 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
 
         print("Reading image:", single_image)
         image = cv2.imread(single_image)
-        results = model_sonic(image, conf=0.7)[0]
+        results = model(image, conf=0.7)[0]
         detections = sv.Detections.from_ultralytics(results)
 
         # append infer result as dict
@@ -615,8 +621,6 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
         num_part = int(single_image.split('frame_')[1].split('.')[0])
         single_image_dict["frame_number"] = num_part
         single_image_dict["detections"] = detections
-        all_image_result.append(single_image_dict)
-
 
         print("Detection Data:")
         print(detections.data)
@@ -651,7 +655,10 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
                 character_movement_x = (this_pos[marker_class][0][0] + this_pos[marker_class][0][2]) / 2 - (last_pos[marker_class][0][0] + last_pos[marker_class][0][2]) / 2
                 character_movement_y = (this_pos[marker_class][0][1] + this_pos[marker_class][0][3]) / 2 - (last_pos[marker_class][0][1] + last_pos[marker_class][0][3]) / 2
                 print("Sonic's movement:", character_movement_x, character_movement_y)
-
+                sonic_position_x = (this_pos[marker_class][0][0] + this_pos[marker_class][0][2]) / 2
+                sonic_position_y = (this_pos[marker_class][0][1] + this_pos[marker_class][0][3]) / 2
+                single_image_dict["sonic_position_x"] = sonic_position_x
+                single_image_dict["sonic_position_y"] = sonic_position_y
                 continue
 
                 # change cloud to marker
@@ -707,12 +714,13 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
         character_actual_movement_y = character_movement_y - bg_movement_y
 
         print("Sonic's actual movement:", character_actual_movement_x, character_actual_movement_y)
-        single_frame_output["character_movement_x"] = character_movement_x
-        single_frame_output["character_movement_y"] = character_movement_y
-        single_frame_output["bg_movement_x"] = bg_movement_x
-        single_frame_output["bg_movement_y"] = bg_movement_y
-        output_list.append(single_frame_output)
-        
+        single_image_dict["character_movement_x"] = character_movement_x
+        single_image_dict["character_movement_y"] = character_movement_y
+        # single_frame_output["bg_movement_x"] = bg_movement_x
+        # single_frame_output["bg_movement_y"] = bg_movement_y
+        print(single_image_dict)
+        all_image_result.append(single_image_dict)
+
         print("All marker_classes analyzed. Crop pixel check:", crop_pixels)
 
         if crop_pixels:
@@ -775,16 +783,10 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
         # Write the frame with the boxes to the output video
         output_video.write(image)
 
-        # TODO: check underground
-        # 1st: check if consecutive black for 5 frames. use black_threshold_test.check_black_image_with_threshold
-        # 2nd: Toggle underground mode.
-        # 3rd: Assume only one screen in underground (Fix this later)
-        # 4th: 尋找新的定位點
-        # 5th: 先試著用影像辨識，然後如果不行，
-        # 6th: 畫三條線(最上面三個block)分析亮度，猜出移動了多少
     output_video.release()
 
     print(output_list)
+    print(all_image_result)
 
     if processed_frames:
         combined_image = np.hstack(processed_frames)
@@ -794,7 +796,7 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
         return output_filename, all_image_result
     else:
         print("No frames were captured from the video.")
-        return None, None
+        return None, all_image_result
     
 if __name__ == "__main__":
     images=[]

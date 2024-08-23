@@ -53,7 +53,7 @@ async function fetchTaskQueueDb(){
         renderTable(wipData, 'data-db-wip-table', ["task_id", "source", "video_id", "status", "date_updated"]);
         const compData = resultJson["tasks_completed"];
         console.log(compData);
-        renderTable(compData, 'data-db-comp-table', ["task_id", "source", "video_id", "status", "date_updated", "image", "video", "json", "message"]);
+        renderTable(compData, 'data-db-comp-table', ["task_id", "source", "video_id", "status", "date_updated", "map", "video", "movement", "message"]);
     // if (resultJson["tasks_wip"].length > 0){
     //     }
     // else{
@@ -113,7 +113,7 @@ function renderTable(data, tableId, headers) {
     data.forEach(item => {
         const tr = document.createElement('tr');
         headers.forEach(header => {
-            if ((header === "image" || header === "video" || header === "json") && item[header]){
+            if ((header === "map" || header === "video" || header === "movement") && item[header]){
                const span = document.createElement('span');
                span.textContent = "Link";
                const anchor = document.createElement('a');
