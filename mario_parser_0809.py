@@ -102,7 +102,18 @@ def mario_parser_function(task_id: str, source: str, video_id: str, game_type: s
             print("[Main program] Jumping motion infer complete, text:", motion_result_with_jump_inference)
 
             return {"ok": True, "file": infer_filename, "text": motion_result_with_jump_inference}
-        
+        elif game_type == "mario_new":
+            infer_filename, infer_result = test_one_frame_detect_0801.infer_and_combine_to_jpg_sonic(images=captured_frames, task_id=task_id, fps=video_data["fps"], output_filename = f"map_{task_id}.jpg", game="mario")
+            task_id, frames, movement_x, movement_y = background_movement.get_all_background_movement_from_folder(task_id)
+            final_img_filename = shift_image.combine_images(task_id, frames, movement_x, movement_y, infer_result, game=game_type)
+            result_text = {}
+            result_text["infer"] = infer_result
+            result_text["task_id"] = task_id
+            result_text["frames"] = frames
+            result_text["movement_x"] = movement_x
+            result_text["movement_y"] = movement_y
+
+            return {"ok": True, "file": final_img_filename, "text": result_text}
         elif game_type == "sonic":
             # 4. Try to get the starting frame
 
@@ -111,7 +122,7 @@ def mario_parser_function(task_id: str, source: str, video_id: str, game_type: s
             # 5. Having the starting frame, Drop the frames before starting frame from captured_frames list
             
             # 6. use the new captured_frames list to do inference
-            infer_filename, infer_result = test_one_frame_detect_0801.infer_and_combine_to_jpg_sonic(images=captured_frames, task_id=task_id, fps=video_data["fps"], output_filename = f"map_{task_id}.jpg")
+            infer_filename, infer_result = test_one_frame_detect_0801.infer_and_combine_to_jpg_sonic(images=captured_frames, task_id=task_id, fps=video_data["fps"], output_filename = f"map_{task_id}.jpg", game="sonic")
             
             # 7. Background inference New 20240822 version
             task_id, frames, movement_x, movement_y = background_movement.get_all_background_movement_from_folder(task_id)

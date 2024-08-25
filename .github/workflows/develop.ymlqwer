@@ -1,0 +1,28 @@
+name: Deploy to ec2
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  Deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3 
+      - name: Deploy to ec2
+        env:
+            PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+            HOSTNAME: ${{ secrets.SSH_HOST }}
+            USER_NAME: ${{ secrets.SSH_USER }}
+
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+
+              # Now we have got the access of EC2 and we will start the deploy...
+              ls &&
+              cd /home/ubuntu/<PROJECT_DIRECTORY> &&
+              ls
+              '

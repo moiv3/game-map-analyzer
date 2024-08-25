@@ -236,17 +236,22 @@ def combine_images(task_id, images, movement_x, movement_y, all_image_result, ga
                 # this line below fails, fix
                 # final_img = final_img[:,:-left_crop]
                 final_img[curr_position_list[i][2]-min_y_top:curr_position_list[i][3]-min_y_top, curr_position_list[i][0]-min_x_left:curr_position_list[i][1]-min_x_left-left_crop] = image
+            elif game == "mario_new":
+                left_crop = 0
+                final_img[curr_position_list[i][2]-min_y_top:curr_position_list[i][3]-min_y_top, curr_position_list[i][0]-min_x_left:curr_position_list[i][1]-min_x_left] = image
             else:
+                left_crop = 0
                 final_img[curr_position_list[i][2]-min_y_top:curr_position_list[i][3]-min_y_top, curr_position_list[i][0]-min_x_left:curr_position_list[i][1]-min_x_left] = image
         
         cv2.imwrite(f"map_{task_id}.jpg", final_img)
         print(f"Combine success! Written result to file: map_{task_id}.jpg")
 
         # paste sonic to the map
-        print("Pasting sonic to the map...")
-        if game == "sonic":
+        print(f"Pasting {game} to the map...")
+        if game == "sonic" or game == "mario_new":
+            print(game)
             char_img = cv2.imread('sonic.png', cv2.IMREAD_UNCHANGED)
-            for i in range(len(images)):
+            for i in range(len(all_image_result)):
                 if "sonic_position_x" in all_image_result[i] and "sonic_position_y" in all_image_result[i]:
                     x_center = round(all_image_result[i]["sonic_position_x"]) - 1
                     y_center = round(all_image_result[i]["sonic_position_y"]) - 1

@@ -1,4 +1,3 @@
-
 function addUploadButtonListener(){
     document.getElementById('upload-form').addEventListener('submit', async function(event){
         event.preventDefault();
@@ -63,7 +62,8 @@ function addUploadButtonListener(){
                     document.querySelector('#upload-response-message').textContent = `錯誤：${result.message}`;
                     }
                 else if (result.ok) {
-                    document.querySelector('#upload-response-message').textContent = `成功上傳影片，檔名：${result.filename}。系統訊息：${result.message}`;
+                    document.querySelector('#upload-response-message').textContent = `成功上傳影片，檔名：${result.filename}。系統訊息：${result.message}。即將重新整理畫面...`;
+                    setTimeout(() => window.location.reload(), 3000);
                 }
                 else {
                     document.querySelector('#upload-response-message').textContent = `錯誤：${result.detail}`;
@@ -84,7 +84,7 @@ async function fetchUploadedVideos(){
         console.log("No token detected!");
         return false;
     }
-    const result = await fetch("./api/get_uploaded_videos/", {
+    const result = await fetch("./task-status-db/", {
         method:"GET",
         headers: {Authorization: `Bearer ${signinStatusToken}`}
     });
@@ -100,52 +100,6 @@ async function fetchUploadedVideos(){
         console.log("No uploaded video data found!");
     }
 
-}
-
-// Function to render the table
-// data: array of objects
-// headers: array of strings
-function renderTable(data, tableId, headers) {
-    const table = document.getElementById(tableId);
-    const thead = table.querySelector('thead tr');
-    const tbody = table.querySelector('tbody');
-
-    // Clear existing table data
-    thead.innerHTML = '';
-    tbody.innerHTML = '';
-
-    // Get keys (headers) from the first object
-    // const headers = Object.keys(data[0]);
-
-    // Create table headers
-    headers.forEach(header => {
-        const th = document.createElement('th');
-        th.textContent = header.charAt(0).toUpperCase() + header.slice(1);
-        thead.appendChild(th);
-    });
-
-    // Create table rows
-    data.forEach(item => {
-        const tr = document.createElement('tr');
-        headers.forEach(header => {
-            const td = document.createElement('td');
-
-            // Check if the status is 'NOT PROCESSED' and add a button
-            if (header === 'status' && item[header] === 'NOT PROCESSED') {
-                td.textContent = item[header];
-                const button = document.createElement('button');
-                button.textContent = '點此開始分析';
-                button.onclick = () => processVideo(item, button);
-
-                td.appendChild(button);
-            } else {
-                td.textContent = item[header];
-            }
-
-            tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-    });
 }
 
 async function checkApiKey() {
@@ -228,7 +182,4 @@ async function processVideo(item, button) {
 }
 
 addUploadButtonListener();
-fetchUploadedVideos();
-// let apiKeyGlobal;
-// const fetchApiKeyButton = document.querySelector("#fetch-api-key-button");
-// fetchApiKeyButton.addEventListener("click", checkApiKey);
+// fetchUploadedVideos();

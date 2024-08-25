@@ -187,7 +187,7 @@ def process_video(self, video_id: str, api_key: str):
 # For video uploaded via S3
 @celery_app.task(bind=True)
 def process_uploaded_video(self, video_id: str, user_id: int, game: str):
-    if game not in ["mario", "sonic"]:
+    if game not in ["mario", "sonic", "mario_new"]:
         return{"error": True, "message": "Not a currently supported game"}
         
     task_id = self.request.id
@@ -206,8 +206,9 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
     user_email = user_info[2]
 
     # update task status
-    cmd = "INSERT into task (task_id, user_id, video_id, status) VALUES (%s, %s, %s, %s)"
-    website_db_cursor.execute(cmd, (task_id, user_id, video_id, "PROCESSING"))
+    cmd = "UPDATE task SET task_id = %s, status = %s WHERE video_id = %s"
+    # cmd = "INSERT into task (task_id, user_id, video_id, status) VALUES (%s, %s, %s, %s)"
+    website_db_cursor.execute(cmd, (task_id, "PROCESSING", video_id))
     website_db.commit()
 
     # THE REAL FUNCTION
@@ -271,7 +272,7 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
                 print("Uploading JSON...")
                 s3_client.put_object(Bucket=BUCKET_NAME, Key=json_file_name, Body=json_data)
                 print("Uploading complete.")
-            if game == "sonic":
+            elif game == "sonic" or game == "mario_new":
                 movement_file_path = f"movement_{task_id}.jpg"
                 movement_filename = f"movement_{task_id}.jpg"
                 movement_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{movement_filename}"

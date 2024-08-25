@@ -573,8 +573,16 @@ def generate_jump_inference_from_infer_result(infer_result):
     return output
 
 # main function, "images" is a list of image filenames
-def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "output.jpg"):
-    model = model_sonic
+def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "output.jpg", game = "sonic"):
+    if game == "sonic":
+        model = model_sonic
+        marker_classes = ['sonic']
+    elif game == "mario":
+        model = model_mario
+        marker_classes = ['sm']
+    else:
+        print("[infer_and_combine_to_jpg_sonic] game is not 'mario' or 'sonic', returning None")
+        return None
     # init total infer result
     all_image_result = []
     # init processed_frames
@@ -607,7 +615,9 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
         single_frame_output["frame"] = first_frame + nth_frame
         single_image = images[nth_frame]
         next_image =  images[nth_frame + 1]
-        bg_movement_x, bg_movement_y = background_movement.check_background_movement(single_image,next_image)
+
+        # checks background movement
+        bg_movement_x, bg_movement_y = background_movement.check_background_movement(single_image, next_image)
         print("Background movement:", bg_movement_x, bg_movement_y)
 
         print("Reading image:", single_image)
@@ -625,7 +635,6 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
         print("Detection Data:")
         print(detections.data)
 
-        marker_classes = ['sonic']
         last_pos = this_pos
         this_pos = {}
 
@@ -759,7 +768,7 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
         else:
             print("No marker_classes gave a crop_pixel count. This frame is not cropped.")
 
-        # check flagpole and castle
+        # check flagpole and castle, overrides class_list
         if "cl" in detections.data["class_name"] and "castle" in detections.data["class_name"] and num_part >= clear_detection_starting_frame:
             clear_detection += 1
 

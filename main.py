@@ -364,7 +364,7 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
         # Select user's valid API keys
         # cmd = "SELECT task_id, api_key, youtube_id, status, date_updated FROM task_status WHERE status = 'PROCESSING' OR status = 'ERROR' ORDER BY date_updated DESC LIMIT 10;"
         # cmd = "SELECT task_id, video_source, youtube_id, status, date_updated FROM task_status JOIN api_key ON task_status.api_key = api_key.api_key WHERE (api_key.user_id = %s AND (status = 'PROCESSING')) ORDER BY date_updated DESC LIMIT 5"
-        cmd = "SELECT task.id, video.id, video.video_source, task.status, task.update_time FROM task JOIN video ON task.video_id = video.video_id JOIN member ON task.user_id = member.id WHERE (task.user_id = %s AND (status = 'PROCESSING')) ORDER BY task.update_time DESC LIMIT 5"
+        cmd = "SELECT task.id, video.id, video.video_source, task.status, task.update_time FROM task JOIN video ON task.video_id = video.video_id JOIN member ON task.user_id = member.id WHERE (task.user_id = %s AND (status = 'PROCESSING' OR status = 'QUEUED' OR status = 'UPLOADED')) ORDER BY task.update_time DESC LIMIT 5"
         website_db_cursor.execute(cmd,(user_id,))
         tasks_wip_result = website_db_cursor.fetchall()
         print(tasks_wip_result)
@@ -457,14 +457,19 @@ async def upload_file(file: UploadFile = File(...), token_data: TokenOut = Depen
             website_db_cursor.execute(cmd, (user_id, upload_video_id, file_url, "s3", gameType))
             website_db.commit()
 
+            # Create an "uploaded" info in table "tasks"
+            cmd = "INSERT into task (user_id, video_id, status) VALUES (%s, %s, %s)"
+            website_db_cursor.execute(cmd, (user_id, upload_video_id, "UPLOADED"))
+            website_db.commit()
+            
             # Check how many status="PROCESSING" is there
-            cmd = "SELECT COUNT(*) FROM task WHERE status = %s"
-            website_db_cursor.execute(cmd, ("PROCESSING",))
+            cmd = "SELECT COUNT(*) FROM task WHERE (status = %s OR status = %s)"
+            website_db_cursor.execute(cmd, ("PROCESSING", "QUEUED"))
             processing_items_result = website_db_cursor.fetchone()[0]
             print("Processing items:", processing_items_result)
             # If too many items processing, not process, return ok
             if processing_items_result >= 3:
-                return {"error": True, "filename": unique_filename, "message": "目前請求數量超出伺服器上限，已上傳此影片，但未開始分析，請稍待再送出分析需求。"}
+                return {"ok": True, "filename": unique_filename, "message": "目前請求數量超出伺服器上限，已上傳此影片，但未開始分析，請稍待再送出分析需求。"}
             # If not too many items, start the process
             else:
             # Check if everything is there
@@ -477,7 +482,11 @@ async def upload_file(file: UploadFile = File(...), token_data: TokenOut = Depen
                 if db_fetch_result:
                     return JSONResponse(status_code=400, content=(Error(error="true", message="影片已在處理中，請至會員中心確認結果").dict()))
                 else:
-                    # not found, process video(task is inserted in celery)
+                    # not found, process video (insert task first, then pass task to celery)
+                    cmd = "UPDATE task SET status = %s WHERE video_id = %s"
+                    website_db_cursor.execute(cmd, ("QUEUED", upload_video_id))
+                    website_db.commit()
+
                     task = celery_config.process_uploaded_video.delay(upload_video_id, user_id, gameType)
                     return {"ok": True, "filename": upload_video_id, "message": f"已經排入處理佇列，請至會員中心確認結果"}
                     
@@ -544,8 +553,8 @@ async def process_video_by_id(process_info: VideoParseInfoUploaded, token_data: 
         website_db_cursor = website_db.cursor()
         
         # 先確認目前有多少 PROCESSING
-        cmd = "SELECT COUNT(*) FROM uploaded_video WHERE status = %s"
-        website_db_cursor.execute(cmd, ("PROCESSING",))
+        cmd = "SELECT COUNT(*) FROM task WHERE (status = %s OR status = %s)"
+        website_db_cursor.execute(cmd, ("PROCESSING", "QUEUED"))
         processing_items_result = website_db_cursor.fetchone()[0]
         print("Processing items:", processing_items_result)
         if processing_items_result >= 3:
@@ -625,6 +634,54 @@ async def process_video_dummy(process_info: VideoParseInfoUploaded, token_data: 
 
             task = celery_config.process_uploaded_video_dummy.delay(uploaded_video_id, api_key)
             return {"ok": True, "task_id": task.id, "video_id": uploaded_video_id, "message": f"已經排入處理隊列，請至會員中心確認結果"}
+
+@app.get("/api/statistics", summary="取得API統計資料")
+async def get_api_statistics():
+    try:
+        website_db = mysql.connector.connect(
+            host=db_host, user=db_user, password=db_pw, database=db_database)
+        website_db_cursor = website_db.cursor()
+        cmd = """SELECT COUNT(*) AS total,
+        SUM(CASE WHEN status='COMPLETED' THEN 1 ELSE 0 END) as completed,
+        SUM(CASE WHEN status='PROCESSING' THEN 1 ELSE 0 END) as processing,
+        SUM(CASE WHEN status='QUEUED' THEN 1 ELSE 0 END) as queued,
+        SUM(CASE WHEN status='UPLOADED' THEN 1 ELSE 0 END) as uploaded,
+        SUM(CASE WHEN status='ERROR' THEN 1 ELSE 0 END) as error
+        FROM task"""
+        website_db_cursor.execute(cmd)
+        db_fetch_result = website_db_cursor.fetchone()
+        
+        statistics_result = {}
+
+        tasks_result = {}
+        tasks_result["total"] = db_fetch_result[0]
+        tasks_result["completed"] = db_fetch_result[1]
+        tasks_result["processing"] = db_fetch_result[2]
+        tasks_result["queued"] = db_fetch_result[3]
+        tasks_result["uploaded"] = db_fetch_result[4]
+        tasks_result["error"] = db_fetch_result[5]
+        statistics_result["tasks"] = tasks_result
+
+        cmd = """SELECT COUNT(*) AS total,
+        SUM(CASE WHEN game_type='mario' THEN 1 ELSE 0 END) as mario,
+        SUM(CASE WHEN game_type='mario_new' THEN 1 ELSE 0 END) as mario_new,
+        SUM(CASE WHEN game_type='sonic' THEN 1 ELSE 0 END) as sonic
+        FROM video"""
+        website_db_cursor.execute(cmd)
+        db_fetch_result = website_db_cursor.fetchone()
+        
+        videos_result = {}
+        videos_result["total"] = db_fetch_result[0]
+        videos_result["mario"] = db_fetch_result[1]
+        videos_result["mario_new"] = db_fetch_result[2]
+        videos_result["sonic"] = db_fetch_result[3]
+        statistics_result["videos"] = videos_result
+
+        return statistics_result 
+    
+    except Exception as e:
+        traceback.print_exc()
+        return {"error": True, "message": e}
 
 #Exception Block
 @app.exception_handler(RequestValidationError)

@@ -1,41 +1,3 @@
-
-async function fetchTaskQueueRedis() {
-    try {
-        const result = await fetch("./task-status/", {
-            method: "GET"
-        });
-        const resultJson = await result.json();
-        console.log(resultJson);
-
-        const allTasks = [];
-
-        if (resultJson["active"]) {
-            // Iterate over each worker in the 'active' tasks
-            for (const workerName in resultJson["active"]) {
-                if (resultJson["active"].hasOwnProperty(workerName)) {
-                    const tasks = resultJson["active"][workerName];
-                    
-                    tasks.forEach(task => {
-                        task.worker = workerName;  // Add worker name to each task object
-                    });
-
-                    allTasks.push(...tasks);  // Combine all tasks into one list
-                }
-            }
-
-            if (allTasks.length > 0) {
-                renderTable(allTasks, 'data-redis-table', ["worker", "id", "time_start"]);
-            } else {
-                console.log("No task queue data found!");
-            }
-        } else {
-            console.log("No active tasks found!");
-        }
-    } catch (error) {
-        console.error("Error fetching task queue:", error);
-    }
-}
-
 async function fetchTaskQueueDb(){
     const signinStatusToken = window.localStorage.getItem('token');
     const result = await fetch("./task-status-db/", {
@@ -54,32 +16,9 @@ async function fetchTaskQueueDb(){
         const compData = resultJson["tasks_completed"];
         console.log(compData);
         renderTable(compData, 'data-db-comp-table', ["task_id", "source", "video_id", "status", "date_updated", "map", "video", "movement", "message"]);
-    // if (resultJson["tasks_wip"].length > 0){
-    //     }
-    // else{
-    //     console.log("No task queue data found! (DB, WIP)");
-    // }
-
-    // if (resultJson["tasks_completed"].length > 0){
-    //     const compData = resultJson["tasks_completed"];
-    //     console.log(compData);
-    //     renderTable(compData, 'data-db-comp-table', ["task_id", "source", "video_id", "status", "date_updated", "image", "video", "json", "message"]);
-    // }
-    // else{
-    //     console.log("No task queue data found! (DB, COMP)");
-    // }
 }
 
-fetchTaskQueueRedis();
-fetchTaskQueueDb();
-
-// const data = [
-//     { name: 'John', age: 30, city: 'New York' },
-//     { name: 'Anna', age: 22, city: 'London' },
-//     { name: 'Mike', age: 32, city: 'Chicago' }
-// ];
-
-// Function to render the table
+// Function to render table
 // data: array of objects
 // headers: array of strings
 function renderTable(data, tableId, headers) {
@@ -98,9 +37,6 @@ function renderTable(data, tableId, headers) {
     }
     // Get keys (headers) from the first object
     // const headers = Object.keys(data[0]);
-
-    // Brian: if headers defined:
-    // const headers = ["id", "time_start"]
 
     // Create table headers
     headers.forEach(header => {
@@ -127,6 +63,14 @@ function renderTable(data, tableId, headers) {
             else{
                 const td = document.createElement('td');
                 td.textContent = item[header];
+                if (header === 'status' && item[header] === 'UPLOADED') {
+                    td.textContent = item[header];
+                    const button = document.createElement('button');
+                    button.textContent = '點此開始分析(分析按鈕觸發的函數還須全部確認過)';
+                    button.onclick = () => processVideo(item, button);
+    
+                    td.appendChild(button);
+                }    
                 tr.appendChild(td);
             }
 
@@ -135,40 +79,49 @@ function renderTable(data, tableId, headers) {
     });
 }
 
-// function renderTable(data) {
-//     const table = document.getElementById('data-table');
-//     const thead = table.querySelector('thead tr');
-//     const tbody = table.querySelector('tbody');
+async function processVideo(item, button) {
+    const signinStatusToken = window.localStorage.getItem('token');
+    const uploadStatusMessage = document.querySelector("#video-process-status-message");
 
-//     // Clear existing table data
-//     thead.innerHTML = '';
-//     tbody.innerHTML = '';
+    if (!signinStatusToken){
+        uploadStatusMessage.textContent = "登入狀態異常，請重新整理頁面"
+        return false;
+    }
+    if (!confirm("即將開始分析，請確認是否送出分析需求？")){
+        return false;
+    }
 
-//     // Get keys (headers) from the first object
-//     // const headers = Object.keys(data[0]);
+    button.disabled = true;
+    button.textContent = '已送出需求，請稍候';
 
-//     // Brian: if headers defined:
-//     const headers = ["id", "time_start"]
+    // check API key
+    console.log(`Processing video with ID: ${item.video_id}`);
+    // fetch and update 結果
+    result = await fetch("./api/process_uploaded_video",{
+        method:"POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${signinStatusToken}`
+        },
+        body: JSON.stringify({
+            "video_id": item.video_id,
+            "api_key": apiKeyGlobal
+        })
+    });
+    const resultJson = await result.json();
+    console.log(resultJson);
 
-//     // Create table headers
-//     headers.forEach(header => {
-//         const th = document.createElement('th');
-//         th.textContent = header.charAt(0).toUpperCase() + header.slice(1);
-//         thead.appendChild(th);
-//     });
+    if (resultJson.ok){
+        uploadStatusMessage.textContent = "成功送出需求，請到會員中心確認結果";
+        button.textContent = '需求送出成功！';
 
-//     // Create table rows
-//     data.forEach(item => {
-//         const tr = document.createElement('tr');
-//         headers.forEach(header => {
-//             const td = document.createElement('td');
-//             td.textContent = item[header];
-//             tr.appendChild(td);
-//         });
-//         tbody.appendChild(tr);
-//     });
-// }
+    }
+    else{
+        console.log(resultJson.message);
+        uploadStatusMessage.textContent = `送出需求失敗：${resultJson.message}`;
+        button.textContent = '需求送出失敗';
+    }
+}
 
 
-// Render the table with the data
-// renderTable(data);
+fetchTaskQueueDb();
