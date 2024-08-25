@@ -10,12 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3 
+      - uses: actions/checkout@v4 
       - name: Deploy to ec2
         env:
             PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
             HOSTNAME: ${{ secrets.SSH_HOST }}
             USER_NAME: ${{ secrets.SSH_USER }}
+
 
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
@@ -23,6 +24,6 @@ jobs:
 
               # Now we have got the access of EC2 and we will start the deploy...
               ls &&
-              cd /home/ubuntu/<PROJECT_DIRECTORY> &&
+              cd /home/ubuntu/${{ github.event.repository.name }} &&
               ls
               '
