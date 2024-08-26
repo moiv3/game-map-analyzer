@@ -33,6 +33,26 @@ jobs:
                 pgrep -f "celery" && pkill -f "celery" || echo "No celery process found"
   
                 echo "uvicorn and celery stopped."
+                echo "Navigating to project directory..."
+                cd /home/ubuntu/${{ github.event.repository.name }}
+                pwd
+
+                echo "Pulling latest development build..."
+                git pull
+                echo "Latest development build pulled."
+
+                echo "Activating venv..."
+                source .venv/bin/activate
+                echo "venv activated."
+
+                echo "Starting uvicorn and celery..."
+                nohup python3 -m uvicorn main:app --host=0.0.0.0 &
+                nohup celery -A celery_config.celery_app worker --loglevel=info &
+                echo "uvicorn and celery started."
+                
+                exit
+                echo "Signed out from ec2."
+
             EOF
         # run: |
         #   echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
