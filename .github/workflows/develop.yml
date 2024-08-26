@@ -14,7 +14,10 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
 
-      - name: Deploy to ec2
+      - name: Wait for latest commit
+        run: sleep 10  
+
+      - name: Deploy to EC2
         env:
           PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           HOSTNAME: ${{ secrets.SSH_HOST }}
