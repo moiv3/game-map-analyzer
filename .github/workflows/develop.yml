@@ -40,7 +40,7 @@ jobs:
               pwd
 
               echo "Pulling latest development build..."
-              git pull
+              git pull https://${{ secrets.GH_PAT }}@github.com/username/${{ github.event.repository.name }}.git
               echo "Latest development build pulled."
 
               echo "Activating venv..."
@@ -48,8 +48,8 @@ jobs:
               echo "venv activated."
 
               echo "Starting uvicorn and celery..."
-              nohup python3 -m uvicorn main:app --host=0.0.0.0 & disown
-              nohup celery -A celery_config.celery_app worker --loglevel=info & disown
+              nohup python3 -m uvicorn main:app --host=0.0.0.0 > uvicorn.out 2>&1 & disown
+              nohup celery -A celery_config.celery_app worker > celery.out 2>&1 & disown
               echo "uvicorn and celery started."
 
           EOF
