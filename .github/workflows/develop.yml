@@ -25,8 +25,8 @@ jobs:
               # Now we have got the access of EC2 and we will start the deploy...
               echo "Signed in into ec2 via ssh!"
               echo "Stopping uvicorn and celery processes..."
-              pkill -f "uvicorn"
-              pkill -f "celery"
+              pgrep -f "uvicorn" && pkill -f "uvicorn" || echo "No uvicorn process found"
+              pgrep -f "celery" && pkill -f "celery" || echo "No celery process found"
               echo "uvicorn and celery stopped."
               echo "Navigating into GMA directory..."
               cd /home/ubuntu/${{ github.event.repository.name }} &&
