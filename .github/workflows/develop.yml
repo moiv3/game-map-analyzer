@@ -11,16 +11,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4 
+        with:
+          token: ${{ secrets.GH_PAT }}
+          
       - name: Deploy to ec2
         env:
             PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
             HOSTNAME: ${{ secrets.SSH_HOST }}
             USER_NAME: ${{ secrets.SSH_USER }}
-            GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+            # GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
             echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
             ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} << 'EOF'
-                echo "Signed in into ec2 via ssh!"
+                echo "Signed in into ec2 via SSH."
                 
                 echo "Stopping uvicorn and celery processes..."
                 
@@ -46,10 +49,10 @@ jobs:
                 echo "venv activated."
 
                 echo "Starting uvicorn and celery..."
-                nohup python3 -m uvicorn main:app --host=0.0.0.0 &
-                nohup celery -A celery_config.celery_app worker --loglevel=info &
+                nohup python3 -m uvicorn main:app --host=0.0.0.0 & disown
+                nohup celery -A celery_config.celery_app worker --loglevel=info & disown
                 echo "uvicorn and celery started."
-                
+
                 exit
                 echo "Signed out from ec2."
 
