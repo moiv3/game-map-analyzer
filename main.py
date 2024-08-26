@@ -685,7 +685,7 @@ async def get_api_statistics():
 
 @app.get("/api/cicd_test", summary="CICD試驗API")
 async def test_cicd():
-    return{"ok": True, "message": "If you see this message, CI/CD pipeline is workingggg!"}
+    return{"ok": True, "message": "If you see this message, CI/CD pipeline is workinggggggg!"}
 
 #Exception Block
 @app.exception_handler(RequestValidationError)
