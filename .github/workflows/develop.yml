@@ -2,7 +2,7 @@ name: Deploy to ec2
 
 on:
   push:
-    branches: [ develop ]
+    branches: [develop]
 
 jobs:
   Deploy:
@@ -10,53 +10,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4 
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT }}
-          
+
       - name: Deploy to ec2
         env:
-            PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-            HOSTNAME: ${{ secrets.SSH_HOST }}
-            USER_NAME: ${{ secrets.SSH_USER }}
-            # GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOSTNAME: ${{ secrets.SSH_HOST }}
+          USER_NAME: ${{ secrets.SSH_USER }}
         run: |
-            echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-            ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} << 'EOF'
-                echo "Signed in into ec2 via SSH."
-                
-                echo "Stopping uvicorn and celery processes..."
-                
-                # Attempt to stop the uvicorn process
-                pgrep -f "uvicorn" || echo "uvicorn process not found"
-                pgrep -f "uvicorn" && pkill -f "uvicorn" || echo "No uvicorn process found"
-  
-                # Attempt to stop the celery process
-                pgrep -f "celery" || echo "celery process not found"
-                pgrep -f "celery" && pkill -f "celery" || echo "No celery process found"
-  
-                echo "uvicorn and celery stopped."
-                echo "Navigating to project directory..."
-                cd /home/ubuntu/${{ github.event.repository.name }}
-                pwd
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} << 'EOF'
+              echo "Signed in into ec2 via SSH."
+              
+              echo "Stopping uvicorn and celery processes..."
+              
+              # Attempt to stop the uvicorn process
+              pgrep -f "uvicorn" || echo "uvicorn process not found"
+              pgrep -f "uvicorn" && pkill -f "uvicorn" || echo "No uvicorn process found"
 
-                echo "Pulling latest development build..."
-                git pull
-                echo "Latest development build pulled."
+              # Attempt to stop the celery process
+              pgrep -f "celery" || echo "celery process not found"
+              pgrep -f "celery" && pkill -f "celery" || echo "No celery process found"
 
-                echo "Activating venv..."
-                source .venv/bin/activate
-                echo "venv activated."
+              echo "uvicorn and celery stopped."
+              echo "Navigating to project directory..."
+              cd /home/ubuntu/${{ github.event.repository.name }}
+              pwd
 
-                echo "Starting uvicorn and celery..."
-                nohup python3 -m uvicorn main:app --host=0.0.0.0 & disown
-                nohup celery -A celery_config.celery_app worker --loglevel=info & disown
-                echo "uvicorn and celery started."
+              echo "Pulling latest development build..."
+              git pull
+              echo "Latest development build pulled."
 
-                exit
-                echo "Signed out from ec2."
+              echo "Activating venv..."
+              source .venv/bin/activate
+              echo "venv activated."
 
-            EOF
+              echo "Starting uvicorn and celery..."
+              nohup python3 -m uvicorn main:app --host=0.0.0.0 & disown
+              nohup celery -A celery_config.celery_app worker --loglevel=info & disown
+              echo "uvicorn and celery started."
+
+          EOF
         # run: |
         #   echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
         #   ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
