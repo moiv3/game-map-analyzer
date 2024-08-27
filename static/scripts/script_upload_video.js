@@ -1,3 +1,5 @@
+// note: upload_video page also loads script_task_queue.js
+
 function addUploadButtonListener(){
     document.getElementById('upload-form').addEventListener('submit', async function(event){
         event.preventDefault();
@@ -62,8 +64,8 @@ function addUploadButtonListener(){
                     document.querySelector('#upload-response-message').textContent = `錯誤：${result.message}`;
                     }
                 else if (result.ok) {
-                    document.querySelector('#upload-response-message').textContent = `成功上傳影片，檔名：${result.filename}。系統訊息：${result.message}。即將重新整理畫面...`;
-                    setTimeout(() => window.location.reload(), 3000);
+                    document.querySelector('#upload-response-message').textContent = `成功上傳影片！系統訊息：${result.message}。請稍候，即將重新整理畫面...`;
+                    setTimeout(() => window.location.reload(), 5000);
                 }
                 else {
                     document.querySelector('#upload-response-message').textContent = `錯誤：${result.detail}`;
@@ -182,4 +184,4 @@ async function processVideo(item, button) {
 }
 
 addUploadButtonListener();
-// fetchUploadedVideos();
+checkTokenOnPageLoad();

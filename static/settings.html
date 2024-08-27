@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../static/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
+  <title class="attraction-title">Game Map Analyzer - 統計資料</title>
+</head>
+<body>
+  <div class="navbar-background">
+    <div class="navbar-container">
+      <a href="/"><div class="navbar-title cyan-70 header-2">Game Map Analyzer</div></a>
+      <div class="navbar-topright-container">
+        <a href="use_api"><button class="navbar-button gray-70 body" id="api-docs-button">使用說明</button></a>
+        <a href="upload_video"><button class="navbar-button gray-70 body" id="upload-video-button">影片上傳</button></a>
+        <a href="member"><button class="navbar-button gray-70 body" id="member-page-button">會員中心</button></a>
+        <a href="#"><button class="navbar-button gray-70 body" id="signin-button"></button></a><!--renders 登入/註冊 or 登出系統-->
+      </div>
+    </div>
+    <div class="hr attraction-header-hr"></div>
+  </div>
+  <div class="attraction-main-container">
+    <div class="body bold" style="height: 30px"></div>
+    <div class="order-details-form body">
+      <div class="header-3 bold">會員設定</div>
+      <div>以下可以確認會員資料並變更相關資訊。</div>
+      <div>您的姓名：<span id="member-name"></span></div>
+      <div>您的email：<span id="member-email"></span></div>
+    </div>
+
+    <div class="body bold" style="height: 30px"></div>
+
+    <div class="order-details-form body">
+      <div class="header-3 bold">偏好設定</div>
+      <form>
+        <div id="preferences-form">
+          <ul>
+            <li>當影片分析完成，是否寄送email通知分析結果：
+            <input type="radio" id="send-mail-true" name="send_mail" value="Yes"><label for="send-mail-true">是</label>
+            <input type="radio" id="send-mail-false" name="send_mail" value="No"><label for="send-mail-false">否</label>
+            </li>
+          </ul>
+          <button id="edit-preferences">變更偏好設定</button>
+        </div>
+      </form>
+      <div id="preferences-result-text"></div>
+    </div>
+
+    <!-- <div class="body bold" style="height: 30px"></div>
+
+    <div class="order-details-form body">
+        <div class="header-3 bold">會員資訊變更</div>
+  
+      <form>
+        <div id="userdata-form">
+          <div>您的姓名：</div>
+          <div>您的email：</div>
+          <div>變更密碼：</div>
+          <button id="edit-userdata">變更會員資訊</button>
+        </div>
+      </form>
+    </div>-->
+  </div>
+  </div>
+<!-- <div class="footer body bold">COPYRIGHT &copy; 2024 台北一日遊</div> -->
+<script src="../static/scripts/script_general.js"></script>
+<script src="../static/scripts/script_settings.js" defer></script>
+</body>
+</html>

@@ -66,7 +66,7 @@ function renderTable(data, tableId, headers) {
                 if (header === 'status' && item[header] === 'UPLOADED') {
                     td.textContent = item[header];
                     const button = document.createElement('button');
-                    button.textContent = '點此開始分析(分析按鈕觸發的函數還須全部確認過)';
+                    button.textContent = '點此開始分析';
                     button.onclick = () => processVideo(item, button);
     
                     td.appendChild(button);
@@ -104,8 +104,7 @@ async function processVideo(item, button) {
             "Authorization": `Bearer ${signinStatusToken}`
         },
         body: JSON.stringify({
-            "video_id": item.video_id,
-            "api_key": apiKeyGlobal
+            "video_id": item.video_id
         })
     });
     const resultJson = await result.json();
@@ -125,3 +124,4 @@ async function processVideo(item, button) {
 
 
 fetchTaskQueueDb();
+checkTokenOnPageLoad();

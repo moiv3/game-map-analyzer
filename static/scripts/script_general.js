@@ -20,6 +20,14 @@ async function checkToken(){
     }
 }
 
+async function checkTokenOnPageLoad(){
+    const userData = await checkToken();
+    if (!userData){
+        alert("尚未登入，請先登入會員！")
+        window.location.replace("./");
+    }
+}
+
 // signout function
 async function removeSigninToken(){
     localStorage.removeItem("token");

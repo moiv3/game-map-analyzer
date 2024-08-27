@@ -670,55 +670,6 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
                 single_image_dict["sonic_position_y"] = sonic_position_y
                 continue
 
-                # change cloud to marker
-                distance_cloud_AB_to_CD = []
-                for cloud in this_pos[marker_class]:
-                    distance_cloud_A_to_CD = []
-                    for last_cloud in last_pos[marker_class]:
-                        distance_cloud_A_to_C = []
-
-                        # lr_margin and lr_width are calculated above
-                        if cloud[0] < lr_margin or cloud[0] > lr_width - lr_margin or \
-                            last_cloud[0] < lr_margin or last_cloud[0] > lr_width - lr_margin:
-                            print("margin detected, not appending")
-                        else:
-                            distance_ul = sqrt((cloud[0]-last_cloud[0]) ** 2 + (cloud[1]-last_cloud[1]) ** 2)
-                            distance_cloud_A_to_C.append(distance_ul)
-
-                        if cloud[2] < lr_margin or cloud[2] > lr_width - lr_margin or \
-                            last_cloud[2] < lr_margin or last_cloud[2] > lr_width - lr_margin:
-                            print("margin detected, not appending")
-                        else:
-                            distance_dr = sqrt((cloud[2]-last_cloud[2]) ** 2 + (cloud[3]-last_cloud[3]) ** 2)
-                            distance_cloud_A_to_C.append(distance_dr)
-                        
-                        print("distance_cloud_A_to_C is:")
-                        print(distance_cloud_A_to_C)
-
-                        if not distance_cloud_A_to_C:
-                            print("no distance were appended")
-                        elif len(distance_cloud_A_to_C) == 1:
-                            print("only one distance")
-                            distance_cloud_A_to_CD.append(distance_cloud_A_to_C[0])
-
-                        elif len(distance_cloud_A_to_C) == 2 and abs(distance_cloud_A_to_C[0] - distance_cloud_A_to_C[1]) <= 3:
-                            print("two distance and match, getting average")
-                            distance_cloud_A_to_CD.append((distance_cloud_A_to_C[0] + distance_cloud_A_to_C[1]) / 2)
-                        else:
-                            print("two distance and mismatch, getting minimum")
-                            distance_cloud_A_to_CD.append(min(distance_cloud_A_to_C[0], distance_cloud_A_to_C[1]))
-                        # 可能要處理關於雲消失(從由邊或左邊)的部分
-                        # 如果端點太左或太右，則不append
-                    if distance_cloud_A_to_CD:
-                        print("min distance of cloud & last_cloud:", min(distance_cloud_A_to_CD))
-                        distance_cloud_AB_to_CD.append(min(distance_cloud_A_to_CD))
-                print(distance_cloud_AB_to_CD)
-                if distance_cloud_AB_to_CD:
-                    print("min distance of all, should crop this many pixels", int(min(distance_cloud_AB_to_CD)))
-                    crop_pixels[marker_class] = round(min(distance_cloud_AB_to_CD))
-                else:
-                    print("no marker classes detected, using value 0 for this class")
-                    crop_pixels[marker_class] = 0
         character_actual_movement_x = character_movement_x - bg_movement_x
         character_actual_movement_y = character_movement_y - bg_movement_y
 
@@ -733,21 +684,11 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
         print("All marker_classes analyzed. Crop pixel check:", crop_pixels)
 
         if crop_pixels:
-            # # Average way
-            # crop_pixels_total = 0
-            # for item in crop_pixels:
-            #     crop_pixels_total += crop_pixels[item]
-            # crop_pixels_avg = round(crop_pixels_total / len(crop_pixels))
-
-            # print("Average crop pixel check:", crop_pixels_avg)
-            # # crop the pixels and save to np array
-            # if crop_pixels_avg >= 1:
-            #     cropped_frame = crop_image(image, 0, 0, crop_pixels_avg, ud_height)
-            #     processed_frames.append(cropped_frame)
 
             # Max way
             crop_pixels_max = sorted(crop_pixels.values(), reverse=True)[0]
             print("Max crop pixel check:", crop_pixels_max)
+
             # crop the pixels and save to np array
             if crop_pixels_max > 50:
                 print("Anomaly detected, getting second largest value if exists")
@@ -757,7 +698,7 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
                 cropped_frame = crop_image(image, 0, 0, crop_pixels_max, ud_height)
                 cropped_frame_deep_copy = np.copy(cropped_frame)
                 processed_frames.append(cropped_frame_deep_copy)
-                # processed_frames.append(cropped_frame)
+
             elif crop_pixels_max > 1:
                 cropped_frame = crop_image(image, 0, 0, crop_pixels_max, ud_height)
                 cropped_frame_deep_copy = np.copy(cropped_frame)
@@ -806,11 +747,3 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
     else:
         print("No frames were captured from the video.")
         return None, all_image_result
-    
-if __name__ == "__main__":
-    images=[]
-    for i in range(1,51):
-        images.append(f"sonic_test_0820_2/frame_{i:04}.jpg")
-        task_id = 3
-        fps = 25
-    infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "output.jpg")

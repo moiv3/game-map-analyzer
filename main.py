@@ -81,6 +81,14 @@ def task_queue_page():
 def upload_video_page():
     return FileResponse("static/upload_video.html")
 
+@app.get("/statistics")
+def statistics_page():
+    return FileResponse("static/statistics.html")
+
+@app.get("/settings")
+def statistics_page():
+    return FileResponse("static/settings.html")    
+
 @app.get("/api/process-video/")
 def process_video(video_id: str = "DGQGvAwqpbE"):
     task = mario_parser.mario_parser_function(video_id)
@@ -141,8 +149,10 @@ class VideoParseInfo(BaseModel):
     api_key: str
 
 class VideoParseInfoUploaded(BaseModel):
-    video_id: str
-    api_key: str
+    video_id: int
+
+class UserPreferences(BaseModel):
+    send_mail: bool
 
 def get_password_hash(password):
     return pwd_context.hash(password)
@@ -474,7 +484,6 @@ async def upload_file(file: UploadFile = File(...), token_data: TokenOut = Depen
             else:
             # Check if everything is there
                 cmd = "SELECT member.id, video.video_id, task.status FROM member JOIN video ON member.id = video.user_id JOIN task ON task.video_id = video.id WHERE video.video_id = %s"
-                # cmd = "SELECT member.id, video.video_id, task.status FROM member JOIN video ON member.id = video.user_id JOIN task ON task.video_id = video.id WHERE video.video_id = %s"
                 website_db_cursor.execute(cmd, (upload_video_id,))
                 db_fetch_result = website_db_cursor.fetchone()
                 print(db_fetch_result)
@@ -493,7 +502,7 @@ async def upload_file(file: UploadFile = File(...), token_data: TokenOut = Depen
     except (NoCredentialsError, PartialCredentialsError):
         raise HTTPException(status_code=403, detail="Could not authenticate to S3")
     except Exception as e:
-        print(str(e))
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/get_uploaded_videos", summary="取得影片")
@@ -545,8 +554,7 @@ async def process_video_by_id(process_info: VideoParseInfoUploaded, token_data: 
     # 檢查video_id & API key狀態
     else:
         user_id = signin_status["id"]
-        api_key = process_info.api_key
-        uploaded_video_id = process_info.video_id
+        video_id = process_info.video_id
 
         website_db = mysql.connector.connect(
             host=db_host, user=db_user, password=db_pw, database=db_database)
@@ -560,24 +568,29 @@ async def process_video_by_id(process_info: VideoParseInfoUploaded, token_data: 
         if processing_items_result >= 3:
             return JSONResponse(status_code=500, content=(Error(error="true", message="目前有太多請求，請稍後再試").dict()))
 
-        # Check if everything is there
-        cmd = "SELECT member.id, uploaded_video.video_id, uploaded_video.video_url, uploaded_video.status FROM member JOIN uploaded_video JOIN api_key WHERE member.id = %s AND api_key.api_key = %s AND api_key.validity = 1 AND uploaded_video.video_id = %s"
-        # cmd = "SELECT member.id, uploaded_video.video_id, uploaded_video.video_url FROM member JOIN uploaded_video JOIN api_key WHERE member.id = 2 AND api_key.api_key = 'accb8d65-9183-4f72-8f4a-629d8c89e9e0' AND api_key.validity = 1 AND uploaded_video.video_id = '13446a32-800d-460e-8b31-f4b7814a524b'"
-        website_db_cursor.execute(cmd, (user_id, api_key, uploaded_video_id))
+        # 確認這個影片的狀態
+        cmd = "SELECT task.user_id, task.video_id, task.status, video.game_type FROM task JOIN video ON video.video_id = task.video_id WHERE task.user_id = %s AND video.id = %s"
+        website_db_cursor.execute(cmd, (user_id, video_id))
         db_fetch_result = website_db_cursor.fetchone()
         print(db_fetch_result)
+        video_unique_id = db_fetch_result[1]
+        video_status = db_fetch_result[2]
+        game_type = db_fetch_result[3]
 
         if not db_fetch_result:
-            return JSONResponse(status_code=401, content=(Error(error="true", message="影片資訊或API key不正確，請重新確認").dict()))
-        elif not db_fetch_result[3] == "NOT PROCESSED":
+            return JSONResponse(status_code=401, content=(Error(error="true", message="影片資訊不正確，請重新確認").dict()))
+        elif video_status in ["QUEUED", "PROCESSING"]:
             return JSONResponse(status_code=400, content=(Error(error="true", message="影片正在處理中，請至會員中心確認結果").dict()))
+        elif video_status in ["COMPLETED", "ERROR"]:
+            return JSONResponse(status_code=400, content=(Error(error="true", message="影片已處理完畢，請至會員中心確認結果").dict()))
+        # status = "UPLOADED", 可以處理影片的狀態
         else:
-            cmd = "UPDATE uploaded_video SET status = %s WHERE video_id = %s"
-            website_db_cursor.execute(cmd, ("PROCESSING", uploaded_video_id))
+            cmd = "UPDATE task SET status = %s WHERE video_id = %s"
+            website_db_cursor.execute(cmd, ("QUEUED", video_unique_id))
             website_db.commit()
 
-            task = celery_config.process_uploaded_video.delay(uploaded_video_id, api_key)
-            return {"ok": True, "task_id": task.id, "video_id": uploaded_video_id, "message": f"已經排入處理佇列，請至會員中心確認結果"}
+            task = celery_config.process_uploaded_video.delay(video_unique_id, user_id, game_type)
+            return {"ok": True, "filename": video_unique_id, "message": f"已經排入處理佇列！`"}
 
 
 @app.post("/api/process_uploaded_video_dummy", summary="解析從S3上傳的影片")
@@ -683,9 +696,62 @@ async def get_api_statistics():
         traceback.print_exc()
         return {"error": True, "message": e}
 
+@app.get("/api/preferences", summary="取得使用者偏好設定")
+async def get_user_preferences(token_data: TokenOut = Depends(get_token_header)):
+    # 檢查登入狀態
+    signin_status = check_user_signin_status_return_bool(token_data)
+    if not signin_status:
+        return JSONResponse(status_code=401, content=(Error(error="true", message="登入資訊異常，請重新登入").dict()))
+    
+    # 檢查video_id & API key狀態
+    else:
+        website_db = mysql.connector.connect(
+            host=db_host, user=db_user, password=db_pw, database=db_database)
+        website_db_cursor = website_db.cursor()
+        user_id = signin_status["id"]
+        cmd = "SELECT id, name, email, validity, send_mail FROM member WHERE id = %s"
+        print(user_id)
+        website_db_cursor.execute(cmd, (user_id,))
+        member_result = website_db_cursor.fetchone()
+        member_id = member_result[0]
+        member_validity = member_result[3]
+        member_send_mail = member_result[4]
+        if not member_id:
+            return {"error": True, "message": "No member"}
+        elif not member_validity:
+            return {"error": True, "message": "Invalid member"}
+        else:
+            return {"ok": True, "member_preferences": {"send_mail": member_send_mail}}
+        #接下來寫HTML
+
+@app.patch("/api/preferences", summary="修改使用者偏好設定")
+async def patch_user_preferences(user_preferences: UserPreferences, token_data: TokenOut = Depends(get_token_header)):
+    # 檢查登入狀態
+    signin_status = check_user_signin_status_return_bool(token_data)
+    if not signin_status:
+        return JSONResponse(status_code=401, content=(Error(error="true", message="登入資訊異常，請重新登入").dict()))
+    
+    # 檢查video_id & API key狀態
+    else:
+        try:
+            # patch send_mail
+            website_db = mysql.connector.connect(
+                host=db_host, user=db_user, password=db_pw, database=db_database)
+            website_db_cursor = website_db.cursor()
+            print(user_preferences)
+            send_mail_preference = user_preferences.send_mail
+            user_id = signin_status["id"]
+            cmd = "UPDATE member SET send_mail = %s WHERE id = %s"
+            website_db_cursor.execute(cmd, (send_mail_preference, user_id))
+            website_db.commit()
+            return {"ok": True, "message": "Successfully updated user preference"}
+        except Exception:
+            traceback.print_exc()
+            return {"error": True, "message": "伺服器內部錯誤"}
+
 @app.get("/api/cicd_test", summary="CICD試驗API")
 async def test_cicd():
-    return{"ok": True, "message": "If you see this message, CI/CD pipeline is working!"}
+    return {"ok": True, "message": "If you see this message, CI/CD pipeline is working!"}
 
 #Exception Block
 @app.exception_handler(RequestValidationError)

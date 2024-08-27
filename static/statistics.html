@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../static/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
+  <title class="attraction-title">Game Map Analyzer - 統計資料</title>
+</head>
+<body>
+  <div class="navbar-background">
+    <div class="navbar-container">
+      <a href="/"><div class="navbar-title cyan-70 header-2">Game Map Analyzer</div></a>
+      <div class="navbar-topright-container">
+        <a href="use_api"><button class="navbar-button gray-70 body" id="api-docs-button">使用說明</button></a>
+        <a href="upload_video"><button class="navbar-button gray-70 body" id="upload-video-button">影片上傳</button></a>
+        <a href="member"><button class="navbar-button gray-70 body" id="member-page-button">會員中心</button></a>
+        <a href="#"><button class="navbar-button gray-70 body" id="signin-button"></button></a><!--renders 登入/註冊 or 登出系統-->
+      </div>
+    </div>
+    <div class="hr attraction-header-hr"></div>
+  </div>
+  <div class="attraction-main-container">
+    <div class="body bold" style="height: 30px"></div>
+    <div class="order-details-form body">
+      <div class="header-3 bold">網站統計</div>
+      <div>以下是本站相關的統計資訊！</div>
+      <div id="statistics-table">
+        <h3>影片處理狀態統計</h3>
+        <table id="tasks-table" border="1">
+            <thead>
+                <tr>
+                    <th>狀態</th>
+                    <th>數量</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    
+        <h3>影片類型統計</h3>
+        <table id="videos-table" border="1">
+            <thead>
+                <tr>
+                    <th>類型</th>
+                    <th>數量</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+      </div>
+      </div>
+    </div>  
+  </div>
+<!-- <div class="footer body bold">COPYRIGHT &copy; 2024 台北一日遊</div> -->
+<script src="../static/scripts/script_general.js"></script>
+<script defer>
+  async function getStatistics(){
+    const websiteStatistics = await fetch("./api/statistics",{
+    method: "GET"
+    // headers
+    })
+    const websiteStatisticsJson = await websiteStatistics.json();
+    console.log(websiteStatisticsJson);
+    return websiteStatisticsJson;
+  };
+  function renderTable(data, tableId) {
+    const tableBody = document.querySelector(`#${tableId} tbody`);
+    tableBody.innerHTML = '';  // Clear any existing rows
+
+    for (const key in data) {
+        const row = document.createElement('tr');
+
+        const categoryCell = document.createElement('td');
+        categoryCell.textContent = key;
+        row.appendChild(categoryCell);
+
+        const countCell = document.createElement('td');
+        countCell.textContent = data[key];
+        row.appendChild(countCell);
+
+        tableBody.appendChild(row);
+    }
+  }
+  async function initializePage(){
+  const statisticsText = document.querySelector("#statistics-text");
+  const statisticsOutput = await getStatistics();
+  // statisticsText.textContent = JSON.stringify(statisticsOutput);
+  renderTable(statisticsOutput.tasks, 'tasks-table');
+  renderTable(statisticsOutput.videos, 'videos-table');
+  }
+  initializePage();
+</script>
+<script src="../static/scripts/script_statistics.js" defer></script>
+</body>
+</html>

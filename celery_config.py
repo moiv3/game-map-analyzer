@@ -199,11 +199,12 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
     website_db_cursor = website_db.cursor()
 
     # get user email and name
-    cmd = "SELECT id, name, email FROM member WHERE id = %s"
+    cmd = "SELECT id, name, email, send_mail FROM member WHERE id = %s"
     website_db_cursor.execute(cmd, (user_id,))
     user_info = website_db_cursor.fetchone()
     user_name = user_info[1]
     user_email = user_info[2]
+    user_send_mail = user_info[3]
 
     # update task status
     cmd = "UPDATE task SET task_id = %s, status = %s WHERE video_id = %s"
@@ -219,16 +220,12 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
             # log error to database
             message = parse_result["message"]
             cmd = "UPDATE task SET status = %s, message = %s WHERE task_id = %s"
-            website_db_cursor.execute(cmd, ("UNSUCCESS", message, task_id))
+            website_db_cursor.execute(cmd, ("ERROR", message, task_id))
             website_db.commit()
 
-            # 測試後預計刪除
-            # cmd = "UPDATE uploaded_video SET status = %s, error_message = %s WHERE video_id = %s"
-            # website_db_cursor.execute(cmd, ("UNSUCCESS", parse_result["message"], video_id))
-            # website_db.commit()
-
             # send mail to user
-            send_email.send_email_to_address(user_email, user_name, "分析未成功")
+            if user_send_mail:
+                send_email.send_email_to_address(user_email, user_name, "分析未成功")
 
             return parse_result
         
@@ -291,7 +288,8 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
             website_db.commit()
 
             # send mail to user
-            send_email.send_email_to_address(user_email, user_name, "分析成功")
+            if user_send_mail:
+                send_email.send_email_to_address(user_email, user_name, "分析成功")
 
         else:
             print("Something weird happened! Please check logs.")
@@ -305,8 +303,8 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
         website_db_cursor.execute(cmd, ("ERROR", "內部系統異常", task_id))
         website_db.commit()
 
-        # send mail to user
-        send_email.send_email_to_address(user_email, user_name, "分析未成功")
+        if user_send_mail:
+            send_email.send_email_to_address(user_email, user_name, "分析成功")
 
     # END OF THE REAL FUNCTION
 
