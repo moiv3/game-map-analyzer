@@ -22,7 +22,7 @@ def crop_image(image, x, y, width, height):
     return image[y:y+height, x:x+width]
 
 # main function, "images" is a list of image filenames
-def infer_and_combine_to_jpg(images, task_id, fps, output_filename = "output.jpg"):
+def infer_and_combine_to_jpg(images, task_id, fps, output_folder):
     # this is the mario function
     model = model_mario
     # init total infer result
@@ -47,7 +47,7 @@ def infer_and_combine_to_jpg(images, task_id, fps, output_filename = "output.jpg
     print("image.shape", first_image.shape)
 
     # Define the codec and create VideoWriter object for output video
-    output_video_path = f"video_{task_id}.mp4"
+    output_video_path = f"{output_folder}/output_video/video_{task_id}.mp4"
     output_video = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (lr_width, ud_height))
 
     for single_image in images:
@@ -217,14 +217,15 @@ def infer_and_combine_to_jpg(images, task_id, fps, output_filename = "output.jpg
     output_video.release()
 
     if processed_frames:
+        output_path = f"{output_folder}/map/map_{task_id}.jpg"
         combined_image = np.hstack(processed_frames)
-        cv2.imwrite(output_filename, combined_image)
+        cv2.imwrite(output_path, combined_image)
 
-        print("Inference complete. Combined image saved to:", output_filename)
-        return output_filename, all_image_result
+        print("Inference complete. Combined image saved to:", output_path)
+        return output_path, all_image_result, output_video_path
     else:
         print("No frames were captured from the video.")
-        return None, None
+        return None, None, None
         
 
 
@@ -573,7 +574,7 @@ def generate_jump_inference_from_infer_result(infer_result):
     return output
 
 # main function, "images" is a list of image filenames
-def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "output.jpg", game = "sonic"):
+def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_folder, game):
     if game == "sonic":
         model = model_sonic
         marker_classes = ['sonic']
@@ -606,7 +607,7 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
     print("image.shape", first_image.shape)
 
     # Define the codec and create VideoWriter object for output video
-    output_video_path = f"video_{task_id}.mp4"
+    output_video_path = f"{output_folder}/output_video/video_{task_id}.mp4"
     output_video = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (lr_width, ud_height))
     image_count = last_frame - first_frame + 1
     output_list = []
@@ -740,10 +741,11 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_filename = "outp
 
     if processed_frames:
         combined_image = np.hstack(processed_frames)
-        cv2.imwrite(output_filename, combined_image)
+        output_filepath = f"{output_folder}/map/map_{task_id}.jpg"
+        cv2.imwrite(output_filepath, combined_image)
 
-        print("Inference complete. Combined image saved to:", output_filename)
-        return output_filename, all_image_result
+        print("Inference complete. Combined image saved to:", output_filepath)
+        return output_filepath, all_image_result, output_video_path
     else:
         print("No frames were captured from the video.")
-        return None, all_image_result
+        return None, all_image_result, output_video_path

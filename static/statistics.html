@@ -57,7 +57,7 @@
 <script src="../static/scripts/script_general.js"></script>
 <script defer>
   async function getStatistics(){
-    const websiteStatistics = await fetch("./api/statistics",{
+    const websiteStatistics = await fetch("./api/website/statistics",{
     method: "GET"
     // headers
     })
@@ -92,6 +92,5 @@
   }
   initializePage();
 </script>
-<script src="../static/scripts/script_statistics.js" defer></script>
 </body>
 </html>

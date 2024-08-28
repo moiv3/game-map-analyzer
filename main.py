@@ -358,7 +358,7 @@ async def process_fake_video(request: Request, response: Response, video_info: V
     else:
         return JSONResponse(status_code=401, content=(Error(error="true", message="API key不正確，請確認輸入資訊").dict()))
 
-@app.get("/task-status-db/")
+@app.get("api/video/task-status-db/")
 def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
     signin_status = check_user_signin_status_return_bool(token_data)
     if not check_user_signin_status_return_bool(token_data):
@@ -435,7 +435,7 @@ def get_all_task_status_db():
     print(tasks)
     return tasks
 
-@app.post("/api/upload", summary="上傳一個影片")
+@app.post("/api/video/upload_video", summary="上傳一個影片")
 async def upload_file(file: UploadFile = File(...), token_data: TokenOut = Depends(get_token_header), gameType: str = Form(...)):
     try:
         signin_status = check_user_signin_status_return_bool(token_data)
@@ -544,7 +544,7 @@ async def process_video_by_id(process_info: VideoParseInfoUploaded, token_data: 
     print(process_info)
     return{"ok": True}
 
-@app.post("/api/process_uploaded_video", summary="解析從S3上傳的影片")
+@app.post("/api/video/process_uploaded_video", summary="解析從S3上傳的影片")
 async def process_video_by_id(process_info: VideoParseInfoUploaded, token_data: TokenOut = Depends(get_token_header)):
     # 檢查登入狀態
     signin_status = check_user_signin_status_return_bool(token_data)
@@ -696,7 +696,7 @@ async def get_api_statistics():
         traceback.print_exc()
         return {"error": True, "message": e}
 
-@app.get("/api/preferences", summary="取得使用者偏好設定")
+@app.get("/api/user/preferences", summary="取得使用者偏好設定")
 async def get_user_preferences(token_data: TokenOut = Depends(get_token_header)):
     # 檢查登入狀態
     signin_status = check_user_signin_status_return_bool(token_data)
@@ -724,7 +724,7 @@ async def get_user_preferences(token_data: TokenOut = Depends(get_token_header))
             return {"ok": True, "member_preferences": {"send_mail": member_send_mail}}
         #接下來寫HTML
 
-@app.patch("/api/preferences", summary="修改使用者偏好設定")
+@app.patch("/api/user/preferences", summary="修改使用者偏好設定")
 async def patch_user_preferences(user_preferences: UserPreferences, token_data: TokenOut = Depends(get_token_header)):
     # 檢查登入狀態
     signin_status = check_user_signin_status_return_bool(token_data)

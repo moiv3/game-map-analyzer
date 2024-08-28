@@ -198,22 +198,22 @@ def stack_images(images):
 
     return stacked_image
 
-def get_all_background_movement_from_folder(task_id):
+def get_all_background_movement_from_folder(folder):
     frames = []
     movement_x = []
     movement_y = []
-    files = os.listdir(task_id)
+    files = os.listdir(folder)
     sorted_files=sorted(files, key=lambda x: int(x.split('frame_')[1].split('.')[0]))
     for frame_num in range(len(sorted_files)-1):
-        curr_frame_path = f"{task_id}/{sorted_files[frame_num]}"
-        next_frame_path = f"{task_id}/{sorted_files[frame_num+1]}"
+        curr_frame_path = f"{folder}/{sorted_files[frame_num]}"
+        next_frame_path = f"{folder}/{sorted_files[frame_num+1]}"
         bg_movement_x, bg_movement_y = check_background_movement(curr_frame_path, next_frame_path)
         frames.append(sorted_files[frame_num])
         movement_x.append(round(bg_movement_x))
         movement_y.append(round(bg_movement_y))
         print(f"{frame_num} / {len(sorted_files)-1} frames analyzed.")
     print("Finished analysis.")
-    return task_id, frames, movement_x, movement_y
+    return folder, frames, movement_x, movement_y
 
 if __name__ == "__main__":
     task_id, frames, movement_x, movement_y = get_all_background_movement_from_folder("7529efda-1910-47e7-8e29-ec10d055d20e")

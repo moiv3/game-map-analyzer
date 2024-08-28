@@ -52,7 +52,7 @@ function addUploadButtonListener(){
             formData.append('gameType', gameType);
 
             try {
-                const response = await fetch('./api/upload', {
+                const response = await fetch('./api/video/upload_video', {
                     method: 'POST',
                     body: formData,
                     headers: {Authorization: `Bearer ${signinStatusToken}`}

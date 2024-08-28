@@ -1,6 +1,6 @@
 async function fetchTaskQueueDb(){
     const signinStatusToken = window.localStorage.getItem('token');
-    const result = await fetch("./task-status-db/", {
+    const result = await fetch("./api/video/task-status-db/", {
         method:"GET",
         headers: {
             "Content-Type": "application/json",
@@ -97,7 +97,7 @@ async function processVideo(item, button) {
     // check API key
     console.log(`Processing video with ID: ${item.video_id}`);
     // fetch and update 結果
-    result = await fetch("./api/process_uploaded_video",{
+    result = await fetch("./api/video/process_uploaded_video",{
         method:"POST",
         headers: {
             "Content-Type": "application/json",
