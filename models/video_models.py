@@ -4,13 +4,13 @@ from fastapi import Depends, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from datetime import *
 import traceback
-import celery_config
+import video_analysis.celery_config as celery_config
 import uuid
 import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 # internal dependencies
-from classes import TokenOut, VideoParseInfoUploaded, Error
+from utils.classes import TokenOut, VideoParseInfoUploaded, Error
 from utils.auth import get_token_header, check_user_signin_status_return_bool
 from utils.config import db_host, db_user, db_pw, db_database
 from utils.config import region_name, aws_access_key_id, aws_secret_access_key, BUCKET_NAME

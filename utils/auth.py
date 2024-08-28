@@ -1,3 +1,4 @@
+# External Dependencies
 from fastapi import Header
 from fastapi.responses import JSONResponse
 import jwt
@@ -5,7 +6,8 @@ from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError, DecodeE
 from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-from classes import TokenOut
+# Internal Dependencies
+from utils.classes import TokenOut
 from utils.config import SECRET_KEY
 
 def get_password_hash(password):
@@ -26,7 +28,6 @@ def check_user_signin_status(token_data):
         result = {}
         result["data"] = jwt.decode(token_data.token, SECRET_KEY, algorithms="HS256")
         print("Data:", result)
-        # return result #Testing 20240621
         return JSONResponse(status_code=200, content=result)
     except ExpiredSignatureError:
         print("ExpiredSignatureError")

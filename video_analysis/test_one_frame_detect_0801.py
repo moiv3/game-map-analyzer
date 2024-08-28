@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import supervision as sv
 from ultralytics import YOLO
-import black_threshold_test
-import background_movement
+import video_analysis.black_threshold_test as black_threshold_test
+import video_analysis.background_movement as background_movement
 from math import sqrt
 import traceback
 

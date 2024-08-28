@@ -50,7 +50,7 @@ jobs:
 
               echo "Starting uvicorn and celery..."
               nohup python3 -m uvicorn main_mvc:app --host=0.0.0.0 > uvicorn.out 2>&1 & disown
-              nohup celery -A celery_config.celery_app worker > celery.out 2>&1 & disown
+              nohup celery -A video_analysis.celery_config.celery_app worker > celery.out 2>&1 & disown
               echo "uvicorn and celery started."
 
               echo "Disconnecting from SSH."

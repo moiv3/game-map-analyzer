@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 import traceback
 
-from classes import *
+from utils.classes import *
 
 # import app routers
 from controllers import user_controllers

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Response, Depends
-from classes import *
+from utils.classes import *
 from utils.auth import get_token_header
 from models.user_models import create_user, authenticate_user, get_user_preferences, patch_user_preferences
 from utils.auth import check_user_signin_status

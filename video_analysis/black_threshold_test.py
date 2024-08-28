@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import os
-import mario_check_white_ratio
+import video_analysis.mario_check_white_ratio as mario_check_white_ratio
 import json
 
 # threshold: This value (ranging from 0 to 255) determines what pixel values are considered "non-black."

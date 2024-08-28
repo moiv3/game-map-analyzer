@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 # internal dependencies
-from classes import *
+from utils.classes import *
 from models.video_models import get_all_task_status_db, process_uploaded_video_by_id, upload_file_and_process
 from utils.auth import get_token_header
 
