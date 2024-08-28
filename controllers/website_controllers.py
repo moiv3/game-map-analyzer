@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from classes import *
+from utils.classes import *
 from models.website_models import get_api_statistics
 
 router = APIRouter(

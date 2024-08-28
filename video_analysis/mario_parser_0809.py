@@ -1,10 +1,10 @@
-import convert_mario_to_jpg
-import get_video_info_cv2
-import black_threshold_test
-import filter_frames
-import test_one_frame_detect_0801
-import background_movement
-import shift_image
+import video_analysis.convert_mario_to_jpg as convert_mario_to_jpg
+import video_analysis.get_video_info_cv2 as get_video_info_cv2
+import video_analysis.black_threshold_test as black_threshold_test
+import video_analysis.filter_frames as filter_frames
+import video_analysis.test_one_frame_detect_0801 as test_one_frame_detect_0801
+import video_analysis.background_movement as background_movement
+import video_analysis.shift_image as shift_image
 import traceback
 import os
 

@@ -4,8 +4,8 @@ import boto3
 import uuid
 import json
 import traceback
-import mario_parser_0809
-import send_email
+import video_analysis.mario_parser_0809 as mario_parser_0809
+import utils.send_email as send_email
 
 # db config
 from dotenv import load_dotenv

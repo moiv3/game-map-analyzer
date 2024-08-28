@@ -16,8 +16,8 @@ from jwt.exceptions import InvalidTokenError, ExpiredSignatureError, InvalidSign
 from datetime import *
 import traceback
 from celery.result import AsyncResult
-from celery_config import celery_app
-import celery_config
+from video_analysis.celery_config import celery_app
+import video_analysis.celery_config as celery_config
 import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 import uuid
@@ -50,7 +50,7 @@ token_valid_time = timedelta(days=7)
 
 # from tasks import process_video
 from celery.result import AsyncResult
-from celery_config import celery_app, process_video
+from video_analysis.celery_config import celery_app, process_video
 import mario_parser
 
 app = FastAPI(openapi_url=None)

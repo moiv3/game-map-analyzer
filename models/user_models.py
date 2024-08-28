@@ -7,7 +7,7 @@ from datetime import *
 import traceback
 
 # internal dependencies
-from classes import TokenOut, UserPreferences, Error
+from utils.classes import TokenOut, UserPreferences, Error
 from utils.config import db_host, db_user, db_pw, db_database, SECRET_KEY, token_valid_time
 from utils.auth import get_password_hash, verify_password, get_token_header, check_user_signin_status_return_bool
 

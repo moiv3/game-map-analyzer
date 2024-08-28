@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import traceback
-import stack_transparent_image
+import video_analysis.stack_transparent_image as stack_transparent_image
 from matplotlib import pyplot as plt
 
 def read_image(image_file, gray_scale=False):

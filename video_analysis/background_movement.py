@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import os
-import shift_image
+import video_analysis.shift_image as shift_image
 from matplotlib import pyplot as plt
 
 # checks background movement between 2 frames
