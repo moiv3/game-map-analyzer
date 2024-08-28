@@ -43,7 +43,7 @@ def crop_image(image, x, y, width, height):
 def download_s3(video_id: str, task_id: str):
     try:
         s3_filename = f"{video_id}.mp4"
-        downloaded_filename = f"s3_{video_id}.mp4"
+        downloaded_filename = f"output_data/{task_id}/source_video/s3_{video_id}.mp4"
         s3_client.download_file(Bucket=BUCKET_NAME, Key=s3_filename, Filename=downloaded_filename)
         return downloaded_filename
     except Exception:

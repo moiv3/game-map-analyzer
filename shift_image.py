@@ -189,9 +189,9 @@ def combine_translated_images_for_img_objects(image1_obj, image2_obj, at):
     cv2.waitKey()
     return image1_trans
 
-def combine_images(task_id, images, movement_x, movement_y, all_image_result, game=None):
+def combine_images(task_id, frames_folder, images, movement_x, movement_y, all_image_result, game=None):
     try:
-        image0 = cv2.imread(f"{task_id}/{images[0]}")
+        image0 = cv2.imread(f"{frames_folder}/{images[0]}")
         height, width, _ = image0.shape
 
         curr_x_left = 0
@@ -226,7 +226,7 @@ def combine_images(task_id, images, movement_x, movement_y, all_image_result, ga
         final_img = np.zeros([final_size_y,final_size_x, 3], dtype=np.uint8)
 
         for i in range(len(images)):
-            image = cv2.imread(f"{task_id}/{images[i]}")
+            image = cv2.imread(f"{frames_folder}/{images[i]}")
             print(f"appending image # {i}/{len(images)}")
 
             if game == "sonic":
@@ -243,8 +243,9 @@ def combine_images(task_id, images, movement_x, movement_y, all_image_result, ga
                 left_crop = 0
                 final_img[curr_position_list[i][2]-min_y_top:curr_position_list[i][3]-min_y_top, curr_position_list[i][0]-min_x_left:curr_position_list[i][1]-min_x_left] = image
         
-        cv2.imwrite(f"map_{task_id}.jpg", final_img)
-        print(f"Combine success! Written result to file: map_{task_id}.jpg")
+        final_map_filepath = f"output_data/{task_id}/map/map_{task_id}.jpg"
+        cv2.imwrite(final_map_filepath, final_img)
+        print(f"Combine success! Written result to file: {final_map_filepath}")
 
         # paste sonic to the map
         print(f"Pasting {game} to the map...")
@@ -262,12 +263,12 @@ def combine_images(task_id, images, movement_x, movement_y, all_image_result, ga
                 else:
                     pass
         
-        cv2.imwrite(f"movement_{task_id}.jpg", final_img)
-        print(f"Combine success! Written result to file: movement_{task_id}.jpg")
-        final_img_filename = f"map_{task_id}.jpg"
-        return final_img_filename
+        final_movement_filepath = f"output_data/{task_id}/movement/movement_{task_id}.jpg"
+        cv2.imwrite(final_movement_filepath, final_img)
+        print(f"Combine success! Written result to file: {final_movement_filepath}")
+        return final_map_filepath, final_movement_filepath
     
     except Exception as e:
         traceback.print_exc()
         print(f"Failed to combine images: {e}")
-        return None
+        return None, None

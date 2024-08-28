@@ -10,7 +10,7 @@ async function renderMember() {
 
 async function getMemberPreferences(){
     const signinStatusToken = window.localStorage.getItem('token');
-    const memberPreferences = await fetch("/api/preferences",{
+    const memberPreferences = await fetch("/api/user/preferences",{
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -59,7 +59,7 @@ async function editMemberPreferences(){
     sendMailRequest["send_mail"] = sendMailValue;
 
     const signinStatusToken = window.localStorage.getItem('token');
-    const memberPreferences = await fetch("/api/preferences",{
+    const memberPreferences = await fetch("/api/user/preferences",{
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
