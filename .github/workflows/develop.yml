@@ -1,0 +1,58 @@
+name: Deploy to ec2
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  Deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Deploy to EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOSTNAME: ${{ secrets.SSH_HOST }}
+          USER_NAME: ${{ secrets.SSH_USER }}
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} << 'EOF'
+              echo "Signed in into ec2 via SSH."
+              
+              echo "Stopping uvicorn and celery processes..."
+              
+              # Attempt to stop the uvicorn process
+              pgrep -f "uvicorn" && pkill -f "uvicorn" || echo "No uvicorn process found"
+
+              # Attempt to stop the celery process
+              pgrep -f "celery" && pkill -f "celery" || echo "No celery process found"
+
+              echo "uvicorn and celery stopped."
+              echo "Navigating to project directory..."
+              cd /home/ubuntu/${{ github.event.repository.name }}
+              pwd
+
+              echo "Checking out develop branch..."
+              git checkout develop
+
+              echo "Pulling latest development build..."
+              git pull https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git develop
+              echo "Latest development build pulled."
+
+              echo "Activating virtual environment..."
+              source .venv/bin/activate
+              echo "Virtual environment activated."
+
+              echo "Starting uvicorn and celery..."
+              nohup python3 -m uvicorn main_mvc:app --host=0.0.0.0 > uvicorn.out 2>&1 & disown
+              nohup celery -A video_analysis.celery_config.celery_app worker > celery.out 2>&1 & disown
+              echo "uvicorn and celery started."
+
+              echo "Disconnecting from SSH."
+              exit
+          EOF

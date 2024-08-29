@@ -25,22 +25,28 @@
   <div class="attraction-main-container">
     <div class="body bold" style="height: 30px"></div>
     <div class="order-details-form body" style="height: 200px">
-    <div class="header-3 bold">上傳影片：</div>
-    請在此上傳影片！<br/>
-    Youtube download目前無法支援EC2 IP，相關對應方式，開發人員極對應中。造成您的不便，敬請見諒。<br/>
-    目前，本系統開放使用瀏覽器上傳影片的方式，對您上傳的影片進行解析。<br/>
-    <a href="#">如何下載Youtube影片</a>
-
+      <div class="header-3 bold">上傳影片：</div>
+      可以在此上傳影片，或下載測試影片進行測試。<br/>
+      目前，本系統開放使用瀏覽器上傳影片的方式，對您上傳的影片進行解析。<br/>
     </div>
 
     <div class="body bold" style="height: 30px"></div>
 
-    <div class="api-form body" id="api-key" style="height: 100px">
+    <div class="api-form body" id="api-web-signed-out">
+      <div class="header-3 bold">測試影片</div>
+      <a href="https://testbucket2233449988teapot.s3.us-west-2.amazonaws.com/782c9abf-5fc4-4ae6-b7d2-360b184df64f.mp4">範例影片一（瑪莉歐，短，分析時間：約3分鐘）</a>
+      <a href="https://testbucket2233449988teapot.s3.us-west-2.amazonaws.com/5dff4fb6-5220-4993-aabf-b7c7d2e4b8a1.mp4">範例影片二（音速小子，短，分析時間：約3分鐘）</a>
+      <a href="https://testbucket2233449988teapot.s3.us-west-2.amazonaws.com/5feac8ef-a0a2-41e3-b361-49a2338833c7.mp4">範例影片三（音速小子，短，分析時間：約3分鐘）</a>
+    </div>
+
+    <div class="body bold" style="height: 30px"></div>
+
+    <!-- <div class="api-form body" id="api-key" style="height: 100px">
       <div class="header-3 bold" style="height: 30px">您的API key</div>
       <div class="body" id="api-key-result">Your API key: <span id="api-key-result-text"></span><button id="fetch-api-key-button">Check current API key</button><span id="system-message"></span></div>
     </div>
 
-    <div class="body bold" style="height: 30px"></div>
+    <div class="body bold" style="height: 30px"></div> -->
       
     <div class="api-form body" id="api-web-signed-out">
       <div class="header-3 bold" style="height: 30px">上傳您的影片</div>
@@ -52,7 +58,15 @@
                 <input type="text" id="text-id" name="text-name" placeholder="Enter message">
             </div> -->
             <div><label for="file-id">選擇希望上傳的影片: (支援格式：mp4, 影片最大容量：5 MB, 影片時間上限：90秒)</label></div>
-            <div><input type="file" id="file-id" name="file-name"><span><button type="submit" id="submit-video-button">上傳影片</button></span></div>
+            <div><input type="file" id="file-id" name="file-name"><span></span></div>
+            <div><label for="game-type">選擇遊戲的類型：</label>
+              <select name="game-type" id="game-type">
+                <option value="sonic">音速小子</option>
+                <option value="mario_new">瑪莉歐(新版引擎，支援路徑繪製)</option>
+                <option value="mario">瑪莉歐(初版引擎，無路徑繪製)</option>
+              </select>
+            </div>
+            <div><button type="submit" id="submit-video-button">上傳影片</button></div>
         </form>
       </div>
   
@@ -62,19 +76,32 @@
       </div>
         <div class="body bold" style="height: 30px"></div>
 
-    <div class="api-form body" id="api-web-signed-in" style="height: 1000px;">
+    <div class="api-form body" id="api-web-signed-in">
       <div class="header-3 bold">已上傳的影片</div>
       <div class="bold" id="video-process-status-message"></div>
-      <table id="uploaded-videos-table" border="1">
-        <thead>
-            <tr>
-                <!-- Table headers will be populated here -->
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Table data will be populated here -->
-        </tbody>
-    </table>
+      <div>目前進行中的任務如下：</div>
+      <table id="data-db-wip-table" border="1">
+          <thead>
+              <tr>
+                  <!-- Table headers will be populated here -->
+              </tr>
+          </thead>
+          <tbody>
+              <!-- Table data will be populated here -->
+          </tbody>
+      </table>
+      
+      <div>已完成的任務如下：</div>
+      <table id="data-db-comp-table" border="1">
+          <thead>
+              <tr>
+                  <!-- Table headers will be populated here -->
+              </tr>
+          </thead>
+          <tbody>
+              <!-- Table data will be populated here -->
+          </tbody>
+      </table>
 
       <div id="submit-query"></div>
     </div>
@@ -82,6 +109,7 @@
 <!-- <div class="footer body bold">COPYRIGHT &copy; 2024 台北一日遊</div> -->
 <script src="../static/scripts/script_general.js"></script>
 <script src="../static/scripts/script_upload_video.js" defer></script>
+<script src="../static/scripts/script_task_queue.js" defer></script>
 <!-- <script src="../static/scripts/script_attraction.js"></script> -->
 </body>
 </html>

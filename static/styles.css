@@ -27,43 +27,36 @@ button {
 .header-1 {
     font-size: 28px; 
     font-weight: bold;
-    /* line-height: 24px; */
 }
   
 .header-2 {
     font-size: 30px; 
     font-weight: bold;
-    /* line-height: 34px; */
 }
 
 .header-3 {
     font-size: 24px;
     font-weight: normal;
-    /* line-height: 24px; */
 }
 
 .btn {
     font-size: 19px;
     font-weight: normal;
-    line-height: 16px;
 }
 
 .content {
     font-size: 16px;
     font-weight: normal;
-    line-height: auto;
 }
 
 .body {
     font-size: 16px;
-    font-weight: 500; /*medium = 500*/
-    line-height: 13.3px;
+    font-weight: 500;
 }
 
 .list {
     font-size: 14px; 
     font-weight: 500;
-    line-height: auto;
 }
 
 .bold{
@@ -80,7 +73,8 @@ button {
 }
 
 .cyan-70{
-    color:#448899;
+    color: #4285F4
+    /* color:#448899; */
 }
 
 .cyan-50{
@@ -172,11 +166,12 @@ button {
     text-align: left;
     padding: 10px;
     position: absolute;
-    top: 50%;
+    top: 40%;
     left: 50%;
     transform: translateX(-30%), translateY(-50%);
-    background-color: aliceblue;
+    background-color: lightblue;
     color: #000000;
+    border-radius: 5px;
 }
 
 .header-text{
@@ -887,7 +882,7 @@ button {
     width: 340px;
     /* height: 275px; */
     position: absolute;
-    background-color: white;
+    background-color: #F2F2F2;
     top: 80px;
     left: 50%;
     transform: translateX(-50%);
@@ -895,7 +890,7 @@ button {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 25px 15px 15px 15px;
+    padding: 15px 15px 15px 15px;
     box-sizing: border-box;
 }
 
@@ -926,7 +921,7 @@ button {
     position: absolute;
     width: 30px;
     height: 30px;
-    top: 20px;
+    top: 10px;
     right: 10px;
     background-image: url("../static/images/icon_close.png");
     background-color: transparent;
@@ -958,7 +953,7 @@ button {
     height: 47px;
     margin-top: 10px;
     border-radius: 6px;
-    background-color: #448899;
+    background-color: #4285F4;
     border: 0;
     color: white;
 }
@@ -1034,7 +1029,7 @@ button {
 }
 
 .api-form{
-    border: 1px solid red;
+    /* border: 1px solid red; */
     border-radius: 5px;
     background-color: #E8E8E8;
     min-height: 200px;
@@ -1048,11 +1043,11 @@ button {
     line-height: 2rem;
 }
 
-/*
-.api-form > * { 
-    margin-bottom: 15px;
-    }
- 
-.order-details-form-subtitle {
-    margin-right: 5px;
-} */
+.example-img-box{
+    max-width: 100%;
+}
+
+.example-img-box img {
+    max-width: 100%;
+    object-fit: contain;
+  }

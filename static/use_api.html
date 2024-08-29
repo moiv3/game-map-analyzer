@@ -40,20 +40,33 @@
 
     <div class="order-details-form body">
       <div class="header-3 bold">如何使用Game Map Analyzer？</div>
-      <div>請先免費加入會員，即可取得API key進行影片解析。</div>
-      <div>API docs:</div>
-      <div>使用方法目前有兩種：</div>
-      <ol>
-        <li>使用者錄製並上傳遊戲影片後，使用網站介面或API送出申請。</li>
-        <li>使用者上傳遊戲影片至Youtube後，使用網站介面或API送出申請，由伺服器下載影片進行解析(Youtube改版，目前此功能維護中)</li>
-      </ol>
-      <div>為確保服務品質，測試期間開放長度小於90秒的Youtube影片。</div>
+      <div>請先免費加入會員，進行影片解析。</div>
+      <div>目前開放的使用方法有：</div>
+      <ul>
+        <li>使用者錄製並上傳遊戲影片後，使用網站介面送出申請。</li>
+        <!-- <li>使用者上傳遊戲影片至Youtube後，使用網站介面或API送出申請，由伺服器下載影片進行解析(因Youtube改版，目前此功能維護中)</li> -->
+      </ul>
+      <div>為確保服務品質，測試期間開放容量小於5MB，長度小於90秒的Youtube影片。</div>
     </div>
 
     <div class="body bold" style="height: 30px"></div>
 
-    <div class="order-details-form body" id="api-web-examples" style="height: 300px">
+    <div class="order-details-form body" id="api-web-examples">
       <div class="header-3 bold">解析範例：</div>
+      <div>請參考以下解析範例(遊戲：瑪莉歐兄弟)：</div>
+      <div>圖片範例：</div>
+      <div class="example-img-box"><img src="https://testbucket2233449988teapot.s3.amazonaws.com/map_3d1ddbd9-83a1-4019-b44c-e5839c214ee7.jpg"></img></div>
+      <div>影片範例：<a href="https://testbucket2233449988teapot.s3.amazonaws.com/video_903de342-3472-420c-9104-b45e9562be98.mp4">點我下載</a></div>
+      <div>路徑範例：</div>
+      <div class="example-img-box"><img src="https://testbucket2233449988teapot.s3.amazonaws.com/movement_41a9606e-a997-45be-904b-e53b9a2ca1da.jpg"></img></div>
+    </div>
+
+    <div class="body bold" style="height: 30px"></div>
+
+    <div class="order-details-form body">
+      <div class="header-3 bold">API docs</div>
+      <div>請點選右方連結，即可進入API docs頁面：<a href="./docs">Link</a></div>
+      <div>（本網頁使用FastAPI自動生成Swagger UI格式API docs。我們也提供Redoc格式，請點選：<a href="./redoc">Link</a>）</div>
     </div>
 
     <div class="body bold" style="height: 30px"></div>
@@ -62,7 +75,7 @@
       <div class="header-3 bold">開始使用Game Map Analyzer!</div>
       <div>請點選以下連結，開始使用：</div>
       <a href="#" id="signup-anchor" onclick="activateCurtain();">點選此連結，註冊/登入會員</a>
-      <a href="member" id="signin-anchor">點選此連結，進入會員中心</a>
+      <a href="./member" id="signin-anchor">點選此連結，進入會員中心</a>
 
     </div>
       <div class="body bold" style="height: 30px"></div>

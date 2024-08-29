@@ -1,3 +1,4 @@
+// note: upload_video page also loads script_task_queue.js
 
 function addUploadButtonListener(){
     document.getElementById('upload-form').addEventListener('submit', async function(event){
@@ -43,26 +44,35 @@ function addUploadButtonListener(){
             submitVideoButton = document.querySelector("#submit-video-button");
             submitVideoButton.disabled = true;
 
+            const gameType = document.querySelector("#game-type").value;
+            console.log(gameType);
+
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('gameType', gameType);
 
             try {
-                const response = await fetch('./api/upload/', {
+                const response = await fetch('./api/video/upload_video', {
                     method: 'POST',
                     body: formData,
                     headers: {Authorization: `Bearer ${signinStatusToken}`}
                 });
 
                 const result = await response.json();
-                if (response.ok) {
-                    document.querySelector('#upload-response-message').textContent = `File uploaded successfully: ${result.filename}`;
+                console.log(result);
+                if (result.error) {
+                    document.querySelector('#upload-response-message').textContent = `錯誤：${result.message}`;
+                    }
+                else if (result.ok) {
+                    document.querySelector('#upload-response-message').textContent = `成功上傳影片！系統訊息：${result.message}。請稍候，即將重新整理畫面...`;
+                    setTimeout(() => window.location.reload(), 5000);
                 }
                 else {
-                    document.querySelector('#upload-response-message').textContent = `Error: ${result.detail}`;
+                    document.querySelector('#upload-response-message').textContent = `錯誤：${result.detail}`;
                 }
             }
             catch (error) {
-                document.querySelector('#upload-response-message').textContent = `Error: ${error.message}`;
+                document.querySelector('#upload-response-message').textContent = `錯誤：${error.message}`;
             }
             submitVideoButton.disabled = false;
             return;
@@ -76,7 +86,7 @@ async function fetchUploadedVideos(){
         console.log("No token detected!");
         return false;
     }
-    const result = await fetch("./api/get_uploaded_videos/", {
+    const result = await fetch("./task-status-db/", {
         method:"GET",
         headers: {Authorization: `Bearer ${signinStatusToken}`}
     });
@@ -92,52 +102,6 @@ async function fetchUploadedVideos(){
         console.log("No uploaded video data found!");
     }
 
-}
-
-// Function to render the table
-// data: array of objects
-// headers: array of strings
-function renderTable(data, tableId, headers) {
-    const table = document.getElementById(tableId);
-    const thead = table.querySelector('thead tr');
-    const tbody = table.querySelector('tbody');
-
-    // Clear existing table data
-    thead.innerHTML = '';
-    tbody.innerHTML = '';
-
-    // Get keys (headers) from the first object
-    // const headers = Object.keys(data[0]);
-
-    // Create table headers
-    headers.forEach(header => {
-        const th = document.createElement('th');
-        th.textContent = header.charAt(0).toUpperCase() + header.slice(1);
-        thead.appendChild(th);
-    });
-
-    // Create table rows
-    data.forEach(item => {
-        const tr = document.createElement('tr');
-        headers.forEach(header => {
-            const td = document.createElement('td');
-
-            // Check if the status is 'NOT PROCESSED' and add a button
-            if (header === 'status' && item[header] === 'NOT PROCESSED') {
-                td.textContent = item[header];
-                const button = document.createElement('button');
-                button.textContent = '點此開始分析';
-                button.onclick = () => processVideo(item, button);
-
-                td.appendChild(button);
-            } else {
-                td.textContent = item[header];
-            }
-
-            tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-    });
 }
 
 async function checkApiKey() {
@@ -185,11 +149,6 @@ async function processVideo(item, button) {
     }
     if (!confirm("即將開始分析，請確認是否送出分析需求？")){
         return false;
-
-    }
-    if (!apiKeyGlobal){
-        uploadStatusMessage.textContent = "無API key, 請點選上面按鈕讀取，或至會員中心申請API key";
-        return false;
     }
 
     button.disabled = true;
@@ -197,7 +156,6 @@ async function processVideo(item, button) {
 
     // check API key
     console.log(`Processing video with ID: ${item.video_id}`);
-    console.log(`API key: ${apiKeyGlobal}`);
     // fetch and update 結果
     result = await fetch("./api/process_uploaded_video",{
         method:"POST",
@@ -226,7 +184,4 @@ async function processVideo(item, button) {
 }
 
 addUploadButtonListener();
-fetchUploadedVideos();
-let apiKeyGlobal;
-const fetchApiKeyButton = document.querySelector("#fetch-api-key-button");
-fetchApiKeyButton.addEventListener("click", checkApiKey);
+checkTokenOnPageLoad();
