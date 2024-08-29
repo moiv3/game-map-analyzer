@@ -10,6 +10,7 @@ from utils.classes import *
 from controllers import user_controllers
 from controllers import website_controllers
 from controllers import video_controllers
+from controllers import testing_controllers
 
 app = FastAPI(
     title="Game Map Analyzer",
@@ -47,6 +48,7 @@ async def settings_page():
 app.include_router(video_controllers.router)
 app.include_router(website_controllers.router)
 app.include_router(user_controllers.router)
+app.include_router(testing_controllers.router)
 
 # Exception Hamdling
 @app.exception_handler(RequestValidationError)
