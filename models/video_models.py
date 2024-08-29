@@ -45,11 +45,11 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
                 output_task_part_all=[]
                 for task in tasks_wip_result:
                     output_task_part_single={}
-                    output_task_part_single["task_id"] = task[0]
-                    output_task_part_single["source"] = task[2]
-                    output_task_part_single["video_id"] = task[1]
-                    output_task_part_single["status"] = task[3]
-                    output_task_part_single["date_updated"] = task[4]
+                    output_task_part_single["任務編號"] = task[0]
+                    output_task_part_single["來源"] = task[2]
+                    output_task_part_single["影片編號"] = task[1]
+                    output_task_part_single["狀態"] = task[3]
+                    output_task_part_single["最後更新時間"] = task[4]
                     output_task_part_all.append(output_task_part_single)
 
             else:
@@ -67,15 +67,15 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
                 output_task_part_all=[]
                 for task in tasks_completed_result:
                     output_task_part_single={}
-                    output_task_part_single["task_id"] = task[0]
-                    output_task_part_single["source"] = task[2]
-                    output_task_part_single["video_id"] = task[1]
-                    output_task_part_single["status"] = task[3]
-                    output_task_part_single["date_updated"] = task[4]
-                    output_task_part_single["map"] = task[5]
-                    output_task_part_single["video"] = task[6]
-                    output_task_part_single["movement"] = task[7]
-                    output_task_part_single["message"] = task[8]
+                    output_task_part_single["任務編號"] = task[0]
+                    output_task_part_single["來源"] = task[2]
+                    output_task_part_single["影片編號"] = task[1]
+                    output_task_part_single["狀態"] = task[3]
+                    output_task_part_single["最後更新時間"] = task[4]
+                    output_task_part_single["地圖"] = task[5]
+                    output_task_part_single["影片"] = task[6]
+                    output_task_part_single["路徑分析"] = task[7]
+                    output_task_part_single["系統訊息"] = task[8]
                     output_task_part_all.append(output_task_part_single)
 
             else:

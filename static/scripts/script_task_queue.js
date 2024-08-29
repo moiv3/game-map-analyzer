@@ -12,10 +12,10 @@ async function fetchTaskQueueDb(){
 
         const wipData = resultJson["tasks_wip"];
         console.log(wipData);
-        renderTable(wipData, 'data-db-wip-table', ["task_id", "source", "video_id", "status", "date_updated"]);
+        renderTable(wipData, 'data-db-wip-table', ["任務編號", "來源", "影片編號", "狀態", "最後更新時間"]);
         const compData = resultJson["tasks_completed"];
         console.log(compData);
-        renderTable(compData, 'data-db-comp-table', ["task_id", "source", "video_id", "status", "date_updated", "map", "video", "movement", "message"]);
+        renderTable(compData, 'data-db-comp-table', ["任務編號", "來源", "影片編號", "狀態", "最後更新時間", "地圖", "影片", "路徑分析", "系統訊息"]);
 }
 
 // Function to render table
@@ -49,7 +49,7 @@ function renderTable(data, tableId, headers) {
     data.forEach(item => {
         const tr = document.createElement('tr');
         headers.forEach(header => {
-            if ((header === "map" || header === "video" || header === "movement") && item[header]){
+            if ((header === "地圖" || header === "影片" || header === "路徑分析") && item[header]){
                const span = document.createElement('span');
                span.textContent = "Link";
                const anchor = document.createElement('a');

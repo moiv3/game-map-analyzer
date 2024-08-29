@@ -2,6 +2,16 @@
 
 ## How to use
 
+This is a tool for analyzing the maps and character movement of 2D platformer games.
+
+This tool uses ML to find out the character's position and background position, and outputs them into a new video.
+
+Then it uses cv2 to cut and paste the frames to build a map and character movement.
+
+Please run `uvicorn main_mvc:app` to start the program, then follow the instructions to analyze game data!
+
+Currently, this website is Chinese only.
+
 ## CI/CD
 
 Github Actions is used for the CI/CD of this project.

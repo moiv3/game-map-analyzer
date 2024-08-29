@@ -196,13 +196,16 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
 
             if game == "mario":
                 # Upload json data, convert dictionary to JSON string
-                data_dict = parse_result["text"]
-                json_data = json.dumps(data_dict)
-                json_file_name = f"movement_{task_id}.json"
-                movement_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{json_file_name}"
-                print("Uploading JSON...")
-                s3_client.put_object(Bucket=BUCKET_NAME, Key=json_file_name, Body=json_data)
-                print("Uploading complete.")
+                # data_dict = parse_result["text"]
+                # json_data = json.dumps(data_dict)
+                # json_file_name = f"movement_{task_id}.json"
+                # movement_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{json_file_name}"
+                # print("Uploading JSON...")
+                # s3_client.put_object(Bucket=BUCKET_NAME, Key=json_file_name, Body=json_data)
+                # print("Uploading complete.")
+                print("mario v1 engine does not output a movement.")
+                movement_url = None
+
             elif game == "sonic" or game == "mario_new":
                 movement_filepath = parse_result["movement"]
                 movement_filename = f"movement_{task_id}.jpg"
@@ -217,8 +220,8 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
             website_db.commit()
 
             # UPDATE task status
-            cmd = "UPDATE task SET status = %s WHERE task_id = %s"
-            website_db_cursor.execute(cmd, ("COMPLETED", task_id))
+            cmd = "UPDATE task SET status = %s, message = %s WHERE task_id = %s"
+            website_db_cursor.execute(cmd, ("COMPLETED", "分析完成", task_id))
             website_db.commit()
 
             # send mail to user

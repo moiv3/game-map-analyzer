@@ -62,7 +62,7 @@ CREATE TABLE `member` (
 `hashed_password` varchar(255) NOT NULL,
 `name` varchar(255) NOT NULL,
 `validity` tinyint(1) NOT NULL DEFAULT '1',
-`send_mail` tinyint(1) NOT NULL DEFAULT '1',
+`send_mail` tinyint(1) NOT NULL DEFAULT '0',
 `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 PRIMARY KEY (`id`)

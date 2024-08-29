@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # Load the two images
-char_img = cv2.imread('sonic.png', cv2.IMREAD_UNCHANGED)  # image with transparency
+# char_img = cv2.imread('sonic.png', cv2.IMREAD_UNCHANGED)
 
 def put_character_on_bg(background_img, char_img, x_center, y_center):
     char_y = char_img.shape[0]

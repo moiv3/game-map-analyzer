@@ -44,9 +44,9 @@ function createCurtainAndSigninForm(){
     signupSquareElement.classList="signup-form-bg";
     curtainElement.appendChild(signupSquareElement);
 
-    let signupDecorationBarElement = document.createElement("div");
-    signupDecorationBarElement.classList="decoration-bar";
-    signupSquareElement.appendChild(signupDecorationBarElement);
+    // let signupDecorationBarElement = document.createElement("div");
+    // signupDecorationBarElement.classList="decoration-bar";
+    // signupSquareElement.appendChild(signupDecorationBarElement);
 
     let buttonElement = document.createElement("button");
     buttonElement.classList="deactivate-curtain-button";
@@ -57,7 +57,7 @@ function createCurtainAndSigninForm(){
 
     let signupTitleElement = document.createElement("div");
     signupTitleElement.classList="header-3 bold signin gray-70";
-    signupTitleElement.textContent="登入會員帳號";
+    signupTitleElement.textContent="會員登入";
     signupSquareElement.appendChild(signupTitleElement);
 
     let formElement = document.createElement("form");
@@ -71,7 +71,7 @@ function createCurtainAndSigninForm(){
     inputUsernameElement.type = "text";
     inputUsernameElement.name = "username_name"
     inputUsernameElement.id = "username_id";
-    inputUsernameElement.placeholder = "輸入電子信箱";
+    inputUsernameElement.placeholder = "請輸入email";
     formElement.appendChild(inputUsernameElement);
 
     let inputPasswordElement = document.createElement("input");
@@ -79,13 +79,13 @@ function createCurtainAndSigninForm(){
     inputPasswordElement.type = "password";
     inputPasswordElement.name = "password_name"
     inputPasswordElement.id = "password_id";
-    inputPasswordElement.placeholder = "輸入密碼";
+    inputPasswordElement.placeholder = "請輸入密碼";
     formElement.appendChild(inputPasswordElement);
 
     let signinButtonElement = document.createElement("button");
     signinButtonElement.classList = "btn";
     signinButtonElement.id = "signin_button";
-    signinButtonElement.textContent="登入帳戶";
+    signinButtonElement.textContent="登入";
     formElement.appendChild(signinButtonElement);
 
     let signinResponseElement = document.createElement("div");
@@ -99,11 +99,12 @@ function createCurtainAndSigninForm(){
 
     let signupPromptElement = document.createElement("span");
     signupPromptElement.classList = "signup-text";
-    signupPromptElement.textContent = "還沒有帳戶？";
+    signupPromptElement.textContent = "新使用者，請 ";
     signupContainerElement.appendChild(signupPromptElement);
 
     let signupAnchorElement = document.createElement("a");
-    signupAnchorElement.textContent="點此註冊";
+    signupAnchorElement.textContent="點此免費註冊";
+    signupAnchorElement.style.color="blue";
     signupAnchorElement.href="#";
     signupAnchorElement.onclick= () => toggleSignupPrompt();
     signupContainerElement.appendChild(signupAnchorElement);
@@ -140,7 +141,7 @@ function toggleSignupPrompt(){
         // console.log("Hit toggle Signup Prompt! Signin -> Signup");
 
         const titleElement = document.querySelector(".signin");
-        titleElement.textContent = "註冊會員帳號";
+        titleElement.textContent = "新會員註冊";
 
         const formElement = document.querySelector("#signin_form");        
         const usernameIdElement = document.querySelector("#username_id");
@@ -149,17 +150,18 @@ function toggleSignupPrompt(){
         newNameInputElement.type="text";
         newNameInputElement.name="name_name";
         newNameInputElement.id="name_id";
-        newNameInputElement.placeholder="輸入姓名";
+        newNameInputElement.placeholder="請輸入姓名";
         newNameInputElement.classList="signup-input body";
         formElement.insertBefore(newNameInputElement, usernameIdElement);
         
         const signInButtonElement = document.querySelector("#signin_button");
-        signInButtonElement.textContent = "註冊新帳戶";
+        signInButtonElement.textContent = "註冊";
 
         const signinTextElement = document.querySelector(".signup-text");
-        signinTextElement.textContent = "已經有帳戶了？";
+        signinTextElement.textContent = "已註冊過之會員，請";
 
         const promptElement = document.querySelector(".signup-container a");
+        promptElement.style.color="blue";
         promptElement.textContent = "點此登入";
 
         formElement.removeEventListener("submit", handleSigninEvent);
@@ -171,7 +173,7 @@ function toggleSignupPrompt(){
         // console.log("Hit toggle Signup Prompt! Signup -> Signin");
 
         const titleElement = document.querySelector(".signin");
-        titleElement.textContent = "登入會員帳號";
+        titleElement.textContent = "會員登入";
         
         const formElement = document.querySelector("#signin_form");
 
@@ -179,13 +181,13 @@ function toggleSignupPrompt(){
         nameIdElement.remove();
 
         const signInButtonElement = document.querySelector("#signin_button");
-        signInButtonElement.textContent = "登入帳號";
+        signInButtonElement.textContent = "登入";
 
         const signinTextElement = document.querySelector(".signup-text");
-        signinTextElement.textContent = "還沒有帳戶？";
+        signinTextElement.textContent = "新使用者，請 ";
 
         const promptElement = document.querySelector(".signup-container a");
-        promptElement.textContent = "點此註冊";
+        promptElement.textContent = "點此免費註冊";
 
         formElement.removeEventListener("submit", handleSignupEvent);
         formElement.addEventListener("submit", handleSigninEvent);

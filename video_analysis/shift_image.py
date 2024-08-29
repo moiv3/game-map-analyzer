@@ -191,6 +191,15 @@ def combine_translated_images_for_img_objects(image1_obj, image2_obj, at):
 
 def combine_images(task_id, frames_folder, images, movement_x, movement_y, all_image_result, game=None):
     try:
+        print(movement_x)
+        print(movement_y)
+
+        # test movement_y for mario
+        if game == "mario_new":
+            movement_y[:] = [0 for _ in movement_y]
+        else:
+            pass
+
         image0 = cv2.imread(f"{frames_folder}/{images[0]}")
         height, width, _ = image0.shape
 
@@ -227,7 +236,7 @@ def combine_images(task_id, frames_folder, images, movement_x, movement_y, all_i
 
         for i in range(len(images)):
             image = cv2.imread(f"{frames_folder}/{images[i]}")
-            print(f"appending image # {i}/{len(images)}")
+            # print(f"appending image # {i}/{len(images)}")
 
             if game == "sonic":
                 # the left 18% of the screen has text on it, so crop it
@@ -247,11 +256,27 @@ def combine_images(task_id, frames_folder, images, movement_x, movement_y, all_i
         cv2.imwrite(final_map_filepath, final_img)
         print(f"Combine success! Written result to file: {final_map_filepath}")
 
-        # paste sonic to the map
+        # paste sonic/mario to the map
         print(f"Pasting {game} to the map...")
+
+        # read and resize
+        if game == "sonic":
+            char_img = cv2.imread('video_analysis/sonic.png', cv2.IMREAD_UNCHANGED)
+            # constants for sonic character
+            char_height_on_map = round(77 / 480 * height)
+            char_width_on_map = round(57 / 480 * height)
+            char_img = cv2.resize(char_img, (char_width_on_map, char_height_on_map))
+        elif game == "mario_new":
+            char_img = cv2.imread('video_analysis/mario.png', cv2.IMREAD_UNCHANGED)
+            # constants for mario character
+            char_height_on_map = round(36 / 540 * height)
+            char_width_on_map = round(27 / 540 * height)
+            char_img = cv2.resize(char_img, (char_width_on_map, char_height_on_map))
+        else:
+            pass
+
         if game == "sonic" or game == "mario_new":
             print(game)
-            char_img = cv2.imread('sonic.png', cv2.IMREAD_UNCHANGED)
             for i in range(len(all_image_result)):
                 if "sonic_position_x" in all_image_result[i] and "sonic_position_y" in all_image_result[i]:
                     x_center = round(all_image_result[i]["sonic_position_x"]) - 1
