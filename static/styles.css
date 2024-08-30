@@ -1052,7 +1052,7 @@ button {
 }
 
 .landing-page-box{
-    border: 1px red solid;
+    border: 1px blue solid;
     border-radius: 20px;
     color: #000000;
     padding: 15px 20px 15px 20px;
@@ -1070,7 +1070,7 @@ button {
 }
 
 .landing-page-steps-small-box{
-    border: 1px green solid;
+    border: 1px blue solid;
     flex: 1;
     max-width: 33.33%;
     box-sizing: border-box;
@@ -1088,26 +1088,26 @@ button {
 }
 
 .landing-page-example-box{
-    border: 1px green solid;
+    border: 1px blue solid;
     display: flex;
 }
 
 .landing-page-example-box-left{
-    border: 1px green solid;
+    border: 1px blue solid;
     flex: 1;
     max-width: 11.11%;
     box-sizing: border-box;
 }
 
 .landing-page-example-box-mid{
-    border: 1px green solid;
+    border: 1px blue solid;
     flex: 2;
     max-width: 22.22%;
     box-sizing: border-box;
 }
 
 .landing-page-example-box-right{
-    border: 1px green solid;
+    border: 1px blue solid;
     flex: 6;
     max-width: 66.67%;
     box-sizing: border-box;
@@ -1167,7 +1167,7 @@ button {
 }
 
 .landing-page-example-box-right-sonic{
-    border: 1px green solid;
+    border: 1px blue solid;
     flex: 6;
     max-width: 66.67%;
     box-sizing: border-box;
@@ -1183,7 +1183,7 @@ button {
     overflow: auto; /* adds scrollbars */
     height: 200px;
     position: relative;
-    border: 1px green solid;
+    border: 1px blue solid;
     flex: 6;
     max-width: 66.67%;
     box-sizing: border-box;
@@ -1199,7 +1199,7 @@ button {
     overflow: auto; /* adds scrollbars */
     height: 200px;
     position: relative;
-    border: 1px green solid;
+    border: 1px blue solid;
     flex: 6;
     max-width: 66.67%;
     box-sizing: border-box;
