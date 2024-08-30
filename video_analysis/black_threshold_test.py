@@ -33,7 +33,7 @@ def get_image_black_values(folder_path):
 
     return image_black_values
 
-def get_image_title_black_game_attr(folder_path):
+def get_image_title_black_game_attr(folder_path, game):
     image_black_values = {}
     
     # Iterate over all files in the directory
@@ -48,7 +48,7 @@ def get_image_title_black_game_attr(folder_path):
             is_black_screen = mario_check_white_ratio.check_if_black_screen(file_path)
             is_blue_game_background = bool(mario_check_white_ratio.check_color_ratio(file_path,((240, 255), (120, 155), (70, 100))) > 0.5)
             is_black_game_background = bool(mario_check_white_ratio.check_color_ratio(file_path,((0, 16), (0, 16), (0, 16))) > 0.75)
-
+            is_sonic_start_end_screen = bool(mario_check_white_ratio.check_color_ratio(file_path,((245, 255), (17, 32), (0, 10))) > 0.6)
 
             if title_screen_have_words and title_screen_black_enough:
                 image_black_values[filename] = "title"
@@ -57,7 +57,9 @@ def get_image_title_black_game_attr(folder_path):
             elif is_blue_game_background:
                 image_black_values[filename] = "game"
             elif is_black_game_background:
-                image_black_values[filename] = "game_blackbg"                
+                image_black_values[filename] = "game_blackbg"
+            elif is_sonic_start_end_screen and game == "sonic":
+                image_black_values[filename] = "sonic_startend"
             else:
                 image_black_values[filename] = "other"
 

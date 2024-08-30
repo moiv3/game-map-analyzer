@@ -749,3 +749,29 @@ def infer_and_combine_to_jpg_sonic(images, task_id, fps, output_folder, game):
     else:
         print("No frames were captured from the video.")
         return None, all_image_result, output_video_path
+    
+def infer_one_frame_check_for_character(filepath, game, output = "bool"):
+    if game == "sonic":
+        model = model_sonic
+        marker_class = 'sonic'
+    elif game == "mario" or "mario_new":
+        model = model_mario
+        marker_class = 'sm'
+    else:
+        print("[infer_one_frame] game is not 'mario' or 'sonic', returning None")
+        return None
+    
+    image = cv2.imread(filepath)
+    results = model(image, conf=0.7)[0]
+    detections = sv.Detections.from_ultralytics(results)
+    # print(detections)
+    # print(detections.data)
+    # print(bool("sonic" in detections.data))
+    # print(bool("sonic" in detections.data['class_name']))
+    if output == "bool":
+        return bool(marker_class in detections.data['class_name'])
+    elif output == "full":
+        return detections
+    else:
+        print("Error: output not specified")
+        return None
