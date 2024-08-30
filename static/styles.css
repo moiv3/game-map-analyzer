@@ -401,7 +401,6 @@ button {
 .order-details-form{
     border-radius: 5px;
     background-color: #E8E8E8;
-    min-height: 200px;
     bottom: 0;
     padding: 15px 20px 15px 20px;
     box-sizing: border-box;
@@ -705,9 +704,9 @@ input:checked + .radio-newlycreated-button {
 
 /* footer區域 */
 .footer{
-    height: 104px;
-    background-color: #757575;
-    color: white;
+    height: 60px;
+    background-color: lightgray;
+    color: black;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1039,7 +1038,7 @@ button {
     width: calc(100%-20px);
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /*維持預約button的大小*/
+    align-items: flex-start;
     line-height: 2rem;
 }
 
@@ -1050,4 +1049,164 @@ button {
 .example-img-box img {
     max-width: 100%;
     object-fit: contain;
-  }
+}
+
+.landing-page-box{
+    border: 1px red solid;
+    border-radius: 20px;
+    color: #000000;
+    padding: 15px 20px 15px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: calc(100%-20px);
+    line-height: 3rem;
+}
+
+.landing-page-steps-box{
+    display: flex;
+    flex-direction: row;
+}
+
+.landing-page-steps-small-box{
+    border: 1px green solid;
+    flex: 1;
+    max-width: 33.33%;
+    box-sizing: border-box;
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+}
+
+.landing-page-steps-small-box div{
+    justify-content: center;
+    align-items: center;
+    line-height: 2rem;
+}
+
+.landing-page-example-box{
+    border: 1px green solid;
+    display: flex;
+}
+
+.landing-page-example-box-left{
+    border: 1px green solid;
+    flex: 1;
+    max-width: 11.11%;
+    box-sizing: border-box;
+}
+
+.landing-page-example-box-mid{
+    border: 1px green solid;
+    flex: 2;
+    max-width: 22.22%;
+    box-sizing: border-box;
+}
+
+.landing-page-example-box-right{
+    border: 1px green solid;
+    flex: 6;
+    max-width: 66.67%;
+    box-sizing: border-box;
+}
+
+.landing-page-example-box-right img{
+    width: auto;
+    max-width: 100%;
+    height: 90%;
+    max-height: 300px;
+    overflow-y: scroll;
+}
+
+.start-button{
+    background-color: #337788;
+    color: #FFFFFF;
+    border: 0;
+    border-radius: 3px;
+    height: 40px;
+    width: 200px;
+    margin: 20px 20px 10px 20px;
+}
+
+.blank-150px{
+    height: 150px;
+}
+
+.steps-icon-div{
+    display: flex;
+    justify-content: center;
+}
+
+.steps-icon-div img {
+    width: 50%;
+    height: auto;
+    display: block;
+}
+
+#upload-video-button{
+    border: 1px solid #4285F4;
+    color: #4285F4;
+    font-weight: bold;
+    border-radius: 3px;
+}
+
+#upload-video-button:hover{
+    background-color: #4285F4;
+    color: white;
+}
+
+
+.footer-div{
+    height: 100%;
+    margin: 0 10px 0 10px;
+    display: flex;
+    align-items: center;
+}
+
+.landing-page-example-box-right-sonic{
+    border: 1px green solid;
+    flex: 6;
+    max-width: 66.67%;
+    box-sizing: border-box;
+}
+
+.landing-page-example-box-right-sonic img{
+    width: 100%;
+    height: 400px;
+    overflow-y: scroll;
+}
+
+.landing-page-example-box-right-mario {
+    overflow: auto; /* adds scrollbars */
+    height: 200px;
+    position: relative;
+    border: 1px green solid;
+    flex: 6;
+    max-width: 66.67%;
+    box-sizing: border-box;
+}
+
+.landing-page-example-box-right-mario > img {
+    height: 100%; /* probably looks neater if auto */
+    width: 200%; /* double width image to show only first quarter */
+    vertical-align: bottom; /* moves image to true text bottom */
+}
+
+.landing-page-example-box-right-sonic {
+    overflow: auto; /* adds scrollbars */
+    height: 200px;
+    position: relative;
+    border: 1px green solid;
+    flex: 6;
+    max-width: 66.67%;
+    box-sizing: border-box;
+}
+
+.landing-page-example-box-right-sonic > img {
+    height: 300%; /* probably looks neater if auto */
+    width: 50%; /* double width image to show only first quarter */
+    vertical-align: bottom; /* moves image to true text bottom */
+}

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
+      <title>Game Map Analyzer</title>
+</head>
+<body style="background-color: aliceblue;">
+    <div class="navbar-background">
+        <div class="navbar-container">
+            <a href="/"><div class="navbar-title cyan-70 header-2">Game Map Analyzer</div></a>
+            <div class="navbar-topright-container">
+                <a href="upload_video"><button class="navbar-button gray-70 body" id="upload-video-button">影片上傳/資料下載</button></a>
+                <a href="member"><button class="navbar-button gray-70 body" id="member-page-button">會員中心</button></a>
+                <a href="#"><button class="navbar-button gray-70 body" id="signin-button"></button></a><!--renders 登入/註冊 or 登出系統-->
+            </div>
+        </div>
+    </div>
+    
+    <div class="attraction-main-container">
+
+        <div class="body bold" style="height: 100px;"></div>
+
+        <div class="landing-page-box">
+            <div class="header-1">GMA是一個橫向卷軸遊戲影片的解析服務。</div>
+            <div class="btn bold">目前可分析Mario Bros.(超級瑪莉歐)與Sonic(音速小子)兩款遊戲的遊戲影片。</div>
+            <div class="btn bold" id="start-here-text-1">點擊以下按鈕，登入/註冊會員，即可開始使用，或向下捲動以了解更多！</div>
+            <button class="btn start-button" id="start-here-button">登入/註冊</button>
+        </div>
+
+        <div class="blank-150px"></div>
+
+        <div class="landing-page-box">
+            <div class="header-1">如何使用Game Map Analyzer</div>
+            <div class="btn">三個步驟，即可輕鬆使用。</div>
+            <div class="landing-page-steps-box">
+                <div class="landing-page-steps-small-box btn">
+                    <div>1. 上傳影片</div>
+                    <div class="steps-icon-div"><img src="./static/images/upload.png"></div>
+                    <div>加入會員後，即可上傳影片。<br/>
+                    (影片大小限制：5MB以下)</div>
+                </div>
+                <div class="landing-page-steps-small-box btn">
+                    <div>2. 等待通知</div>
+                    <div class="steps-icon-div"><img src="./static/images/processing.png"></div>
+                    <div>伺服器將會分析您的影片。<br/>您不須維持網頁開啟，當分析完畢，系統會寄送email至您的信箱。</div>
+                </div>
+                <div class="landing-page-steps-small-box btn">
+                    <div>3. 下載結果</div>
+                    <div class="steps-icon-div"><img src="./static/images/downloadcloud.png"></div>
+                    <div>屆時，您可回到網站下載分析結果。</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="blank-150px"></div>
+
+        <div class="landing-page-box">
+            <div class="header-1">解析範例</div>
+            <div class="btn bold">以下是GMA實際解析遊玩影片的結果！請上下/左右移動滾動條，以觀看全景。
+                <div class="landing-page-example-box">
+                    <div class="landing-page-example-box-left">1. 瑪莉歐</div>
+                    <div class="landing-page-example-box-mid">GIF</div>
+                    <div class="landing-page-example-box-right-mario"><img src="./static/images/movement_sample_mario_small.jpg"></div>
+                </div>
+                <div class="body bold" style="height: 30px"></div>
+                <div class="landing-page-example-box">
+                    <div class="landing-page-example-box-left">2. 音速小子</div>
+                    <div class="landing-page-example-box-mid">GIF</div>
+                    <div class="landing-page-example-box-right-sonic"><img src="./static/images/movement_sample_sonic_small.jpg"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="blank-150px"></div>
+
+        <div class="landing-page-box">
+            <div class="header-1">Let's Start!</div>
+            <div class="btn bold" id="start-here-text-2">點擊以下按鈕，登入/註冊會員後，即可開始使用。</div>
+            <button class="btn start-button" id="start-here-button">登入/註冊</button>
+
+        </div>
+    </div>
+
+    <div class="blank-150px"></div>
+    <div class="footer body"><span class="footer-div bold">Copyright &copy; 2024 Game Map Analyzer</span><span class="footer-div"><a href="statistics">統計資料</a></span><span class="footer-div"><a href="about">更新資訊</span></a><span class="footer-div"><a href="docs" target=”_blank”>API docs</a></span></div>
+
+    <script src="../static/scripts/script_general.js"></script>
+    <script src="../static/scripts/script_index_new.js"></script>
+</body>
+</html>
