@@ -16,6 +16,9 @@ aws_access_key_id=os.getenv("aws_access_key_id")
 aws_secret_access_key=os.getenv("aws_secret_access_key")
 BUCKET_NAME = os.getenv("s3_bucket_name")
 
+
+GOOGLE_OAUTH_CLIENT_ID = os.getenv("google_oauth_client_id")
+
 # other config
 token_valid_time = timedelta(days=7)
 MAX_FILE_SIZE = 5 * 1024 * 1024

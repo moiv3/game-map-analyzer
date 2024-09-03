@@ -108,9 +108,47 @@ function createCurtainAndSigninForm(){
     signupAnchorElement.href="#";
     signupAnchorElement.onclick= () => toggleSignupPrompt();
     signupContainerElement.appendChild(signupAnchorElement);
-    
+
+    let signupPromptElement2 = document.createElement("div");
+    signupPromptElement2.classList = "signup-text gray-70 weight-500";
+    signupPromptElement2.style.textAlign = "center";
+    signupPromptElement2.style.marginBottom = "10px";
+    signupPromptElement2.textContent = "或選擇以下登入方式：";
+    signupSquareElement.appendChild(signupPromptElement2);
+
+    // google Signin
+    const googleOnloadDiv = document.createElement("div");
+    googleOnloadDiv.id = "g_id_onload";
+    googleOnloadDiv.setAttribute("data-client_id", "1050135494893-n44gn1fhho6gre5p5qp158c5bffpr902.apps.googleusercontent.com")
+    googleOnloadDiv.setAttribute("data-context","signin");
+    googleOnloadDiv.setAttribute("data-ux_mode","popup");
+    googleOnloadDiv.setAttribute("data-callback","signinByGoogleAuthResponse");
+    googleOnloadDiv.setAttribute("data-auto_prompt","false");
+
+    const googleSigninDiv = document.createElement("div");
+    googleSigninDiv.className = "g_id_signin";
+    googleSigninDiv.setAttribute("data-type", "standard");
+    googleSigninDiv.setAttribute("data-shape", "rectangular");
+    googleSigninDiv.setAttribute("data-theme", "outline");
+    googleSigninDiv.setAttribute("data-text", "signin_with");
+    googleSigninDiv.setAttribute("data-size", "large");
+    googleSigninDiv.setAttribute("data_logo_alignment", "left");
+
+    signupSquareElement.appendChild(googleOnloadDiv);
+    signupSquareElement.appendChild(googleSigninDiv);
+
     let bodyElement = document.querySelector("body");
     bodyElement.appendChild(curtainElement);
+
+    // Re-render the Google Sign-In button
+    google.accounts.id.initialize({
+        client_id: '1050135494893-n44gn1fhho6gre5p5qp158c5bffpr902.apps.googleusercontent.com',
+        callback: signinByGoogleAuthResponse,
+    });
+    google.accounts.id.renderButton(
+        googleSigninDiv,
+        { theme: "outline", size: "large" }  // Customize button as needed
+    );
 }
 
 // curtain element (signin/signup form) activation and deactivation
@@ -333,6 +371,39 @@ function initializeStartHereElements(tokenStatus){
             buttons[i].textContent = "登入/註冊";
             buttons[i].addEventListener("click", activateCurtain);
         }
+    }
+}
+
+
+async function signinByGoogleAuthResponse(googleAuthresponse){
+    const googleToken = googleAuthresponse.credential;
+    const gmaAuthresponse = await fetch("./api/user/signin_by_google", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({"credential": googleToken})
+    });
+    const gmaAuthresponseJson = await gmaAuthresponse.json();
+    console.log("AAA", gmaAuthresponseJson, gmaAuthresponseJson.token);
+    if (gmaAuthresponseJson.error){
+        console.log("Sign in unsuccessful.");
+        const signinResponseElement = document.querySelector(".signin-response-text");
+        signinResponseElement.textContent = "無法登入：" + gmaAuthresponseJson.message;
+        signinResponseElement.style.display = "block";
+        setTimeout(() => signinResponseElement.style.display = "none", 3000);
+        console.log(gmaAuthresponseJson.message);
+    }
+    else if (gmaAuthresponseJson.token){
+        console.log("Successfully signed in!");
+        window.localStorage.setItem('token', gmaAuthresponseJson.token);
+
+        const signinResponseElement = document.querySelector(".signin-response-text");
+        signinResponseElement.textContent = "登入成功！即將導向至會員中心...";
+        signinResponseElement.style.display = "block";
+        setTimeout(() => window.location.href = "member", 3000);
+    }
+    else{
+        //其他狀況暫放
+        console.log("Unknown error, please notify admin to check logs");
     }
 }
 

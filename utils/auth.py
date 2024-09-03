@@ -5,10 +5,11 @@ import jwt
 from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError, DecodeError
 from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from datetime import *
 
 # Internal Dependencies
 from utils.classes import TokenOut
-from utils.config import SECRET_KEY
+from utils.config import SECRET_KEY, token_valid_time
 
 def get_password_hash(password):
     return pwd_context.hash(password)
@@ -52,3 +53,16 @@ def check_user_signin_status_return_bool(token_data):
             return False
     except Exception:
         return False
+    
+def create_gma_token(id: int, email: str, name: str):
+    user_information = {}
+    user_information["id"] = id
+    user_information["email"] = email
+    user_information["name"] = name
+    time_now = datetime.now(tz=timezone.utc)
+    user_information["iat"] = time_now.timestamp()
+    user_information["exp"] = (time_now + token_valid_time).timestamp()
+    print(user_information)
+    user_token = jwt.encode(user_information, SECRET_KEY, algorithm="HS256")
+    print(user_token)
+    return user_token

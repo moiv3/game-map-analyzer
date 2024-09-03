@@ -134,7 +134,7 @@ def process_uploaded_video_by_id(process_info: VideoParseInfoUploaded, token_dat
             website_db.commit()
 
             task = celery_config.process_uploaded_video.delay(video_unique_id, user_id, game_type)
-            return JSONResponse(status_code=200, content={"ok": True, "filename": video_unique_id, "message": f"已經排入處理佇列！`"})
+            return JSONResponse(status_code=200, content={"ok": True, "filename": video_unique_id, "message": f"已經排入處理隊列"})
 
 def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut = Depends(get_token_header), gameType: str = Form(...), messageInput: str = Form(...)):
     try:
@@ -205,7 +205,7 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
                     website_db.commit()
 
                     task = celery_config.process_uploaded_video.delay(upload_video_id, user_id, gameType)
-                    return {"ok": True, "filename": upload_video_id, "message": f"已經排入處理隊列！"}
+                    return {"ok": True, "filename": upload_video_id, "message": f"已經排入處理隊列"}
                     
     except (NoCredentialsError, PartialCredentialsError):
         return JSONResponse(status_code=403, content={"error": True, "message": f"AWS S3連線異常，請稍後再試"})
