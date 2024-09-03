@@ -1346,3 +1346,8 @@ button {
 #message-upload{
     width: 100%;
 }
+
+.g_id_signin {
+    display: block;
+    margin: 0 auto;
+}
