@@ -1195,6 +1195,17 @@ button {
     font-size: 20px;
 }
 
+.start-button:disabled{
+    background-color: rgb(192, 192, 192);
+    color: rgb(96, 96, 96);
+    border: 0;
+    border-radius: 3px;
+    height: 50px;
+    width: 200px;
+    margin: 20px 20px 10px 20px;
+    font-size: 20px;
+}
+
 .blank-150px{
     height: 150px;
 }
