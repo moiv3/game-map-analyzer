@@ -107,3 +107,4 @@ CONSTRAINT `task_ibfk_2` FOREIGN KEY (`video_id`) REFERENCES `video` (`video_id`
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 ALTER TABLE video ADD video_remark varchar(255);
+ALTER TABLE member ADD COLUMN google_id VARCHAR(255) UNIQUE;
