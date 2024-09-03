@@ -27,7 +27,8 @@ button {
 .header-title {
     font-size: 48px; 
     font-weight: bold;
-    line-height: 144px;
+    color:#4285F4;
+    line-height: 96px;
 }
 
 .header-1 {
@@ -1296,6 +1297,22 @@ button {
 
 .lightyellow-bg{
     background-color: rgb(255, 255, 232)
+}
+
+.lightpurple-bg{
+    /* background-color: plum; */
+    background-color: rgb(217, 161, 255)
+}
+
+.lets-start-div{    
+    background-color: rgb(232, 202, 252);
+    color: #000000;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    line-height: 3rem;
 }
 
 .text-center{
