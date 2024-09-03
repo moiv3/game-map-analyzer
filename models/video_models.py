@@ -136,7 +136,7 @@ def process_uploaded_video_by_id(process_info: VideoParseInfoUploaded, token_dat
             task = celery_config.process_uploaded_video.delay(video_unique_id, user_id, game_type)
             return JSONResponse(status_code=200, content={"ok": True, "filename": video_unique_id, "message": f"已經排入處理隊列"})
 
-def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut = Depends(get_token_header), gameType: str = Form(...), messageInput: str = Form(...)):
+def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut = Depends(get_token_header), gameType: str = Form(...), messageInput: str | None = Form(None)):
     try:
         signin_status = check_user_signin_status_return_bool(token_data)
         if not signin_status:
@@ -156,7 +156,7 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
             print(messageInput)
 
             # Check message size
-            if len(messageInput) > MAX_REMARK_SIZE:
+            if messageInput and len(messageInput) > MAX_REMARK_SIZE:
                 return JSONResponse(status_code=400, content=(Error(error="true", message="備註長度超出上限").dict()))
             
             # Check game_type
