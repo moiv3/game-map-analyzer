@@ -67,7 +67,7 @@ def mario_parser_function(task_id: str, source: str, video_id: str, game_type: s
         # 分歧: mario
         if game_type == "mario":
             # 4. Try to get the starting frame
-            dict_to_infer = black_threshold_test.get_image_title_black_game_attr(extracted_frames_folder)
+            dict_to_infer = black_threshold_test.get_image_title_black_game_attr(extracted_frames_folder, game="mario")
 
             # Check if is valid video, if not, raise an exception
             count_game_image = sum(1 for v in dict_to_infer.values() if v in ["game", "title", "game_blackbg"])
@@ -75,6 +75,7 @@ def mario_parser_function(task_id: str, source: str, video_id: str, game_type: s
             game_image_ratio = count_game_image / total_images
             game_image_ratio_threshold = 0.5
             if game_image_ratio < game_image_ratio_threshold:
+                print("Validity check failed: not enough game screens")
                 return {"error": True, "message": "Not a valid gameplay video"}
             
             # For debugging
@@ -106,6 +107,19 @@ def mario_parser_function(task_id: str, source: str, video_id: str, game_type: s
         
         elif game_type == "mario_new":
             try:
+                # for simplicity, use mario v1's validity function first, fix later
+                # 4. Try to get the starting frame
+                dict_to_infer = black_threshold_test.get_image_title_black_game_attr(extracted_frames_folder, game="mario")
+
+                # Check if is valid video, if not, raise an exception
+                count_game_image = sum(1 for v in dict_to_infer.values() if v in ["game", "title", "game_blackbg"])
+                total_images = len(dict_to_infer)
+                game_image_ratio = count_game_image / total_images
+                game_image_ratio_threshold = 0.5
+                if game_image_ratio < game_image_ratio_threshold:
+                    print("Validity check failed: not enough game screens")
+                    return {"error": True, "message": "Not a valid gameplay video"}
+
                 infer_filepath, infer_result, video_file_path = test_one_frame_detect_0801.infer_and_combine_to_jpg_sonic(images=captured_frames, task_id=task_id, fps=video_data["fps"], output_folder=output_folder, game="mario")
                 frames_folder, frames, movement_x, movement_y = background_movement.get_all_background_movement_from_folder(extracted_frames_folder)
                 
@@ -126,10 +140,39 @@ def mario_parser_function(task_id: str, source: str, video_id: str, game_type: s
                 return {"error": True, "message": "Exception occured at mario_parser_function"}
             
         elif game_type == "sonic":
+            # Validity check 1: check if there are enough spalsh screens(Sonic version)
+            dict_to_infer = black_threshold_test.get_image_title_black_game_attr(extracted_frames_folder, game="sonic")
+
+            count_startend_image = sum(1 for v in dict_to_infer.values() if v in ["sonic_startend"])
+            count_black_image = sum(1 for v in dict_to_infer.values() if v in ["black"])
+
+            if count_startend_image >= 10 and count_black_image >= 5:
+                print("Validity check 1 passed: check if there are enough spalsh screens")
+
+            else:
+                print("Validity check 1 failed: check if there are enough spalsh screens")
+                # Validity check 2: check if there are enough frames with character?
+                valid_frames = 0
+                check_frames = 10
+                extracted_frames_files = os.listdir(extracted_frames_folder)
+                extracted_frames_filepath_list=[]
+                for extracted_frame in extracted_frames_files:
+                    extracted_frames_filepath_list.append(f"{extracted_frames_folder}/{extracted_frame}")
+                
+                print(extracted_frames_filepath_list)
+
+                for i in range(check_frames):
+                    frame_no = round(total_frames * (i+0.5) / check_frames)
+                    if test_one_frame_detect_0801.infer_one_frame_check_for_character(extracted_frames_filepath_list[frame_no], game=game_type):
+                        valid_frames += 1
+                print("Valid frame ratio:", (valid_frames / check_frames))
+                if valid_frames / check_frames >= 0.25:
+                    print("Validity check 2 passed: check if there are enough frames with character")
+                else:
+                    print("Validity check 2 failed: check if there are enough frames with character")
+                    print("Both validity checks failed, returning error")
+                    return {"error": True, "message": "Not a valid gameplay video"}
             # 4. Try to get the starting frame
-
-            # Check if is valid video, if not, raise an exception
-
             # 5. Having the starting frame, Drop the frames before starting frame from captured_frames list
             
             # 6. use the new captured_frames list to do inference

@@ -15,6 +15,12 @@ function addUploadButtonListener(){
             return false;
         }
 
+        const messageInput = document.querySelector('#text-id').value;
+        if(messageInput.length > 30){
+            document.querySelector('#upload-status-message').textContent = '錯誤：影片備註長度超過上限';
+            return false;
+        }
+
         const fileInput = document.querySelector('#file-id');
         console.log(fileInput);
         console.log(fileInput.files[0]);
@@ -47,9 +53,15 @@ function addUploadButtonListener(){
             const gameType = document.querySelector("#game-type").value;
             console.log(gameType);
 
+            const messageInput = document.querySelector('#text-id').value;
+            console.log(messageInput);
+
             const formData = new FormData();
             formData.append('file', file);
             formData.append('gameType', gameType);
+            if (messageInput){
+                formData.append('messageInput', messageInput);
+            }
 
             try {
                 const response = await fetch('./api/video/upload_video', {

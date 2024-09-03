@@ -22,15 +22,21 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Static Pages
+# @app.get("/", include_in_schema=False)
+# async def index_page():
+#     return FileResponse("static/index.html", media_type="text/html")
 @app.get("/", include_in_schema=False)
-async def index_page():
-    return FileResponse("static/index.html", media_type="text/html")
+async def index_page_new():
+    return FileResponse("static/index_new.html", media_type="text/html")
+@app.get("/member/new", include_in_schema=False)
+async def index_page_new():
+    return FileResponse("static/member_new.html", media_type="text/html")
 @app.get("/use_api", include_in_schema=False)
 async def use_api_page():
     return FileResponse("static/use_api.html", media_type="text/html")
 @app.get("/member", include_in_schema=False)
 async def member_page():
-    return FileResponse("static/member.html", media_type="text/html")
+    return FileResponse("static/member_new.html", media_type="text/html")
 @app.get("/task_queue", include_in_schema=False)
 async def task_queue_page():
     return FileResponse("static/task_queue.html", media_type="text/html")
@@ -42,7 +48,10 @@ async def statistics_page():
     return FileResponse("static/statistics.html", media_type="text/html")
 @app.get("/settings", include_in_schema=False)
 async def settings_page():
-    return FileResponse("static/settings.html", media_type="text/html")  
+    return FileResponse("static/settings.html", media_type="text/html")
+@app.get("/about", include_in_schema=False)
+async def about_page():
+    return FileResponse("static/about.html", media_type="text/html")
 
 # Routers
 app.include_router(video_controllers.router)

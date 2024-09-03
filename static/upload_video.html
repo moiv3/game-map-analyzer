@@ -14,8 +14,7 @@
     <div class="navbar-container">
       <a href="/"><div class="navbar-title cyan-70 header-2">Game Map Analyzer</div></a>
       <div class="navbar-topright-container">
-        <a href="use_api"><button class="navbar-button gray-70 body" id="api-docs-button">使用說明</button></a>
-        <a href="upload_video"><button class="navbar-button gray-70 body" id="upload-video-button">影片上傳</button></a>
+        <a href="upload_video"><button class="navbar-button gray-70 body" id="upload-video-button">影片上傳/資料下載</button></a>
         <a href="member"><button class="navbar-button gray-70 body" id="member-page-button">會員中心</button></a>
         <a href="#"><button class="navbar-button gray-70 body" id="signin-button"></button></a><!--renders 登入/註冊 or 登出系統-->
       </div>
@@ -24,60 +23,58 @@
   </div>
   <div class="attraction-main-container">
     <div class="body bold" style="height: 30px"></div>
-    <div class="order-details-form body" style="height: 200px">
-      <div class="header-3 bold">上傳影片：</div>
-      可以在此上傳影片，或下載測試影片進行測試。<br/>
-      目前，本系統開放使用瀏覽器上傳影片的方式，對您上傳的影片進行解析。<br/>
+    <div class="order-details-form body">
+      <div class="header-3 bold">影片上傳/資料下載：</div>
+      <div>在這裡，您可以上傳影片進行分析，並下載分析結果。<br/>
+      您也可以下載測試影片進行測試。</div>
     </div>
 
     <div class="body bold" style="height: 30px"></div>
 
-    <div class="api-form body" id="api-web-signed-out">
-      <div class="header-3 bold">測試影片</div>
-      <a href="https://testbucket2233449988teapot.s3.us-west-2.amazonaws.com/782c9abf-5fc4-4ae6-b7d2-360b184df64f.mp4">範例影片一（瑪莉歐，短，分析時間：約3分鐘）</a>
-      <a href="https://testbucket2233449988teapot.s3.us-west-2.amazonaws.com/5dff4fb6-5220-4993-aabf-b7c7d2e4b8a1.mp4">範例影片二（音速小子，短，分析時間：約3分鐘）</a>
-      <a href="https://testbucket2233449988teapot.s3.us-west-2.amazonaws.com/5feac8ef-a0a2-41e3-b361-49a2338833c7.mp4">範例影片三（音速小子，短，分析時間：約3分鐘）</a>
-    </div>
+    <div class="upload-form body" id="api-web-signed-out">
 
-    <div class="body bold" style="height: 30px"></div>
+      <div class="api-form body" id="upload-videos">
+        <div class="header-3 bold">上傳您的影片</div>      
+        <div id="message-upload">
+          <form id="upload-form">
+            <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"> -->
+              <div class="body"><label for="file-id">1. 請選擇希望上傳的影片檔案：<span class="footnote">（支援格式：mp4，影片最大容量：5 MB，影片時間上限：90秒）</span></label></div>
+              <div><input type="file" id="file-id" name="file-name"><span></span></div>
+              <div>
+                <label for="game-type">2. 請選擇遊戲類型：</label>
+                <select class="game-select" name="game-type" id="game-type">
+                  <option value="sonic">音速小子</option>
+                  <option value="mario_new">瑪莉歐(新版引擎，支援路徑繪製)</option>
+                  <option value="mario">瑪莉歐(初版引擎，無路徑繪製)</option>
+                </select>
+              </div>
+              <div>
+                <label for="text-id">3. 填寫影片備註(可為空白，上限30字)：<br/></label>
+                <input class="video-title" type="text" id="text-id" name="text-name" placeholder="輸入備註訊息">
+              </div>
+              <div class="text-center"><button class="start-button" type="submit" id="submit-video-button">上傳影片</button></div>
+          </form>
+        </div>
+        <div class="btn bold">
+          <div id="upload-status-message"></div>
+          <div id="upload-response-message"></div>
+        </div>
+      </div>
 
-    <!-- <div class="api-form body" id="api-key" style="height: 100px">
-      <div class="header-3 bold" style="height: 30px">您的API key</div>
-      <div class="body" id="api-key-result">Your API key: <span id="api-key-result-text"></span><button id="fetch-api-key-button">Check current API key</button><span id="system-message"></span></div>
-    </div>
-
-    <div class="body bold" style="height: 30px"></div> -->
-      
-    <div class="api-form body" id="api-web-signed-out">
-      <div class="header-3 bold" style="height: 30px">上傳您的影片</div>
-      
-      <div id="message-upload">
-        <form id="upload-form">
-            <!-- <div>
-                <label for="text-id">Your message: (max. 255 characters)</label>
-                <input type="text" id="text-id" name="text-name" placeholder="Enter message">
-            </div> -->
-            <div><label for="file-id">選擇希望上傳的影片: (支援格式：mp4, 影片最大容量：5 MB, 影片時間上限：90秒)</label></div>
-            <div><input type="file" id="file-id" name="file-name"><span></span></div>
-            <div><label for="game-type">選擇遊戲的類型：</label>
-              <select name="game-type" id="game-type">
-                <option value="sonic">音速小子</option>
-                <option value="mario_new">瑪莉歐(新版引擎，支援路徑繪製)</option>
-                <option value="mario">瑪莉歐(初版引擎，無路徑繪製)</option>
-              </select>
-            </div>
-            <div><button type="submit" id="submit-video-button">上傳影片</button></div>
-        </form>
+      <div class="api-form body" id="test-videos">
+        <div class="header-3 bold">測試影片</div>
+        <div class="body">以下測試影片可供下載測試：</div>
+        <a href="https://testbucket2233449988teapot.s3.us-west-2.amazonaws.com/782c9abf-5fc4-4ae6-b7d2-360b184df64f.mp4">範例一（瑪莉歐，約需4分鐘）</a>
+        <a href="https://testbucket2233449988teapot.s3.us-west-2.amazonaws.com/5dff4fb6-5220-4993-aabf-b7c7d2e4b8a1.mp4">範例二（音速小子，約需3分鐘）</a>
+        <a href="https://testbucket2233449988teapot.s3.us-west-2.amazonaws.com/5feac8ef-a0a2-41e3-b361-49a2338833c7.mp4">範例三（音速小子，約需3分鐘）</a>
       </div>
   
-      <h3 id="upload-status-message"></h3>
-      <h3 id="upload-response-message"></h3>
   
       </div>
         <div class="body bold" style="height: 30px"></div>
 
     <div class="api-form body" id="api-web-signed-in">
-      <div class="header-3 bold">已上傳的影片</div>
+      <div class="header-3 bold">影片分析進度與資料下載</div>
       <div class="bold" id="video-process-status-message"></div>
       <div>目前進行中的任務如下：</div>
       <table id="data-db-wip-table" border="1">
@@ -106,10 +103,10 @@
       <div id="submit-query"></div>
     </div>
   </div>
-<!-- <div class="footer body bold">COPYRIGHT &copy; 2024 台北一日遊</div> -->
+  <div class="body bold" style="height: 30px"></div>
+  <div class="footer body"><span class="footer-div bold">Copyright &copy; 2024 Game Map Analyzer</span><span class="footer-div"><a href="statistics">統計資料</a></span><span class="footer-div"><a href="about">更新資訊</span></a><span class="footer-div"><a href="docs" target=”_blank”>API docs</a></span></div>
 <script src="../static/scripts/script_general.js"></script>
 <script src="../static/scripts/script_upload_video.js" defer></script>
 <script src="../static/scripts/script_task_queue.js" defer></script>
-<!-- <script src="../static/scripts/script_attraction.js"></script> -->
 </body>
 </html>

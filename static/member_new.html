@@ -24,10 +24,22 @@
   <div class="attraction-main-container">
     <div class="body bold" style="height: 30px"></div>
     <div class="order-details-form body">
-      <div class="header-3 bold">會員設定</div>
-      <div>以下可以確認會員資料並變更相關資訊。</div>
-      <div>您的姓名：<span id="member-name"></span></div>
-      <div>您的email：<span id="member-email"></span></div>
+      <div class="header-3 bold">會員中心</div>
+      <div id="member-greeting">您好！</div>
+      <div>在此可以確認您的資料，並變更相關偏好設定。</div>
+      <div>如欲上傳影片，請點選右上角 <a href="upload_video">影片上傳/資料下載</a> 按鈕，進入上傳介面。</div>
+    </div>
+
+    <div class="body bold" style="height: 30px"></div>
+
+    <div class="order-details-form body">
+      <div class="header-3 bold">會員資訊</div>
+      <ul>
+      <li>您的姓名：<span id="member-name"></span></li>
+      <li>您的email：<span id="member-email"></span></li>
+      </ul>
+      <!-- <button id="edit-member-btn">變更會員資料(開發中)</button> -->
+
     </div>
 
     <div class="body bold" style="height: 30px"></div>
@@ -64,8 +76,12 @@
     </div>-->
   </div>
   </div>
+  
+  <div class="body bold" style="height: 30px"></div>
+
   <div class="footer body"><span class="footer-div bold">Copyright &copy; 2024 Game Map Analyzer</span><span class="footer-div"><a href="statistics">統計資料</a></span><span class="footer-div"><a href="about">更新資訊</span></a><span class="footer-div"><a href="docs" target=”_blank”>API docs</a></span></div>
 <script src="../static/scripts/script_general.js"></script>
+<script src="../static/scripts/script_member.js" defer></script>
 <script src="../static/scripts/script_settings.js" defer></script>
 </body>
 </html>

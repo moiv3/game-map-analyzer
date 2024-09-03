@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../static/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
+  <title class="attraction-title">Game Map Analyzer - About</title>
+</head>
+<body>
+  <div class="navbar-background">
+    <div class="navbar-container">
+      <a href="/"><div class="navbar-title cyan-70 header-2">Game Map Analyzer</div></a>
+      <div class="navbar-topright-container">
+        <a href="upload_video"><button class="navbar-button gray-70 body" id="upload-video-button">影片上傳/資料下載</button></a>
+        <a href="member"><button class="navbar-button gray-70 body" id="member-page-button">會員中心</button></a>
+        <a href="#"><button class="navbar-button gray-70 body" id="signin-button"></button></a><!--renders 登入/註冊 or 登出系統-->
+      </div>
+    </div>
+    <div class="hr attraction-header-hr"></div>
+  </div>
+
+  <div class="body bold" style="height: 30px"></div>
+  <div class="attraction-main-container">
+    <div class="order-details-form body">
+      <div class="header-3 bold">更新資訊</div>
+      <div class="body">以下為本網站的更新資訊：</div>
+      <div style="border-radius:3px; background-color: white; width: 100%; height: 500px; overflow-y: auto;">
+        <p>2024.09.03<br/>
+            增加使用Google帳號登入的功能(僅記錄使用者的email與名字)</p>
+        <p>2024.09.02<br/>
+            增加輸入影片備註的功能</p>
+        <p>2024.08.30<br/>
+            使用者流程調整<br/>
+            改善mario_new和sonic引擎的有效影片確認流程</p>
+        <p>2024.08.29<br/>
+            修正mario_new引擎角色繪製錯誤的異常<br/>
+            改善mario_new引擎的y方向移動判定</p>
+        <p>2024.08.28<br/>
+            程式碼重構，以MVC(Model-View-Controller)概念重新架構完成</p>
+        <p>2024.08.27<br/>
+            增加偏好設定：完成後是否寄送email功能</p>
+        <p>2024.08.26<br/>
+            增加CI/CD功能(Github Actions)</p>
+        <p>2024.08.24<br/>
+            增加了使用sonic的分析引擎分析mario的功能</p>
+        <p>2024.08.22<br/>
+            增加了分析sonic的功能</p>
+        <p>2024.08.21<br/>
+            增加了作業完成後寄送email的功能<br/>
+            改為HTTPS</p>
+      </div>
+    </div>
+  </div>
+<div class="body bold" style="height: 30px"></div>
+</div>
+
+<div class="footer body"><span class="footer-div bold">Copyright &copy; 2024 Game Map Analyzer</span><span class="footer-div"><a href="statistics">統計資料</a></span><span class="footer-div"><a href="about">更新資訊</span></a><span class="footer-div"><a href="docs" target=”_blank”>API docs</a></span></div>
+<script src="../static/scripts/script_general.js"></script>
+</body>
+</html>

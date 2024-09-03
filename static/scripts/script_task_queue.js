@@ -12,10 +12,10 @@ async function fetchTaskQueueDb(){
 
         const wipData = resultJson["tasks_wip"];
         console.log(wipData);
-        renderTable(wipData, 'data-db-wip-table', ["任務編號", "來源", "影片編號", "狀態", "最後更新時間"]);
+        renderTable(wipData, 'data-db-wip-table', ["任務編號", "來源", "影片編號", "影片備註", "狀態", "最後更新時間"]);
         const compData = resultJson["tasks_completed"];
         console.log(compData);
-        renderTable(compData, 'data-db-comp-table', ["任務編號", "來源", "影片編號", "狀態", "最後更新時間", "地圖", "影片", "路徑分析", "系統訊息"]);
+        renderTable(compData, 'data-db-comp-table', ["任務編號", "來源", "影片編號", "影片備註", "狀態", "最後更新時間", "地圖", "影片", "路徑分析", "系統訊息"]);
 }
 
 // Function to render table

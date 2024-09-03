@@ -5,11 +5,12 @@ from fastapi.responses import JSONResponse
 import jwt
 from datetime import *
 import traceback
+import uuid
 
 # internal dependencies
 from utils.classes import TokenOut, UserPreferences, Error
 from utils.config import db_host, db_user, db_pw, db_database, SECRET_KEY, token_valid_time
-from utils.auth import get_password_hash, verify_password, get_token_header, check_user_signin_status_return_bool
+from utils.auth import get_password_hash, verify_password, get_token_header, check_user_signin_status_return_bool, create_gma_token
 
 def create_user(email: str, password: str, name: str):
     website_db = mysql.connector.connect(
@@ -105,3 +106,53 @@ def patch_user_preferences(user_preferences: UserPreferences, token_data: TokenO
         except Exception:
             traceback.print_exc()
             return {"error": True, "message": "伺服器內部錯誤"}
+        
+
+def signin_by_google(user_email: str, user_name: str, user_google_id: int):
+    website_db = mysql.connector.connect(
+        host=db_host, user=db_user, password=db_pw, database=db_database)
+    website_db_cursor = website_db.cursor()
+    # check if there is a user with same google_id, if yes, login
+    cmd = "SELECT id, email, name, google_id FROM member WHERE google_id = %s"
+    website_db_cursor.execute(cmd, (user_google_id,))
+    result = website_db_cursor.fetchone()
+    if result:
+        print("Signing in with google_id")
+        user_token = create_gma_token(id=result[0], email=result[1], name=result[2])
+        return {"token": user_token}
+    else:
+        pass
+
+    # check if there is a user with same email, if yes, tie user id to email, login
+    cmd = "SELECT id, email, name FROM member WHERE email = %s"
+    website_db_cursor.execute(cmd, (user_email,))
+    result = website_db_cursor.fetchone()
+    if result:
+        print("Found a user with the same email. Updating the google_id...")
+        cmd = "UPDATE member SET google_id = %s WHERE email = %s"
+        website_db_cursor.execute(cmd, (user_google_id, user_email))
+        website_db.commit()
+        print("Updated google_id.")
+        print("Signing in with email...")
+        user_token = create_gma_token(id=result[0], email=result[1], name=result[2])
+        return {"token": user_token}
+    
+    else:
+        # if no, create a user with email and google id and name, login (password use uuid)
+        temp_pw = str(uuid.uuid4())
+        hashed_password = get_password_hash(temp_pw)
+        print(temp_pw, hashed_password)
+        cmd = "INSERT INTO member (name, email, hashed_password, google_id) VALUES (%s, %s, %s, %s)"
+        website_db_cursor.execute(cmd, (user_name, user_email, hashed_password, user_google_id))
+        website_db.commit()
+        print("added new user")
+        print("Signing in...")
+        cmd = "SELECT id, email, name, google_id FROM member WHERE google_id = %s"
+        website_db_cursor.execute(cmd, (user_google_id,))
+        result = website_db_cursor.fetchone()
+        if result:
+            print("Signing in with google_id")
+            user_token = create_gma_token(id=result[0], email=result[1], name=result[2])
+            return {"token": user_token}
+        else:
+            return {"error": True, "message": "A rare exception occured, please check logs"}
