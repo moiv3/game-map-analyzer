@@ -24,6 +24,12 @@ button {
 }
 
 /* 字體大小區域 */
+.header-title {
+    font-size: 48px; 
+    font-weight: bold;
+    line-height: 144px;
+}
+
 .header-1 {
     font-size: 28px; 
     font-weight: bold;
@@ -57,6 +63,11 @@ button {
 .list {
     font-size: 14px; 
     font-weight: 500;
+}
+
+.footnote{
+    font-size: 14px; 
+    font-weight: normal;
 }
 
 .bold{
@@ -1027,6 +1038,29 @@ button {
     width: 300px;
 }
 
+.upload-form{
+    /* border: 1px solid red; */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.upload-form > #upload-videos{
+    /* border: 1px solid red; */
+    display: flex;
+    flex-direction: column;
+    flex: 2;
+    max-width: 64%;
+}
+
+.upload-form > #test-videos{
+    /* border: 1px solid red; */
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    max-width: 32%;
+}
+
 .api-form{
     /* border: 1px solid red; */
     border-radius: 5px;
@@ -1052,10 +1086,11 @@ button {
 }
 
 .landing-page-box{
-    border: 1px blue solid;
-    border-radius: 20px;
+    /* background-color: rgb(232, 232, 232); */
+    /* border: 1px blue solid; */
+    border-radius: 50px;
     color: #000000;
-    padding: 15px 20px 15px 20px;
+    padding: 15px 15px 15px 15px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1067,68 +1102,93 @@ button {
 .landing-page-steps-box{
     display: flex;
     flex-direction: row;
+    justify-content: space-around;
+    line-height: 1.5rem;
 }
 
 .landing-page-steps-small-box{
-    border: 1px blue solid;
     flex: 1;
-    max-width: 33.33%;
+    max-width: 30%;
     box-sizing: border-box;
     justify-content: space-between;
     align-items: center;
     display: flex;
     flex-direction: column;
     height: 400px;
+    border-radius: 30px;
+    padding: 10px;
 }
 
 .landing-page-steps-small-box div{
+    font-weight: bold;
+    line-height: 2rem;
     justify-content: center;
     align-items: center;
-    line-height: 2rem;
+}
+
+.landing-page-steps-small-box img {
+    object-fit: contain;
+    width: 50%;
+    height: auto;
+}
+
+.landing-page-steps-small-box p{
+    height: 80px;
+    display: flex;
+    align-items: center;
+    text-align: center;
 }
 
 .landing-page-example-box{
-    border: 1px blue solid;
     display: flex;
+    justify-content: space-around;
 }
 
 .landing-page-example-box-left{
-    border: 1px blue solid;
     flex: 1;
-    max-width: 11.11%;
+    max-width: 10%;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .landing-page-example-box-mid{
-    border: 1px blue solid;
     flex: 2;
-    max-width: 22.22%;
+    max-width: 20%;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
 }
 
-.landing-page-example-box-right{
-    border: 1px blue solid;
-    flex: 6;
-    max-width: 66.67%;
-    box-sizing: border-box;
-}
-
-.landing-page-example-box-right img{
-    width: auto;
+.landing-page-example-box-mid img{
     max-width: 100%;
-    height: 90%;
-    max-height: 300px;
-    overflow-y: scroll;
+    max-height: 100%;
+    height: auto;
+    width: auto;
+    object-fit: contain;    
 }
 
 .start-button{
-    background-color: #337788;
+    background-color: #4285F4;
     color: #FFFFFF;
     border: 0;
     border-radius: 3px;
-    height: 40px;
+    height: 50px;
     width: 200px;
     margin: 20px 20px 10px 20px;
+    font-size: 20px;
+}
+
+.start-button:hover{
+    background-color: #4169e1;
+    color: #FFFFFF;
+    border: 0;
+    border-radius: 3px;
+    height: 50px;
+    width: 200px;
+    margin: 20px 20px 10px 20px;
+    font-size: 20px;
 }
 
 .blank-150px{
@@ -1141,6 +1201,7 @@ button {
 }
 
 .steps-icon-div img {
+    object-fit: contain;
     width: 50%;
     height: auto;
     display: block;
@@ -1167,9 +1228,8 @@ button {
 }
 
 .landing-page-example-box-right-sonic{
-    border: 1px blue solid;
     flex: 6;
-    max-width: 66.67%;
+    max-width: 60%;
     box-sizing: border-box;
 }
 
@@ -1183,9 +1243,8 @@ button {
     overflow: auto; /* adds scrollbars */
     height: 200px;
     position: relative;
-    border: 1px blue solid;
     flex: 6;
-    max-width: 66.67%;
+    max-width: 60%;
     box-sizing: border-box;
 }
 
@@ -1199,9 +1258,8 @@ button {
     overflow: auto; /* adds scrollbars */
     height: 200px;
     position: relative;
-    border: 1px blue solid;
     flex: 6;
-    max-width: 66.67%;
+    max-width: 60%;
     box-sizing: border-box;
 }
 
@@ -1209,4 +1267,67 @@ button {
     height: 300%; /* probably looks neater if auto */
     width: 50%; /* double width image to show only first quarter */
     vertical-align: bottom; /* moves image to true text bottom */
+}
+
+/* GMA主容器 */
+.gma-main-container{
+    max-width: 1200px;
+    margin: 54px auto 0 auto;
+}
+
+.gray-bg{
+    background-color: rgb(232, 232, 232);
+}
+
+.lightyellow-bg{
+    background-color: rgb(255, 255, 232)
+}
+
+.text-center{
+    text-align: center;
+}
+
+.landing-page-example-text-box{
+    display: flex;
+    justify-content: space-around;
+}
+
+.landing-page-example-text-box-left{
+    flex: 1;
+    max-width: 10%;
+}
+
+.landing-page-example-text-box-mid{
+    flex: 2;
+    max-width: 20%;
+}
+
+.landing-page-example-text-box-right{
+    flex: 6;
+    max-width: 60%;
+}
+
+.landing-page-example-div{
+    background-color: rgb(232, 232, 232);
+    border-radius: 30px;
+    margin: 15px 15px 15px 15px;
+}
+
+.game-select{
+    width: 100%;
+    height: 36px;
+}
+
+.game-select > button{
+    width: 100%;
+    height: 36px;
+}
+
+.video-title{
+    width: 100%;
+    height: 30px;
+}
+
+#message-upload{
+    width: 100%;
 }

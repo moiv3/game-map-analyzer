@@ -316,7 +316,7 @@ function initializeStartHereElements(tokenStatus){
     if (tokenStatus){
         const startHereText1 = document.querySelector("#start-here-text-1");
         if (startHereText1){
-            startHereText1.textContent = "點擊以下按鈕開始使用，或向下捲動以了解更多！";
+            startHereText1.textContent = "點擊以下按鈕，即可開始使用；向下捲動以了解更多！";
         }
         const startHereText2 = document.querySelector("#start-here-text-2");
         if (startHereText2){

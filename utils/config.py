@@ -20,3 +20,5 @@ BUCKET_NAME = os.getenv("s3_bucket_name")
 token_valid_time = timedelta(days=7)
 MAX_FILE_SIZE = 5 * 1024 * 1024
 MAX_QUEUED_VIDEOS = 3
+MAX_REMARK_SIZE = 30
+SUPPORTED_GAME_TYPES = ["mario", "mario_new", "sonic"]

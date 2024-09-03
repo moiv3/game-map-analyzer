@@ -23,10 +23,12 @@
   `times_analyzed` int NOT NULL DEFAULT '0',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `video_remark` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `video_id` (`video_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `uploaded_video_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `member` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
+) ENGINE=InnoDB AUTO_INCREMENT=173 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
 
 | task  | CREATE TABLE `task` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -103,3 +105,5 @@ KEY `user_id` (`user_id`),
 CONSTRAINT `task_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `member` (`id`),
 CONSTRAINT `task_ibfk_2` FOREIGN KEY (`video_id`) REFERENCES `video` (`video_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+ALTER TABLE video ADD video_remark varchar(255);

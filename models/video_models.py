@@ -14,7 +14,7 @@ from utils.classes import TokenOut, VideoParseInfoUploaded, Error
 from utils.auth import get_token_header, check_user_signin_status_return_bool
 from utils.config import db_host, db_user, db_pw, db_database
 from utils.config import region_name, aws_access_key_id, aws_secret_access_key, BUCKET_NAME
-from utils.config import MAX_FILE_SIZE, MAX_QUEUED_VIDEOS
+from utils.config import MAX_FILE_SIZE, MAX_QUEUED_VIDEOS, MAX_REMARK_SIZE, SUPPORTED_GAME_TYPES
 
 # AWS S3 config
 s3_client = boto3.client('s3', region_name=region_name, 
@@ -36,7 +36,7 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
             final_output = {}
 
             # Select user's current PROCESSING, QUEUED or UPLOADED tasks
-            cmd = "SELECT task.id, video.id, video.video_source, task.status, task.update_time FROM task JOIN video ON task.video_id = video.video_id JOIN member ON task.user_id = member.id WHERE (task.user_id = %s AND (status = 'PROCESSING' OR status = 'QUEUED' OR status = 'UPLOADED')) ORDER BY task.update_time DESC LIMIT 5"
+            cmd = "SELECT task.id, video.id, video.video_source, video.video_remark, task.status, task.update_time FROM task JOIN video ON task.video_id = video.video_id JOIN member ON task.user_id = member.id WHERE (task.user_id = %s AND (status = 'PROCESSING' OR status = 'QUEUED' OR status = 'UPLOADED')) ORDER BY task.update_time DESC LIMIT 5"
             website_db_cursor.execute(cmd,(user_id,))
             tasks_wip_result = website_db_cursor.fetchall()
             print(tasks_wip_result)
@@ -48,8 +48,9 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
                     output_task_part_single["任務編號"] = task[0]
                     output_task_part_single["來源"] = task[2]
                     output_task_part_single["影片編號"] = task[1]
-                    output_task_part_single["狀態"] = task[3]
-                    output_task_part_single["最後更新時間"] = task[4]
+                    output_task_part_single["影片備註"] = task[3]
+                    output_task_part_single["狀態"] = task[4]
+                    output_task_part_single["最後更新時間"] = task[5]
                     output_task_part_all.append(output_task_part_single)
 
             else:
@@ -58,7 +59,7 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
             final_output["tasks_wip"] = output_task_part_all
 
             # Select user's current COMPLETED or ERROR tasks
-            cmd = "SELECT task.id, video.id, video.video_source, task.status, task.update_time, task.result_map, task.result_video, task.result_movement, task.message FROM task JOIN video ON task.video_id = video.video_id JOIN member ON task.user_id = member.id WHERE (task.user_id = %s AND (status = 'COMPLETED' OR status = 'ERROR')) ORDER BY task.update_time DESC LIMIT 5"
+            cmd = "SELECT task.id, video.id, video.video_source, video.video_remark, task.status, task.update_time, task.result_map, task.result_video, task.result_movement, task.message FROM task JOIN video ON task.video_id = video.video_id JOIN member ON task.user_id = member.id WHERE (task.user_id = %s AND (status = 'COMPLETED' OR status = 'ERROR')) ORDER BY task.update_time DESC LIMIT 5"
             website_db_cursor.execute(cmd, (user_id,))
             tasks_completed_result = website_db_cursor.fetchall()
             print(tasks_completed_result)
@@ -70,12 +71,13 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
                     output_task_part_single["任務編號"] = task[0]
                     output_task_part_single["來源"] = task[2]
                     output_task_part_single["影片編號"] = task[1]
-                    output_task_part_single["狀態"] = task[3]
-                    output_task_part_single["最後更新時間"] = task[4]
-                    output_task_part_single["地圖"] = task[5]
-                    output_task_part_single["影片"] = task[6]
-                    output_task_part_single["路徑分析"] = task[7]
-                    output_task_part_single["系統訊息"] = task[8]
+                    output_task_part_single["影片備註"] = task[3]
+                    output_task_part_single["狀態"] = task[4]
+                    output_task_part_single["最後更新時間"] = task[5]
+                    output_task_part_single["地圖"] = task[6]
+                    output_task_part_single["影片"] = task[7]
+                    output_task_part_single["路徑分析"] = task[8]
+                    output_task_part_single["系統訊息"] = task[9]
                     output_task_part_all.append(output_task_part_single)
 
             else:
@@ -134,7 +136,7 @@ def process_uploaded_video_by_id(process_info: VideoParseInfoUploaded, token_dat
             task = celery_config.process_uploaded_video.delay(video_unique_id, user_id, game_type)
             return JSONResponse(status_code=200, content={"ok": True, "filename": video_unique_id, "message": f"已經排入處理佇列！`"})
 
-def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut = Depends(get_token_header), gameType: str = Form(...)):
+def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut = Depends(get_token_header), gameType: str = Form(...), messageInput: str = Form(...)):
     try:
         signin_status = check_user_signin_status_return_bool(token_data)
         if not signin_status:
@@ -150,7 +152,17 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
             print(f"File size: {file_size} bytes")
             if file_size > MAX_FILE_SIZE:
                 return JSONResponse(status_code=413, content=(Error(error="true", message="檔案大小超出上限").dict()))
+            print(gameType)
+            print(messageInput)
 
+            # Check message size
+            if len(messageInput) > MAX_REMARK_SIZE:
+                return JSONResponse(status_code=400, content=(Error(error="true", message="備註長度超出上限").dict()))
+            
+            # Check game_type
+            if gameType not in SUPPORTED_GAME_TYPES:
+                return JSONResponse(status_code=400, content=(Error(error="true", message="目前尚不支援此遊戲，請檢查輸入，再試一次").dict()))
+            
             user_id = signin_status["id"]
             upload_video_id = str(uuid.uuid4())
             unique_filename = f"{upload_video_id}.mp4"
@@ -159,8 +171,8 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
             # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
 
             # Save video info to database
-            cmd = "INSERT INTO video (user_id, video_id, video_url, video_source, game_type) VALUES (%s, %s, %s, %s, %s)"
-            website_db_cursor.execute(cmd, (user_id, upload_video_id, file_url, "s3", gameType))
+            cmd = "INSERT INTO video (user_id, video_id, video_url, video_source, game_type, video_remark) VALUES (%s, %s, %s, %s, %s, %s)"
+            website_db_cursor.execute(cmd, (user_id, upload_video_id, file_url, "s3", gameType, messageInput))
             website_db.commit()
 
             # Create an "uploaded" info in table "tasks"
@@ -185,7 +197,7 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
                 print(db_fetch_result)
 
                 if db_fetch_result:
-                    return JSONResponse(status_code=400, content=(Error(error="true", message="影片已在處理中，請至會員中心確認結果").dict()))
+                    return JSONResponse(status_code=400, content=(Error(error="true", message="此部影片已在處理中。").dict()))
                 else:
                     # not found, process video (insert task first, then pass task to celery)
                     cmd = "UPDATE task SET status = %s WHERE video_id = %s"
@@ -193,7 +205,7 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
                     website_db.commit()
 
                     task = celery_config.process_uploaded_video.delay(upload_video_id, user_id, gameType)
-                    return {"ok": True, "filename": upload_video_id, "message": f"已經排入處理佇列，請至會員中心確認結果"}
+                    return {"ok": True, "filename": upload_video_id, "message": f"已經排入處理隊列！"}
                     
     except (NoCredentialsError, PartialCredentialsError):
         return JSONResponse(status_code=403, content={"error": True, "message": f"AWS S3連線異常，請稍後再試"})
