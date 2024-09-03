@@ -74,6 +74,10 @@ button {
     font-weight: bold;
 }
 
+.weight-500{
+    font-weight: 500;
+}
+
 /* 字體顏色區域 */
 .primary-color{
     color:#448899;

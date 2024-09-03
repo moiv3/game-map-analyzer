@@ -37,3 +37,6 @@ class VideoParseInfoUploaded(BaseModel):
 
 class UserPreferences(BaseModel):
     send_mail: bool
+
+class CredentialIn(BaseModel):
+    credential: str
