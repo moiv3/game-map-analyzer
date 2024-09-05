@@ -15,6 +15,7 @@ region_name=os.getenv("region_name")
 aws_access_key_id=os.getenv("aws_access_key_id")
 aws_secret_access_key=os.getenv("aws_secret_access_key")
 BUCKET_NAME = os.getenv("s3_bucket_name")
+CLOUDFRONT_URL = os.getenv("cloudfront_distribution_domain_name")
 
 
 GOOGLE_OAUTH_CLIENT_ID = os.getenv("google_oauth_client_id")

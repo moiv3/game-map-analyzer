@@ -13,7 +13,7 @@ from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 from utils.classes import TokenOut, VideoParseInfoUploaded, Error
 from utils.auth import get_token_header, check_user_signin_status_return_bool
 from utils.config import db_host, db_user, db_pw, db_database
-from utils.config import region_name, aws_access_key_id, aws_secret_access_key, BUCKET_NAME
+from utils.config import region_name, aws_access_key_id, aws_secret_access_key, BUCKET_NAME, CLOUDFRONT_URL
 from utils.config import MAX_FILE_SIZE, MAX_QUEUED_VIDEOS, MAX_REMARK_SIZE, SUPPORTED_GAME_TYPES
 
 # AWS S3 config
@@ -167,8 +167,8 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
             upload_video_id = str(uuid.uuid4())
             unique_filename = f"{upload_video_id}.mp4"
             s3_client.upload_fileobj(file.file, BUCKET_NAME, unique_filename)
-            file_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{unique_filename}"
-            # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
+            # file_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{unique_filename}"
+            file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
 
             # Save video info to database
             cmd = "INSERT INTO video (user_id, video_id, video_url, video_source, game_type, video_remark) VALUES (%s, %s, %s, %s, %s, %s)"
