@@ -1,6 +1,6 @@
 async function fetchTaskQueueDb(){
     const signinStatusToken = window.localStorage.getItem('token');
-    const result = await fetch("./api/video/task-status-db/", {
+    const result = await fetch("./api/video/task_status_db/", {
         method:"GET",
         headers: {
             "Content-Type": "application/json",

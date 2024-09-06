@@ -10,11 +10,13 @@ import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 # internal dependencies
+from utils.hash import compute_file_hash
 from utils.classes import TokenOut, VideoParseInfoUploaded, Error
 from utils.auth import get_token_header, check_user_signin_status_return_bool
 from utils.config import db_host, db_user, db_pw, db_database
 from utils.config import region_name, aws_access_key_id, aws_secret_access_key, BUCKET_NAME, CLOUDFRONT_URL
 from utils.config import MAX_FILE_SIZE, MAX_QUEUED_VIDEOS, MAX_REMARK_SIZE, SUPPORTED_GAME_TYPES
+from utils.config import HASHING_CHECK, VIDEO_PROCESS_CACHE_DAYS
 
 # AWS S3 config
 s3_client = boto3.client('s3', region_name=region_name, 
@@ -36,7 +38,7 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
             final_output = {}
 
             # Select user's current PROCESSING, QUEUED or UPLOADED tasks
-            cmd = "SELECT task.id, video.id, video.video_source, video.video_remark, task.status, task.update_time FROM task JOIN video ON task.video_id = video.video_id JOIN member ON task.user_id = member.id WHERE (task.user_id = %s AND (status = 'PROCESSING' OR status = 'QUEUED' OR status = 'UPLOADED')) ORDER BY task.update_time DESC LIMIT 5"
+            cmd = "SELECT task.id, video.id, video.video_source, task.user_remark, task.status, task.update_time FROM task JOIN video ON task.video_id = video.video_id JOIN member ON task.user_id = member.id WHERE (task.user_id = %s AND (status = 'PROCESSING' OR status = 'QUEUED' OR status = 'UPLOADED')) ORDER BY task.update_time DESC LIMIT 5"
             website_db_cursor.execute(cmd,(user_id,))
             tasks_wip_result = website_db_cursor.fetchall()
             print(tasks_wip_result)
@@ -59,7 +61,7 @@ def get_all_task_status_db(token_data: TokenOut = Depends(get_token_header)):
             final_output["tasks_wip"] = output_task_part_all
 
             # Select user's current COMPLETED or ERROR tasks
-            cmd = "SELECT task.id, video.id, video.video_source, video.video_remark, task.status, task.update_time, task.result_map, task.result_video, task.result_movement, task.message FROM task JOIN video ON task.video_id = video.video_id JOIN member ON task.user_id = member.id WHERE (task.user_id = %s AND (status = 'COMPLETED' OR status = 'ERROR')) ORDER BY task.update_time DESC LIMIT 5"
+            cmd = "SELECT task.id, video.id, video.video_source, task.user_remark, task.status, task.update_time, task.result_map, task.result_video, task.result_movement, task.message FROM task JOIN video ON task.video_id = video.video_id JOIN member ON task.user_id = member.id WHERE (task.user_id = %s AND (status = 'COMPLETED' OR status = 'ERROR')) ORDER BY task.update_time DESC LIMIT 5"
             website_db_cursor.execute(cmd, (user_id,))
             tasks_completed_result = website_db_cursor.fetchall()
             print(tasks_completed_result)
@@ -113,13 +115,14 @@ def process_uploaded_video_by_id(process_info: VideoParseInfoUploaded, token_dat
             return JSONResponse(status_code=500, content=(Error(error="true", message="目前有太多請求，請稍後再試").dict()))
 
         # 確認這個影片的狀態
-        cmd = "SELECT task.user_id, task.video_id, task.status, video.game_type FROM task JOIN video ON video.video_id = task.video_id WHERE task.user_id = %s AND video.id = %s"
+        cmd = "SELECT task.user_id, task.video_id, task.status, video.game_type, task.id FROM task JOIN video ON video.video_id = task.video_id WHERE task.user_id = %s AND video.id = %s"
         website_db_cursor.execute(cmd, (user_id, video_id))
         db_fetch_result = website_db_cursor.fetchone()
         print(db_fetch_result)
         video_unique_id = db_fetch_result[1]
         video_status = db_fetch_result[2]
         game_type = db_fetch_result[3]
+        task_num_id = db_fetch_result[4]
 
         if not db_fetch_result:
             return JSONResponse(status_code=401, content=(Error(error="true", message="影片資訊不正確，請重新確認").dict()))
@@ -129,8 +132,8 @@ def process_uploaded_video_by_id(process_info: VideoParseInfoUploaded, token_dat
             return JSONResponse(status_code=400, content=(Error(error="true", message="影片已處理完畢，請至會員中心確認結果").dict()))
         # status = "UPLOADED", 可以處理影片的狀態
         else:
-            cmd = "UPDATE task SET status = %s WHERE video_id = %s"
-            website_db_cursor.execute(cmd, ("QUEUED", video_unique_id))
+            cmd = "UPDATE task SET status = %s WHERE (video_id = %s AND id = %s)"
+            website_db_cursor.execute(cmd, ("QUEUED", video_unique_id, task_num_id))
             website_db.commit()
 
             task = celery_config.process_uploaded_video.delay(video_unique_id, user_id, game_type)
@@ -145,7 +148,7 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
             website_db = mysql.connector.connect(host=db_host, user=db_user, password=db_pw, database=db_database)
             website_db_cursor = website_db.cursor()
 
-            # Check file size
+            # by GPT: Check file size
             file.file.seek(0, 2)  # Move to the end of the file
             file_size = file.file.tell()  # Get the size in bytes
             file.file.seek(0)  # Reset to the beginning of the file
@@ -163,23 +166,60 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
             if gameType not in SUPPORTED_GAME_TYPES:
                 return JSONResponse(status_code=400, content=(Error(error="true", message="目前尚不支援此遊戲，請檢查輸入，再試一次").dict()))
             
+            # get file hash
+            video_hash = compute_file_hash(file.file)
+
             user_id = signin_status["id"]
             upload_video_id = str(uuid.uuid4())
             unique_filename = f"{upload_video_id}.mp4"
-            s3_client.upload_fileobj(file.file, BUCKET_NAME, unique_filename)
-            # file_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{unique_filename}"
-            file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
 
-            # Save video info to database
-            cmd = "INSERT INTO video (user_id, video_id, video_url, video_source, game_type, video_remark) VALUES (%s, %s, %s, %s, %s, %s)"
-            website_db_cursor.execute(cmd, (user_id, upload_video_id, file_url, "s3", gameType, messageInput))
-            website_db.commit()
+            # TODO: hash is implemented, next do logic for checking if video has same hash
+            cmd = "SELECT video_id, video_url FROM video WHERE video_hash = %s ORDER BY create_time DESC LIMIT 1"
+            website_db_cursor.execute(cmd, (video_hash,))
+            video_duplicate_result = website_db_cursor.fetchone()
+            # dupe video: 1. no upload, don't insert video id at all. Insert task only
+            if video_duplicate_result:
+                upload_video_id = video_duplicate_result[0] # override video_id
+            else:
+                file_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{unique_filename}"
+                s3_client.upload_fileobj(file.file, BUCKET_NAME, unique_filename)
+
+                # Save video info to database
+                cmd = "INSERT INTO video (user_id, video_id, video_url, video_source, video_hash, game_type) VALUES (%s, %s, %s, %s, %s, %s)"
+                website_db_cursor.execute(cmd, (user_id, upload_video_id, file_url, "s3", video_hash, gameType))
+                website_db.commit()
+
+            # Check if [x] days passed since last task's update_time
+            cmd = "SELECT update_time, result_map, result_movement, result_video, status, message FROM task WHERE (video_id = %s AND cached_result = '0') ORDER BY update_time DESC LIMIT 1"
+            website_db_cursor.execute(cmd, (upload_video_id,))
+            cached_result_to_output = website_db_cursor.fetchone()
+            if cached_result_to_output:
+                time_diff_days = (datetime.now()-cached_result_to_output[0]).total_seconds() / 86400
+                # In this special case, return cached result with days mark, don't enter analysis
+                if time_diff_days < VIDEO_PROCESS_CACHE_DAYS:
+                    print("Cached result and satisfies cache conditions, returning cached result")
+                    task_id = str(uuid.uuid4())
+                    cached_result_map = cached_result_to_output[1]
+                    cached_result_movement = cached_result_to_output[2]
+                    cached_result_video = cached_result_to_output[3]
+                    cached_status = cached_result_to_output[4]
+                    cached_message = cached_result_to_output[5] + "(cached)"
+                    cmd = "INSERT INTO task (task_id, user_id, video_id, status, result_map, result_movement, result_video, message, cached_result, user_remark) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                    website_db_cursor.execute(cmd, (task_id, user_id, upload_video_id, cached_status, cached_result_map, cached_result_movement, cached_result_video, cached_message, 1, messageInput))
+                    website_db.commit()
+                    #TODO: 補上信件
+                    return {"ok": True, "message": "已經排入處理隊列"}
+                else: 
+                    print("Cached result but cache too old, entering normal analyze route")
+            else:
+                print("No cached result available, entering normal analyze route")
 
             # Create an "uploaded" info in table "tasks"
-            cmd = "INSERT into task (user_id, video_id, status) VALUES (%s, %s, %s)"
-            website_db_cursor.execute(cmd, (user_id, upload_video_id, "UPLOADED"))
+            cmd = "INSERT into task (user_id, video_id, status, user_remark) VALUES (%s, %s, %s, %s)"
+            website_db_cursor.execute(cmd, (user_id, upload_video_id, "UPLOADED", messageInput))
+            task_num_id = website_db_cursor.lastrowid
             website_db.commit()
-            
+
             # Check how many status="PROCESSING" is there
             cmd = "SELECT COUNT(*) FROM task WHERE (status = %s OR status = %s)"
             website_db_cursor.execute(cmd, ("PROCESSING", "QUEUED"))
@@ -187,7 +227,7 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
             print("Processing items:", processing_items_result)
             # If too many items processing, not process, return ok
             if processing_items_result >= MAX_QUEUED_VIDEOS:
-                return {"ok": True, "filename": unique_filename, "message": "目前請求數量超出伺服器上限，已上傳此影片，但未開始分析，請稍待再送出分析需求。"}
+                return {"ok": True, "message": "目前請求數量超出伺服器上限，已上傳此影片，但未開始分析，請稍待再送出分析需求。"}
             # If not too many items, start the process
             else:
             # Check if everything is there
@@ -200,12 +240,12 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
                     return JSONResponse(status_code=400, content=(Error(error="true", message="此部影片已在處理中。").dict()))
                 else:
                     # not found, process video (insert task first, then pass task to celery)
-                    cmd = "UPDATE task SET status = %s WHERE video_id = %s"
-                    website_db_cursor.execute(cmd, ("QUEUED", upload_video_id))
+                    cmd = "UPDATE task SET status = %s WHERE (video_id = %s AND id = %s)"
+                    website_db_cursor.execute(cmd, ("QUEUED", upload_video_id, task_num_id))
                     website_db.commit()
 
-                    task = celery_config.process_uploaded_video.delay(upload_video_id, user_id, gameType)
-                    return {"ok": True, "filename": upload_video_id, "message": f"已經排入處理隊列"}
+                    task = celery_config.process_uploaded_video.delay(upload_video_id, user_id, gameType, task_num_id)
+                    return {"ok": True, "message": f"已經排入處理隊列"}
                     
     except (NoCredentialsError, PartialCredentialsError):
         return JSONResponse(status_code=403, content={"error": True, "message": f"AWS S3連線異常，請稍後再試"})

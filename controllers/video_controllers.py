@@ -10,7 +10,7 @@ router = APIRouter(
     tags=["Video"]
 )
 
-@router.get("/task-status-db/", summary="取得使用者目前的待分析任務清單")
+@router.get("/task_status_db/", summary="取得使用者目前的待分析任務清單")
 async def get_user_task_status_db(token_data: TokenOut = Depends(get_token_header)):
     return get_all_task_status_db(token_data)
 

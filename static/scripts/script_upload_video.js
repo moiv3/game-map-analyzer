@@ -98,7 +98,7 @@ async function fetchUploadedVideos(){
         console.log("No token detected!");
         return false;
     }
-    const result = await fetch("./task-status-db/", {
+    const result = await fetch("./task_status_db/", {
         method:"GET",
         headers: {Authorization: `Bearer ${signinStatusToken}`}
     });
