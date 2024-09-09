@@ -46,7 +46,7 @@ def get_image_title_black_game_attr(folder_path, game):
             title_screen_have_words = mario_check_white_ratio.check_if_stage_title(file_path)
             title_screen_black_enough = mario_check_white_ratio.check_if_black_screen(file_path, threshold_ratio=0.05)
             is_black_screen = mario_check_white_ratio.check_if_black_screen(file_path)
-            is_blue_game_background = bool(mario_check_white_ratio.check_color_ratio(file_path,((240, 255), (120, 155), (70, 100))) > 0.5)
+            is_blue_game_background = bool(mario_check_white_ratio.check_color_ratio(file_path,((240, 255), (120, 155), (60, 120))) > 0.5)
             is_black_game_background = bool(mario_check_white_ratio.check_color_ratio(file_path,((0, 16), (0, 16), (0, 16))) > 0.75)
             is_sonic_start_end_screen = bool(mario_check_white_ratio.check_color_ratio(file_path,((245, 255), (17, 32), (0, 10))) > 0.6)
 
