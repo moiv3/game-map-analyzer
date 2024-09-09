@@ -33,7 +33,7 @@ class VideoParseInfo(BaseModel):
     api_key: str
 
 class VideoParseInfoUploaded(BaseModel):
-    video_id: int
+    task_id: int
 
 class UserPreferences(BaseModel):
     send_mail: bool

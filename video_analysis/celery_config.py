@@ -142,7 +142,6 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str, task_nu
 
     # update task status
     cmd = "UPDATE task SET task_id = %s, status = %s WHERE (video_id = %s AND id = %s)"
-    # cmd = "INSERT into task (task_id, user_id, video_id, status) VALUES (%s, %s, %s, %s)"
     website_db_cursor.execute(cmd, (task_id, "PROCESSING", video_id, task_num_id))
     website_db.commit()
 
