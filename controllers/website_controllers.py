@@ -8,7 +8,7 @@ router = APIRouter(
     tags=["Website"]
 )
 
-@router.get("/statistics", summary="取得API統計資料")
+@router.get("/statistics", response_model=WebsiteStatistics, summary="取得API統計資料")
 async def get_statistics():
     return get_api_statistics()
 

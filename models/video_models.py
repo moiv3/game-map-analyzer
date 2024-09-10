@@ -205,7 +205,7 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
             file.file.seek(0)  # Reset to the beginning of the file
             print(f"File size: {file_size} bytes")
             if file_size > MAX_FILE_SIZE:
-                return JSONResponse(status_code=413, content=(Error(error="true", message="檔案大小超出上限").dict()))
+                return JSONResponse(status_code=400, content=(Error(error="true", message="檔案大小超出上限").dict()))
             print(gameType)
             print(messageInput)
 
