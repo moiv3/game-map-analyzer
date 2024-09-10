@@ -1,6 +1,6 @@
 async function fetchTaskQueueDb(){
     const signinStatusToken = window.localStorage.getItem('token');
-    const result = await fetch("./api/video/task-status-db/", {
+    const result = await fetch("./api/video/task_status_db/", {
         method:"GET",
         headers: {
             "Content-Type": "application/json",
@@ -12,10 +12,10 @@ async function fetchTaskQueueDb(){
 
         const wipData = resultJson["tasks_wip"];
         console.log(wipData);
-        renderTable(wipData, 'data-db-wip-table', ["任務編號", "來源", "影片編號", "影片備註", "狀態", "最後更新時間"]);
+        renderTable(wipData, 'data-db-wip-table', ["任務編號", "遊戲類型","影片備註", "狀態", "上傳時間", "最後更新時間"]);
         const compData = resultJson["tasks_completed"];
         console.log(compData);
-        renderTable(compData, 'data-db-comp-table', ["任務編號", "來源", "影片編號", "影片備註", "狀態", "最後更新時間", "地圖", "影片", "路徑分析", "系統訊息"]);
+        renderTable(compData, 'data-db-comp-table', ["任務編號", "遊戲類型", "影片備註", "狀態", "最後更新時間", "地圖", "影片", "路徑分析", "系統訊息"]);
 }
 
 // Function to render table
@@ -63,7 +63,7 @@ function renderTable(data, tableId, headers) {
             else{
                 const td = document.createElement('td');
                 td.textContent = item[header];
-                if (header === 'status' && item[header] === 'UPLOADED') {
+                if (header === '狀態' && item[header] === 'UPLOADED') {
                     td.textContent = item[header];
                     const button = document.createElement('button');
                     button.textContent = '點此開始分析';
@@ -95,7 +95,8 @@ async function processVideo(item, button) {
     button.textContent = '已送出需求，請稍候';
 
     // check API key
-    console.log(`Processing video with ID: ${item.video_id}`);
+    const task_id = item.任務編號;
+    console.log(`Processing task with ID: ${task_id}`);
     // fetch and update 結果
     result = await fetch("./api/video/process_uploaded_video",{
         method:"POST",
@@ -104,7 +105,7 @@ async function processVideo(item, button) {
             "Authorization": `Bearer ${signinStatusToken}`
         },
         body: JSON.stringify({
-            "video_id": item.video_id
+            "task_id": task_id
         })
     });
     const resultJson = await result.json();

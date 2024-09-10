@@ -99,6 +99,7 @@ CREATE TABLE `task` (
 `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 `message` varchar(255) DEFAULT NULL,
+`cached_result` varchar(255) DEFAULT NULL,
 PRIMARY KEY (`id`),
 UNIQUE KEY `video_id` (`video_id`),
 KEY `user_id` (`user_id`),
@@ -108,3 +109,4 @@ CONSTRAINT `task_ibfk_2` FOREIGN KEY (`video_id`) REFERENCES `video` (`video_id`
 
 ALTER TABLE video ADD video_remark varchar(255);
 ALTER TABLE member ADD COLUMN google_id VARCHAR(255) UNIQUE;
+ALTER TABLE task ADD cached_result BOOL DEFAULT 0;
