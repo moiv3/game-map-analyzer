@@ -11,5 +11,3 @@ router = APIRouter(
 @router.get("/statistics", response_model=WebsiteStatistics, summary="取得API統計資料")
 async def get_statistics():
     return get_api_statistics()
-
-

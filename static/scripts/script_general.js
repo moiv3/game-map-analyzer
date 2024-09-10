@@ -71,6 +71,7 @@ function createCurtainAndSigninForm(){
     inputUsernameElement.type = "text";
     inputUsernameElement.name = "username_name"
     inputUsernameElement.id = "username_id";
+    inputUsernameElement.value = "gmagma2025@gmail.com";
     inputUsernameElement.placeholder = "請輸入email";
     formElement.appendChild(inputUsernameElement);
 
@@ -79,6 +80,7 @@ function createCurtainAndSigninForm(){
     inputPasswordElement.type = "password";
     inputPasswordElement.name = "password_name"
     inputPasswordElement.id = "password_id";
+    inputPasswordElement.value = "Gma5052";
     inputPasswordElement.placeholder = "請輸入密碼";
     formElement.appendChild(inputPasswordElement);
 

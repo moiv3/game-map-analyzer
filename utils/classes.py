@@ -72,3 +72,10 @@ class TaskQueueOut(BaseModel):
 class WebsiteStatistics(BaseModel):
     tasks: Dict
     game: Dict
+
+class MemberPreferences(BaseModel):
+    send_mail: bool
+
+class PreferencesOut(BaseModel):
+    ok: bool
+    member_preferences: MemberPreferences
