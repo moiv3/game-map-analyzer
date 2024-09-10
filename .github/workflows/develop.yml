@@ -3,7 +3,7 @@ name: Deploy to ec2
 on:
   push:
     branches: [develop]
-    paths-ignore: 'README.md'
+    paths-ignore: 'readme.md'
 
 jobs:
   Deploy:
