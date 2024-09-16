@@ -19,5 +19,5 @@ async def process_video_by_id(process_info: VideoParseInfoUploaded, token_data: 
     return process_uploaded_video_by_id(process_info, token_data)
 
 @router.post("/upload_video", response_model=Success, responses={400: {"model": Error}, 403: {"model": Error}, 500: {"model": Error}}, summary="上傳一個影片並開始解析")
-async def upload_file(file: UploadFile = File(...), token_data: TokenOut = Depends(get_token_header), gameType: str = Form(...), messageInput: str | None = Form(None)):
+async def upload_file(file: UploadFile = File(None), token_data: TokenOut = Depends(get_token_header), gameType: str = Form(...), messageInput: str | None = Form(None)):
     return upload_file_and_process(file, token_data, gameType=gameType, messageInput=messageInput)

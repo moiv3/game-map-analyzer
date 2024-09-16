@@ -44,10 +44,6 @@ function createCurtainAndSigninForm(){
     signupSquareElement.classList="signup-form-bg";
     curtainElement.appendChild(signupSquareElement);
 
-    // let signupDecorationBarElement = document.createElement("div");
-    // signupDecorationBarElement.classList="decoration-bar";
-    // signupSquareElement.appendChild(signupDecorationBarElement);
-
     let buttonElement = document.createElement("button");
     buttonElement.classList="deactivate-curtain-button";
     buttonElement.addEventListener("click", (event) => {
@@ -344,7 +340,10 @@ async function initializeSignedInElements(tokenStatus){
 
         // adjust use_api behavior after signin is finished
         const uploadVideoButton = document.querySelector("#upload-video-button");
-        uploadVideoButton.remove();
+        // uploadVideoButton.remove();
+        uploadVideoButton.textContent = "Try it out! (Demo)";
+        uploadVideoButton.parentElement.href = "./upload_video_demo";
+
         const memberPageButton = document.querySelector("#member-page-button");
         memberPageButton.remove();
 

@@ -23,10 +23,10 @@ GOOGLE_OAUTH_CLIENT_ID = os.getenv("google_oauth_client_id")
 # other config
 token_valid_time = timedelta(days=7)
 MAX_FILE_SIZE = 5 * 1024 * 1024
-MAX_QUEUED_VIDEOS = 0
+MAX_QUEUED_VIDEOS = 1
 MAX_REMARK_SIZE = 30
 SUPPORTED_GAME_TYPES = ["mario", "mario_new", "sonic"]
-VIDEO_PROCESS_CACHE_DAYS = 1 # How many days shoud the program return a cached result
+VIDEO_PROCESS_CACHE_DAYS = 0 # How many days shoud the program return a cached result
 
 # testing zone
 HASHING_CHECK = False
