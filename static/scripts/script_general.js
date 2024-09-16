@@ -76,7 +76,7 @@ function createCurtainAndSigninForm(){
     inputPasswordElement.type = "password";
     inputPasswordElement.name = "password_name"
     inputPasswordElement.id = "password_id";
-    inputPasswordElement.value = "Gma5052";
+    inputPasswordElement.value = "Gma5202";
     inputPasswordElement.placeholder = "請輸入密碼";
     formElement.appendChild(inputPasswordElement);
 
@@ -340,9 +340,7 @@ async function initializeSignedInElements(tokenStatus){
 
         // adjust use_api behavior after signin is finished
         const uploadVideoButton = document.querySelector("#upload-video-button");
-        // uploadVideoButton.remove();
-        uploadVideoButton.textContent = "Try it out! (Demo)";
-        uploadVideoButton.parentElement.href = "./upload_video_demo";
+        uploadVideoButton.remove();
 
         const memberPageButton = document.querySelector("#member-page-button");
         memberPageButton.remove();
