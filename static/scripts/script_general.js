@@ -44,10 +44,6 @@ function createCurtainAndSigninForm(){
     signupSquareElement.classList="signup-form-bg";
     curtainElement.appendChild(signupSquareElement);
 
-    // let signupDecorationBarElement = document.createElement("div");
-    // signupDecorationBarElement.classList="decoration-bar";
-    // signupSquareElement.appendChild(signupDecorationBarElement);
-
     let buttonElement = document.createElement("button");
     buttonElement.classList="deactivate-curtain-button";
     buttonElement.addEventListener("click", (event) => {
@@ -71,6 +67,7 @@ function createCurtainAndSigninForm(){
     inputUsernameElement.type = "text";
     inputUsernameElement.name = "username_name"
     inputUsernameElement.id = "username_id";
+    inputUsernameElement.value = "gmagma2025@gmail.com";
     inputUsernameElement.placeholder = "請輸入email";
     formElement.appendChild(inputUsernameElement);
 
@@ -79,6 +76,7 @@ function createCurtainAndSigninForm(){
     inputPasswordElement.type = "password";
     inputPasswordElement.name = "password_name"
     inputPasswordElement.id = "password_id";
+    inputPasswordElement.value = "Gma5052";
     inputPasswordElement.placeholder = "請輸入密碼";
     formElement.appendChild(inputPasswordElement);
 
@@ -342,7 +340,10 @@ async function initializeSignedInElements(tokenStatus){
 
         // adjust use_api behavior after signin is finished
         const uploadVideoButton = document.querySelector("#upload-video-button");
-        uploadVideoButton.remove();
+        // uploadVideoButton.remove();
+        uploadVideoButton.textContent = "Try it out! (Demo)";
+        uploadVideoButton.parentElement.href = "./upload_video_demo";
+
         const memberPageButton = document.querySelector("#member-page-button");
         memberPageButton.remove();
 

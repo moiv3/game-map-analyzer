@@ -190,11 +190,39 @@ def process_uploaded_video_by_id(process_info: VideoParseInfoUploaded, token_dat
             task = celery_config.process_uploaded_video.delay(video_unique_id, user_id, game_type, task_num_id)
             return JSONResponse(status_code=200, content={"ok": True, "filename": video_unique_id, "message": f"已經排入處理隊列"})
 
-def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut = Depends(get_token_header), gameType: str = Form(...), messageInput: str | None = Form(None)):
+def upload_file_and_process(file: UploadFile = File(None), token_data: TokenOut = Depends(get_token_header), gameType: str = Form(...), messageInput: str | None = Form(None)):
     try:
         signin_status = check_user_signin_status_return_bool(token_data)
         if not signin_status:
             return JSONResponse(status_code=401, content={"error": True, "message": "登入資訊異常，請重新登入"})
+        elif gameType != "demo" and file is None:
+            return JSONResponse(status_code=400, content=(Error(error="true", message="無上傳檔案，請確認").dict()))
+        elif gameType == "demo":
+            # demo logic
+            user_id = signin_status["id"]
+            if messageInput and len(messageInput) > MAX_REMARK_SIZE:
+                return JSONResponse(status_code=400, content=(Error(error="true", message="備註長度超出上限").dict()))
+
+            website_db = mysql.connector.connect(host=db_host, user=db_user, password=db_pw, database=db_database)
+            website_db_cursor = website_db.cursor()
+
+            upload_video_id = "demo0"           
+
+            cmd = "SELECT id, result_map, result_video, result_movement, message, user_remark FROM demo_task ORDER BY RAND() LIMIT 1"
+            website_db_cursor.execute(cmd)
+            demo_result = website_db_cursor.fetchone()
+            if demo_result:
+                demo_result_map = demo_result[1]
+                demo_result_video = demo_result[2]
+                demo_result_movement = demo_result[3]
+                demo_message = f"{demo_result[4]}(demo: {demo_result[5]})"
+            else:
+                return JSONResponse(status_code=500, content=(Error(error="true", message="測試資料庫異常，請稍後再試，如持續異常請聯繫管理員").dict()))
+            
+            cmd = "INSERT into task (user_id, video_id, status, result_map, result_video, result_movement, user_remark, cached_result, game_type, message) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            website_db_cursor.execute(cmd, (user_id, "demo0", "COMPLETED", demo_result_map, demo_result_video, demo_result_movement, messageInput, 1, "demo", demo_message))
+            website_db.commit()
+            return {"ok": True, "message": "已送出demo請求，即將產生任務"}
         else:
             website_db = mysql.connector.connect(host=db_host, user=db_user, password=db_pw, database=db_database)
             website_db_cursor = website_db.cursor()
@@ -205,7 +233,7 @@ def upload_file_and_process(file: UploadFile = File(...), token_data: TokenOut =
             file.file.seek(0)  # Reset to the beginning of the file
             print(f"File size: {file_size} bytes")
             if file_size > MAX_FILE_SIZE:
-                return JSONResponse(status_code=413, content=(Error(error="true", message="檔案大小超出上限").dict()))
+                return JSONResponse(status_code=400, content=(Error(error="true", message="檔案大小超出上限").dict()))
             print(gameType)
             print(messageInput)
 

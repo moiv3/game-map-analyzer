@@ -36,17 +36,17 @@ def get_api_statistics():
         SUM(CASE WHEN game_type='mario' THEN 1 ELSE 0 END) as mario,
         SUM(CASE WHEN game_type='mario_new' THEN 1 ELSE 0 END) as mario_new,
         SUM(CASE WHEN game_type='sonic' THEN 1 ELSE 0 END) as sonic
-        FROM video"""
+        FROM task"""
         website_db_cursor.execute(cmd)
         db_fetch_result = website_db_cursor.fetchone()
         
-        videos_result = {}
-        videos_result["total"] = db_fetch_result[0]
-        videos_result["mario"] = db_fetch_result[1]
-        videos_result["mario_new"] = db_fetch_result[2]
-        videos_result["sonic"] = db_fetch_result[3]
-        statistics_result["videos"] = videos_result
-
+        game_result = {}
+        game_result["total"] = db_fetch_result[0]
+        game_result["mario"] = db_fetch_result[1]
+        game_result["mario_new"] = db_fetch_result[2]
+        game_result["sonic"] = db_fetch_result[3]
+        statistics_result["game"] = game_result
+        print(statistics_result)
         return statistics_result 
     
     except Exception as e:

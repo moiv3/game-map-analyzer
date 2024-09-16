@@ -16,7 +16,7 @@ router = APIRouter(
     tags=["User"]
 )
 
-@router.post("/", summary="註冊一個新的會員")
+@router.post("/", response_model=Success, responses={400: {"model": Error}}, summary="註冊一個新的會員")
 async def signup(sign_up_credentials: SignupFormData, request: Request, response: Response):
     return create_user(email=sign_up_credentials.email, password=sign_up_credentials.password, name=sign_up_credentials.name) 
 
@@ -28,15 +28,15 @@ async def signin(sign_in_credentials: SigninFormData, request: Request, response
 async def check_signin_status(request: Request, response: Response, token_data: TokenOut = Depends(get_token_header)):
     return check_user_signin_status(token_data)
 
-@router.get("/preferences", summary="取得使用者偏好設定")
+@router.get("/preferences", response_model=PreferencesOut, summary="取得使用者偏好設定")
 async def fetch_preferences(token_data: TokenOut = Depends(get_token_header)):
     return get_user_preferences(token_data)
 
-@router.patch("/preferences", summary="修改使用者偏好設定")
+@router.patch("/preferences", response_model=Success, responses={401: {"model": Error}, 500: {"model": Error}}, summary="修改使用者偏好設定")
 async def modify_preferences(user_preferences: UserPreferences, token_data: TokenOut = Depends(get_token_header)):
     return patch_user_preferences(user_preferences, token_data)
 
-@router.post("/signin_by_google", summary="使用Google登入")
+@router.post("/signin_by_google", response_model=TokenOut, summary="使用Google登入")
 async def signin_by_google_oauth2(credential: CredentialIn):
     try:
         # Specify the CLIENT_ID of the app that accesses the backend. If valid, get user info

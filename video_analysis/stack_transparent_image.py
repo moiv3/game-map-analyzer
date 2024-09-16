@@ -32,6 +32,17 @@ def put_character_on_bg(background_img, char_img, x_center, y_center):
             char_img = char_img[:, :x2 - x_offset, :]
             mask = mask[:, :x2 - x_offset]
 
+        # Ensure the coordinates don't go out of bounds of background_img (brian modify, for x or y < 0)
+        if y1 < 0:
+            y1 = 0
+            char_img = char_img[-y_offset:, :, :]
+            mask = mask[-y_offset:, :]
+
+        if x1 < 0:
+            x1 = 0
+            char_img = char_img[:, -x_offset:, :]
+            mask = mask[:, -x_offset:]
+
         # Overlay char_img onto background_img using the mask
         for c in range(0, 3):
             background_img[y1:y2, x1:x2, c][mask] = char_img[:, :, c][mask]

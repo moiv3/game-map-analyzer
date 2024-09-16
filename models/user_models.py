@@ -21,7 +21,7 @@ def create_user(email: str, password: str, name: str):
     result = website_db_cursor.fetchone()
     if result:
         print("user already exists")
-        return JSONResponse(status_code=422, content=(Error(error="true", message="此信箱已被使用").dict()))
+        return JSONResponse(status_code=400, content=(Error(error="true", message="此信箱已被使用").dict()))
     else:
         hashed_password = get_password_hash(password)
         print(password, hashed_password)
@@ -29,7 +29,7 @@ def create_user(email: str, password: str, name: str):
         website_db_cursor.execute(cmd, (name, email, hashed_password))
         website_db.commit()
         print("added new user")
-        return {"ok": True}
+        return {"ok": True, "message": "Successfully added new user."}
     
 def authenticate_user(email: str, password: str):
     website_db = mysql.connector.connect(
@@ -89,7 +89,6 @@ def patch_user_preferences(user_preferences: UserPreferences, token_data: TokenO
     if not signin_status:
         return JSONResponse(status_code=401, content=(Error(error="true", message="登入資訊異常，請重新登入").dict()))
     
-    # 檢查video_id & API key狀態
     else:
         try:
             # patch send_mail
@@ -105,7 +104,7 @@ def patch_user_preferences(user_preferences: UserPreferences, token_data: TokenO
             return {"ok": True, "message": "Successfully updated user preference"}
         except Exception:
             traceback.print_exc()
-            return {"error": True, "message": "伺服器內部錯誤"}
+            return JSONResponse(status_code=500, content=(Error(error="true", message="伺服器內部錯誤").dict()))
         
 
 def signin_by_google(user_email: str, user_name: str, user_google_id: int):
