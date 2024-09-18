@@ -16,7 +16,7 @@ from utils.auth import get_token_header, check_user_signin_status_return_bool
 from utils.config import db_host, db_user, db_pw, db_database
 from utils.config import region_name, aws_access_key_id, aws_secret_access_key, BUCKET_NAME, CLOUDFRONT_URL
 from utils.config import MAX_FILE_SIZE, MAX_QUEUED_VIDEOS, MAX_REMARK_SIZE, SUPPORTED_GAME_TYPES
-from utils.config import HASHING_CHECK, VIDEO_PROCESS_CACHE_DAYS
+from utils.config import VIDEO_PROCESS_CACHE_DAYS
 
 # AWS S3 config
 s3_client = boto3.client('s3', region_name=region_name, 

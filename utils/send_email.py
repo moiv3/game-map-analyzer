@@ -1,13 +1,9 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from dotenv import load_dotenv
-import os
 import traceback
-load_dotenv()
 
-GM_EMAIL = os.getenv("gm_sender_email")
-GM_PW = os.getenv("gm_sender_pw")
+from utils.config import GM_EMAIL, GM_PW
 
 def send_email_to_address(receiver_email, user, analysis_result):
     # Gmail SMTP server credentials
