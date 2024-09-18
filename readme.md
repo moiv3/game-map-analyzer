@@ -2,7 +2,7 @@
 
 ## About
 
-![screenshot_index_page](https://github.com/user-attachments/assets/b869d259-c3f5-4d87-a054-f2f2dc047216)
+![screenshot_index_page](https://github.com/user-attachments/assets/d06c3be0-fc43-4b42-80b4-95935a54568f)
 
 Game Map Analyzer, GMA, is a tool for analyzing the map and character movement of 2D platform games.
 
