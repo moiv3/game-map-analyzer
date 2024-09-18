@@ -1,22 +1,49 @@
 # Game Map Analyzer
 
-## How to use
+## About
 
-This is a tool for analyzing the maps and character movement of 2D platformer games.
+![screenshot_index_page](https://github.com/user-attachments/assets/d06c3be0-fc43-4b42-80b4-95935a54568f)
 
-This tool uses ML to find out the character's position and background position, and outputs them into a new video.
+Game Map Analyzer, GMA, is a tool for analyzing the map and character movement of 2D platform games.
 
-Then it uses cv2 to cut and paste the frames to build a map and character movement.
+[Click here](https://traces.fun/) to visit the website.
 
-Please run `uvicorn main_mvc:app` to start the program, then follow the instructions to analyze game data!
+This tool uses machine learning to parse each frame of the uploaded video,\
+finding out the character's position and analyzing background movement,\
+finally, combines them into a map and a movement picture.
+The object inference video is also included in the output.
 
 Currently, this website is Chinese only.
+
+## Running locally
+
+This website is built with Python FastAPI.
+
+If you wish to run locally:
+1. Please Install FastAPI using:
+
+    ```pip install fastapi```
+
+2. Please run `uvicorn main_mvc:app` to start the program, then follow the instructions to analyze game data!
 
 ## Architecture
 
 The architecture diagram of thie project is as follows:
 
-![architeture_dia](https://github.com/user-attachments/assets/5d358dc7-862f-48a1-b03c-aa0874456d27)
+![architeture_diagram](https://github.com/user-attachments/assets/5d358dc7-862f-48a1-b03c-aa0874456d27)
+
+## Tools and Technologies Used
+
+(Work in progress, to be updated)
+
+GMA leverages the functionality of numerous Python libraries. The author extends heartfelt gratitude to all the developers who made this possible.
+
+1. FastAPI
+2. AWS
+3. Machine learning
+4. Task Queue
+5. MySQL(using AWS RDS)
+6. HTML/CSS/JavaScript
 
 ## CI/CD
 
@@ -41,3 +68,8 @@ The script does the following actions in order:
 6. Disconnects from SSH.
 
 The website will then be running the latest build.
+
+## Configurations
+
+Configurations for the program can be set in utils/config.py.
+
