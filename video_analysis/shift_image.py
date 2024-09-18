@@ -232,7 +232,10 @@ def combine_images(task_id, frames_folder, images, movement_x, movement_y, all_i
         final_size_x = max_x_right - min_x_left
         final_size_y = max_y_bottom - min_y_top
         print(final_size_x, final_size_y)
-        final_img = np.zeros([final_size_y,final_size_x, 3], dtype=np.uint8)
+        # black background
+        # final_img = np.zeros([final_size_y,final_size_x, 3], dtype=np.uint8)
+        # white background
+        final_img = np.full([final_size_y,final_size_x, 3],255, dtype=np.uint8)
 
         for i in range(len(images)):
             image = cv2.imread(f"{frames_folder}/{images[i]}")

@@ -50,7 +50,3 @@ def send_email_to_address(receiver_email, user, analysis_result):
     except Exception as e:
         traceback.print_exc()
         print(f"Failed to send email: {e}")
-
-if __name__ == "__main__":
-    # test script
-    send_email_to_address("brian3961@gmail.com", "Red ㄎㄎ Hong", "分析成功")

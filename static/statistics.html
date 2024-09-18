@@ -25,7 +25,7 @@
     <div class="body bold" style="height: 30px"></div>
     <div class="order-details-form body">
       <div class="header-3 bold">網站統計</div>
-      <div>本頁列出本站相關的統計資訊！</div>
+      <div id="statistics-status-text">以下列出本站相關的統計資訊！</div>
       <div id="statistics-table">
         <h3>影片處理狀態統計</h3>
         <table id="tasks-table" border="1">
@@ -38,8 +38,8 @@
             <tbody></tbody>
         </table>
     
-        <h3>影片類型統計</h3>
-        <table id="videos-table" border="1">
+        <h3>遊戲類型統計</h3>
+        <table id="game-table" border="1">
             <thead>
                 <tr>
                     <th>類型</th>
@@ -55,6 +55,7 @@
   <div class="body bold" style="height: 30px"></div>
   <div class="footer body"><span class="footer-div bold">Copyright &copy; 2024 Game Map Analyzer</span><span class="footer-div"><a href="statistics">統計資料</a></span><span class="footer-div"><a href="about">更新資訊</span></a><span class="footer-div"><a href="docs" target=”_blank”>API docs</a></span></div>
 <script src="../static/scripts/script_general.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script defer>
   async function getStatistics(){
     const websiteStatistics = await fetch("./api/website/statistics",{
@@ -84,11 +85,24 @@
     }
   }
   async function initializePage(){
-  const statisticsText = document.querySelector("#statistics-text");
-  const statisticsOutput = await getStatistics();
-  // statisticsText.textContent = JSON.stringify(statisticsOutput);
-  renderTable(statisticsOutput.tasks, 'tasks-table');
-  renderTable(statisticsOutput.videos, 'videos-table');
+    const statisticsText = document.querySelector("#statistics-text");
+    try {
+      const statisticsOutput = await getStatistics();
+      if (statisticsOutput.error){
+        throw "Fetch error";
+      }
+      else{
+        renderTable(statisticsOutput.tasks, 'tasks-table');
+        renderTable(statisticsOutput.game, 'game-table');
+      }
+    }
+    catch (e) {
+      const statusText = document.querySelector("#statistics-status-text");
+      statusText.textContent = "取得統計資料異常，請通知系統管理員。"
+      const statisticsTableDiv = document.querySelector("#statistics-table");
+      statisticsTableDiv.style.display = "none";    
+      console.log(e);
+    }
   }
   initializePage();
 </script>

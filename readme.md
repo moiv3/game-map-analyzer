@@ -12,6 +12,12 @@ Please run `uvicorn main_mvc:app` to start the program, then follow the instruct
 
 Currently, this website is Chinese only.
 
+## Architecture
+
+The architecture diagram of thie project is as follows:
+
+![architeture_dia](https://github.com/user-attachments/assets/5d358dc7-862f-48a1-b03c-aa0874456d27)
+
 ## CI/CD
 
 Github Actions is used for the CI/CD of this project.

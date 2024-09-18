@@ -1,30 +1,30 @@
 from celery import Celery
-import time
 import boto3
-import uuid
 import json
 import traceback
 import video_analysis.mario_parser_0809 as mario_parser_0809
 import utils.send_email as send_email
+from utils.config import db_host, db_user, db_pw, db_database, region_name, aws_access_key_id, aws_secret_access_key, BUCKET_NAME, CLOUDFRONT_URL
 
 # db config
-from dotenv import load_dotenv
-import os
+# from dotenv import load_dotenv
+# import os
 import mysql.connector
 
-load_dotenv()
-db_host = os.getenv("db_host")
-db_user = os.getenv("db_user")
-db_pw = os.getenv("db_pw")
-db_database = os.getenv("db_database")
+
+# load_dotenv()
+# db_host = os.getenv("db_host")
+# db_user = os.getenv("db_user")
+# db_pw = os.getenv("db_pw")
+# db_database = os.getenv("db_database")
 
 # S3 client initialization
-s3_client = boto3.client('s3', region_name=os.getenv("region_name"), 
-                         aws_access_key_id=os.getenv("aws_access_key_id"),
-                         aws_secret_access_key=os.getenv("aws_secret_access_key"))
+s3_client = boto3.client('s3', region_name=region_name, 
+                         aws_access_key_id=aws_access_key_id,
+                         aws_secret_access_key=aws_secret_access_key)
 
-BUCKET_NAME = os.getenv("s3_bucket_name")
-CLOUDFRONT_URL = os.getenv("cloudfront_distribution_domain_name")
+# BUCKET_NAME = os.getenv("s3_bucket_name")
+# CLOUDFRONT_URL = os.getenv("cloudfront_distribution_domain_name")
 
 celery_app = Celery(
     'worker',
@@ -58,8 +58,8 @@ def process_video(self, video_id: str, api_key: str):
         # UPLOAD A PICTURE TO S3 SEQUENCE
         map_filename = f"map_{file_path}"
         s3_client.upload_file(file_path, BUCKET_NAME, map_filename)
-        picture_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{map_filename}"
-        # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
+        # picture_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{map_filename}"
+        picture_url = f"https://{CLOUDFRONT_URL}/{map_filename}"
 
         # UPDATE database with picture url
         cmd = "UPDATE task_status SET result_picture_url = %s WHERE task_id = %s"
@@ -70,8 +70,8 @@ def process_video(self, video_id: str, api_key: str):
         video_file_path = f"video_{task_id}.mp4"
         video_filename = f"video_{task_id}.mp4"
         s3_client.upload_file(video_file_path, BUCKET_NAME, video_filename)
-        video_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{video_filename}"
-        # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
+        # video_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{video_filename}"
+        video_url = f"https://{CLOUDFRONT_URL}/{video_filename}"
 
         # UPDATE database with video url
         cmd = "UPDATE task_status SET result_video_url = %s WHERE task_id = %s"
@@ -90,7 +90,8 @@ def process_video(self, video_id: str, api_key: str):
         # Upload dummy json dataConvert dictionary to JSON string
         json_data = json.dumps(data_dict)
         json_file_name = f"movement_{task_id}.json"
-        json_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{json_file_name}"
+        # json_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{json_file_name}"
+        json_url = f"https://{CLOUDFRONT_URL}/{json_file_name}"
 
         s3_client.put_object(Bucket=BUCKET_NAME, Key=json_file_name, Body=json_data)
 
@@ -119,7 +120,7 @@ def process_video(self, video_id: str, api_key: str):
 
 # For video uploaded via S3
 @celery_app.task(bind=True)
-def process_uploaded_video(self, video_id: str, user_id: int, game: str):
+def process_uploaded_video(self, video_id: str, user_id: int, game: str, task_num_id: int):
     if game not in ["mario", "sonic", "mario_new"]:
         return{"error": True, "message": "Not a currently supported game"}
         
@@ -140,9 +141,8 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
     user_send_mail = user_info[3]
 
     # update task status
-    cmd = "UPDATE task SET task_id = %s, status = %s WHERE video_id = %s"
-    # cmd = "INSERT into task (task_id, user_id, video_id, status) VALUES (%s, %s, %s, %s)"
-    website_db_cursor.execute(cmd, (task_id, "PROCESSING", video_id))
+    cmd = "UPDATE task SET task_id = %s, status = %s WHERE (video_id = %s AND id = %s)"
+    website_db_cursor.execute(cmd, (task_id, "PROCESSING", video_id, task_num_id))
     website_db.commit()
 
     # THE REAL FUNCTION
@@ -172,8 +172,8 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
             print("Uploading map...")
             s3_client.upload_file(map_filepath, BUCKET_NAME, map_filename, ExtraArgs={'ContentType': 'image/jpeg'})
             print("Uploading complete.")
-            picture_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{map_filename}"
-            # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
+            # picture_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{map_filename}"
+            picture_url = f"https://{CLOUDFRONT_URL}/{map_filename}"
 
             # UPDATE database with picture url
             cmd = "UPDATE task SET result_map = %s WHERE task_id = %s"
@@ -186,8 +186,8 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
             print("Uploading video...")
             s3_client.upload_file(video_filepath, BUCKET_NAME, video_filename)
             print("Uploading complete.")
-            video_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{video_filename}"
-            # file_url = f"https://{CLOUDFRONT_URL}/{unique_filename}"
+            # video_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{video_filename}"
+            video_url = f"https://{CLOUDFRONT_URL}/{video_filename}"
 
             # UPDATE database with video url
             cmd = "UPDATE task SET result_video = %s WHERE task_id = %s"
@@ -209,7 +209,9 @@ def process_uploaded_video(self, video_id: str, user_id: int, game: str):
             elif game == "sonic" or game == "mario_new":
                 movement_filepath = parse_result["movement"]
                 movement_filename = f"movement_{task_id}.jpg"
-                movement_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{movement_filename}"
+                # movement_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{movement_filename}"
+                movement_url = f"https://{CLOUDFRONT_URL}/{movement_filename}"
+
                 print("Uploading movement...")
                 s3_client.upload_file(movement_filepath, BUCKET_NAME, movement_filename, ExtraArgs={'ContentType': 'image/jpeg'})
                 print("Uploading complete.")

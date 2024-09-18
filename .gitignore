@@ -147,3 +147,4 @@ cython_debug/
 *.exe
 *.webm
 *.png
+db_schema.txt
