@@ -34,16 +34,14 @@ The architecture diagram of thie project is as follows:
 
 ## Tools and Technologies Used
 
-(Work in progress, to be updated)
-
 GMA leverages the functionality of numerous Python libraries. The author extends heartfelt gratitude to all the developers who made this possible.
 
-1. FastAPI
-2. AWS
-3. Machine learning
-4. Task Queue
-5. MySQL(using AWS RDS)
-6. HTML/CSS/JavaScript
+1. Development Framework: FastAPI
+2. Web host: AWS EC2, S3, Cloudfront, Route 53
+3. Machine learning: Ultralytics YOLOv8
+4. Task Queue: Celery
+5. Database: Oracle MySQL(AWS RDS)
+6. Frontend: HTML/CSS/JavaScript
 
 ## CI/CD
 
