@@ -20,11 +20,10 @@ Currently, this website is Chinese only.
 This website is built with Python FastAPI.
 
 If you wish to run locally:
-1. Please Install FastAPI using:
-
-    ```pip install fastapi```
-
-2. Please run `uvicorn main_mvc:app` to start the program, then follow the instructions to analyze game data!
+1. Please Install FastAPI using `pip install fastapi`.
+2. Please run `uvicorn main_mvc:app` to start the program. Specify host URL via the `--host` parameter.
+3. Please run `celery -A video_analysis.celery_config.celery_app worker` to start the task queue.
+4. Access the host URL then follow the instructions on screen to analyze game data!
 
 ## Architecture
 
