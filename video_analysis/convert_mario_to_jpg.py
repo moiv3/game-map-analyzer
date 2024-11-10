@@ -3,7 +3,6 @@ from datetime import datetime
 import cv2
 import numpy as np
 import os
-import yt_dlp
 import boto3
 import traceback
 from dotenv import load_dotenv
@@ -50,65 +49,6 @@ def download_s3(video_id: str, task_id: str):
         traceback.print_exc()
         return None
 
-# Download desired YouTube video URL
-def download_youtube_new(youtube_id: str, task_id: str):
-    # Upper bound of video duration
-    video_duration_limit = 90
-
-    downloaded_filename = None
-
-    # Define a custom hook to capture the filename
-    def my_hook(d):
-        nonlocal downloaded_filename
-        if d['status'] == 'finished':
-            downloaded_filename = d['filename']
-
-    video_url = 'https://www.youtube.com/watch?v=' + youtube_id
-
-    # video info options
-    info_options = {
-        'quiet': True,  # Suppress output
-        'no_warnings': True,
-    }
-
-    outtmpl = f"youtube_{task_id}.%(ext)s"
-    # video download options
-    download_options = {
-        'format': 'bestvideo[ext=mp4][height<=480]+bestaudio[ext=m4a]/best[ext=mp4][height<=480]',  # Restrict to MP4 format and max 480p resolution,
-        'outtmpl': outtmpl,  # Output template
-        'progress_hooks': [my_hook],  # Add the hook here
-    }
-
-    with yt_dlp.YoutubeDL(info_options) as ydl:
-        # Extract information
-        info_dict = ydl.extract_info(video_url, download=False)
-        
-        # Retrieve and print the video duration (in seconds)
-        video_duration = info_dict.get('duration', None)
-        print(f"Video Duration: {video_duration} seconds")
-        if video_duration and video_duration < 90:
-            # Initialize yt-dlp with download options
-            with yt_dlp.YoutubeDL(download_options) as ydl_download:
-                ydl_download.download([video_url])        
-                print("Download complete!")
-                downloaded_filename_new = f"youtube_{task_id}.mp4"
-                return downloaded_filename_new
-
-        else:
-            print("Video too long. Returning None")
-            return None
-
-def download_youtube(youtube_id: str):
-    video_url = 'https://www.youtube.com/watch?v=' + youtube_id
-
-    yt = YouTube(video_url)
-    stream = yt.streams.filter(file_extension='mp4').first()
-    now = datetime.now()
-    # Format the datetime as a string in the desired format
-    output_filename = now.strftime("test_video%Y%m%d%H%M%S.mp4")
-    stream.download(filename=output_filename)
-
-    return output_filename
 
 # Extract frames from the video using OpenCV, saves to own folder with filename "frame_xxx.jpg"
 def extract_frames(filename: str, start_time, end_time, interval_frames, output_folder):
@@ -155,32 +95,3 @@ def extract_frames(filename: str, start_time, end_time, interval_frames, output_
     
     print(result)
     return result, frame_list
-
-# extract_frames('mario1-1.mp4',20,25,6)
-
-# Note: cipher.py Line 264
-# was:
-#     function_patterns = [
-#         # https://github.com/ytdl-org/youtube-dl/issues/29326#issuecomment-865985377
-#         # https://github.com/yt-dlp/yt-dlp/commit/48416bc4a8f1d5ff07d5977659cb8ece7640dcd8
-#         # var Bpa = [iha];
-#         # ...
-#         # a.C && (b = a.get("n")) && (b = Bpa[0](b), a.set("n", b),
-#         # Bpa.length || iha("")) }};
-#         # In the above case, `iha` is the relevant function name
-#         r'a\.[a-zA-Z]\s*&&\s*\([a-z]\s*=\s*a\.get\("n"\)\)\s*&&\s*'
-#         r'\([a-z]\s*=\s*([a-zA-Z0-9$]+)(\[\d+\])?\([a-z]\)',
-#     ]
-# is:
-# function_patterns = [
-#     # https://github.com/ytdl-org/youtube-dl/issues/29326#issuecomment-865985377
-#     # https://github.com/yt-dlp/yt-dlp/commit/48416bc4a8f1d5ff07d5977659cb8ece7640dcd8
-#     # var Bpa = [iha];
-#     # ...
-#     # a.C && (b = a.get("n")) && (b = Bpa[0](b), a.set("n", b),
-#     # Bpa.length || iha("")) }};
-#     # In the above case, `iha` is the relevant function name
-#     r'a\.[a-zA-Z]\s*&&\s*\([a-z]\s*=\s*a\.get\("n"\)\)\s*&&.*?\|\|\s*([a-z]+)',
-#     r'\([a-z]\s*=\s*([a-zA-Z0-9$]+)(\[\d+\])?\([a-z]\)',
-#     r'\([a-z]\s*=\s*([a-zA-Z0-9$]+)(\[\d+\])\([a-z]\)',
-# ]

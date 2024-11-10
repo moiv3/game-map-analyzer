@@ -14,10 +14,6 @@ def check_black_image_with_threshold(image_path, threshold=10, ratio_threshold=0
     print(image_path, ratio)
     return ratio
 
-    if ratio < ratio_threshold:
-        return True
-    else:
-        return False
 
 def get_image_black_values(folder_path):
     image_black_values = {}
@@ -126,40 +122,3 @@ def infer_starting_frame(dict_to_infer, start_frame: int, end_frame: int, captur
     
     print("[infer_starting_frame] Did not find a starting frame, will return 0")
     return 0
-
-# dict_to_infer = get_image_title_black_game_attr("output_test_0808")
-# starting_frame = infer_starting_frame(dict_to_infer, start_frame=0, end_frame=1566)
-
-# for i in range(26):
-#     print (check_black_image_with_threshold("frame_54.jpg", threshold=10*i, ratio_threshold=0.00005))
-#     print (check_black_image_with_threshold("frame_56.jpg", threshold=10*i, ratio_threshold=0.00005))
-#     print (check_black_image_with_threshold("frame_164.jpg", threshold=10*i, ratio_threshold=0.00005))
-
-# Test results - Conclusion: threshold=10 + ratio_threshold=0.01 seems good.
-# frame_54.jpg: Stage screen
-# frame_56.jpg: pure black
-# frame_164.jpg: pure blue
-
-# threshold=0
-# frame_54.jpg 0.053287037037037036
-# False
-# frame_56.jpg 0.00028356481481481483
-# False
-# frame_164.jpg 1.0
-# False
-
-# threshold=10
-# frame_54.jpg 0.029988425925925925
-# False
-# frame_56.jpg 0.0
-# True
-# frame_164.jpg 1.0
-# False
-
-# threshold=20
-# frame_54.jpg 0.028182870370370372
-# False
-# frame_56.jpg 0.0
-# True
-# frame_164.jpg 1.0
-# False

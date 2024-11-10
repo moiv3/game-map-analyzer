@@ -14,9 +14,6 @@ model_sonic = YOLO("./training_data/20240820sonicv1/sonicbestv2.pt")
 # ratio of image to 視為邊界
 lr_margin_ratio = 0.005
 
-# 今天的目標是讓這個program可以處理一整個影帶
-
-
 # Function to crop the image
 def crop_image(image, x, y, width, height):
     return image[y:y+height, x:x+width]
