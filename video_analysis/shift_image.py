@@ -10,7 +10,6 @@ def read_image(image_file, gray_scale=False):
         image_src = cv2.cvtColor(image_src, cv2.COLOR_BGR2GRAY)
     else:
         pass
-        # image_src = cv2.cvtColor(image_src, cv2.COLOR_BGR2RGB)
     return image_src
 
 def pad_vector(vector, how, depth, constant_value=255):
